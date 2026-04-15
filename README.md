@@ -1,6 +1,6 @@
 # AICommander-v2
 
-Migration pack introduces provider-based role orchestration as the primary backend architecture:
+Migration packs introduce provider-based role orchestration as the primary backend architecture:
 
 `GUI -> Python orchestration backend -> provider-based roles`
 
@@ -45,22 +45,40 @@ AICOMMANDER_FINAL_AUDITOR_API_KEY=...
 ```bash
 python -m backend.cli --health-check --execution-mode balanced --run-folder runs/current
 python -m backend.cli --run-final-audit --execution-mode premium --run-folder runs/current
+python -m backend.cli --read-final-audit-route --run-folder runs/current
+python -m backend.cli --gui-health-status --run-folder runs/current
 python -m backend.cli --bridge-status --run-folder runs/current
 ```
 
-## Bridge to existing AICommander flow
+## Migration pack #2: integration into existing AICommander app flow
 
-No GUI rewrite is required for migration pack:
+No giant GUI rewrite is required.
 
 1. Existing GUI and stakeholder approve/comment/reject flow stay untouched.
-2. Legacy execution still writes existing run-folder artifacts.
-3. After `judge`, legacy flow invokes:
+2. Legacy execution keeps writing existing run-folder artifacts.
+3. After `judge`, app invokes:
    - `python -m backend.cli --run-final-audit --run-folder <run_folder>`
 4. Backend writes `final_audit.json`.
-5. Legacy flow maps:
+5. App reads route via:
+   - `python -m backend.cli --read-final-audit-route --run-folder <run_folder>`
+6. Route mapping:
    - `approve -> done`
-   - `revise -> revision loop`
-   - `reject -> stakeholder reject path`
+   - `revise -> revision_loop`
+   - `reject -> stakeholder_reject`
+
+### GUI-facing health status model
+
+`--gui-health-status` returns stable keys for GUI state:
+
+- provider_status
+- director_role
+- coder_role
+- reviewer_role
+- qa_role
+- judge_role
+- final_auditor_role
+- workspace_status
+- orchestration_status
 
 ## Artifacts
 

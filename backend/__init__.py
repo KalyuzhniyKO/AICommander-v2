@@ -1,3 +1,3 @@
-"""AICommander v2 backend migration pack #1."""
+"""AICommander v2 backend migration packs."""
 
 __all__ = []

@@ -18,9 +18,14 @@ def build_bridge_plan(run_folder: Path) -> Dict[str, object]:
     return {
         "status": "ok",
         "integration_points": {
-            "before": "legacy pipeline ends after judge",
-            "after": "legacy pipeline calls --run-final-audit before done/reject UI state",
+            "trigger_stage": "after_judge",
+            "action": "invoke --run-final-audit",
             "gui_changes_required": "minimal",
+        },
+        "commands": {
+            "post_judge": f"python -m backend.cli --run-final-audit --run-folder {run_folder}",
+            "read_route": f"python -m backend.cli --read-final-audit-route --run-folder {run_folder}",
+            "gui_health": f"python -m backend.cli --gui-health-status --run-folder {run_folder}",
         },
         "required_inputs": [
             str((run_folder / "director_response.json").resolve()),
@@ -36,7 +41,7 @@ def build_bridge_plan(run_folder: Path) -> Dict[str, object]:
         },
         "routing": {
             "approve": "done",
-            "revise": "manual revision loop",
-            "reject": "stakeholder reject path",
+            "revise": "revision_loop",
+            "reject": "stakeholder_reject",
         },
     }
