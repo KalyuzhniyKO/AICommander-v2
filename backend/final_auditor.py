@@ -6,7 +6,6 @@ import json
 import re
 import urllib.error
 import urllib.request
-from dataclasses import asdict
 from typing import Any, Dict
 
 from .config import RoleConfig
@@ -26,6 +25,17 @@ def _build_prompt(payload: Dict[str, Any]) -> str:
     )
 
 
+def _public_role_descriptor(role: RoleConfig) -> Dict[str, str]:
+    """Return non-secret role descriptor for logs/artifacts."""
+    return {
+        "role": role.role,
+        "provider": role.provider,
+        "model": role.model,
+        "base_url": role.base_url,
+        "mode": role.mode,
+    }
+
+
 def _error_payload(role: RoleConfig, error_type: str, message: str, details: Dict[str, Any] | None = None) -> Dict[str, Any]:
     return {
         "status": "error",
@@ -37,7 +47,7 @@ def _error_payload(role: RoleConfig, error_type: str, message: str, details: Dic
         "critical_issues": [message],
         "recommendation": "Retry final audit after fixing provider/config/runtime issue.",
         "requires_revision": True,
-        "role": asdict(role),
+        "role": _public_role_descriptor(role),
     }
 
 
@@ -74,7 +84,7 @@ def _normalize_result(role: RoleConfig, parsed: Dict[str, Any]) -> Dict[str, Any
         "critical_issues": [str(item) for item in critical_issues],
         "recommendation": str(parsed.get("recommendation", "")).strip(),
         "requires_revision": bool(parsed.get("requires_revision", verdict != "approve")),
-        "role": asdict(role),
+        "role": _public_role_descriptor(role),
     }
 
 
