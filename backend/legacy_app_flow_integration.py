@@ -45,8 +45,10 @@ def run_post_judge_transition(run_folder: Path, execution_mode: str | None = Non
 
     save_json(run_folder / EXECUTION_ARTIFACT, execution_payload)
 
+    transition_status = outcome.get("status", "ok") if isinstance(outcome, dict) else "ok"
+
     return {
-        "status": "ok",
+        "status": transition_status,
         "integration": outcome,
         "final_audit": final_audit if isinstance(final_audit, dict) else {},
         "execution": execution_payload,

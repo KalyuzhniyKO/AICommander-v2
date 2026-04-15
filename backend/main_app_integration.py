@@ -29,7 +29,7 @@ def run_after_judge_and_resolve_next_step(run_folder: Path, execution_mode: str 
     integration = transition.get("integration", {}) if isinstance(transition, dict) else {}
 
     return AppNextStep(
-        status=transition.get("status", "ok") if isinstance(transition, dict) else "ok",
+        status=transition.get("status", "unknown") if isinstance(transition, dict) else "unknown",
         next_route=integration.get("next_route", "revision_loop"),
         final_verdict=integration.get("final_verdict", "revise"),
         final_audit_path=integration.get("final_audit_path", str((run_folder / "final_audit.json").resolve())),
