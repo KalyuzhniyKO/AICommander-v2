@@ -51,6 +51,22 @@ def _error_payload(role: RoleConfig, error_type: str, message: str, details: Dic
     }
 
 
+
+
+def _coerce_bool(value: Any, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "y"}:
+            return True
+        if normalized in {"false", "0", "no", "n"}:
+            return False
+    return default
+
+
 def _extract_json_text(text: str) -> str:
     stripped = text.strip()
     if stripped.startswith("{") and stripped.endswith("}"):
@@ -83,7 +99,7 @@ def _normalize_result(role: RoleConfig, parsed: Dict[str, Any]) -> Dict[str, Any
         "stakeholder_summary": str(parsed.get("stakeholder_summary", "")).strip(),
         "critical_issues": [str(item) for item in critical_issues],
         "recommendation": str(parsed.get("recommendation", "")).strip(),
-        "requires_revision": bool(parsed.get("requires_revision", verdict != "approve")),
+        "requires_revision": _coerce_bool(parsed.get("requires_revision", verdict != "approve"), verdict != "approve"),
         "role": _public_role_descriptor(role),
     }
 

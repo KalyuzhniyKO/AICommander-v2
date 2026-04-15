@@ -97,7 +97,7 @@ def _check_orchestration_state(run_folder: Path) -> Dict[str, Any]:
     required = ["director_response.json", "execution.json", "manual_review.json", "team_summary.json"]
     found = [name for name in required if (run_folder / name).exists()]
     return {
-        "status": "ok" if found else "missing",
+        "status": "ok" if len(found) == len(required) else "missing",
         "required": required,
         "found": found,
     }
