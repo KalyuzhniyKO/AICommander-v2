@@ -12,7 +12,7 @@ from .artifacts import load_json_if_exists
 from .bridge import build_bridge_plan
 from .config import load_config
 from .health import print_health_json
-from .legacy_app_flow_integration import read_post_judge_route, run_post_judge_mvi_payload, run_post_judge_transition
+from .legacy_app_flow_integration import read_post_judge_route, run_post_judge_transition
 
 
 def _cmd_run_final_audit(run_folder: Path, execution_mode: str | None) -> int:
@@ -30,10 +30,6 @@ def _cmd_run_post_judge_transition(run_folder: Path, execution_mode: str | None)
 
 
 
-
-def _cmd_run_post_judge_mvi(run_folder: Path, execution_mode: str | None) -> int:
-    print(json.dumps(run_post_judge_mvi_payload(run_folder=run_folder, execution_mode=execution_mode), ensure_ascii=False, indent=2))
-    return 0
 
 
 def _cmd_health_check(run_folder: Path, execution_mode: str | None) -> int:
@@ -68,7 +64,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--execution-mode", choices=["cheap", "balanced", "premium"], help="Role/model profile mode")
     parser.add_argument("--run-final-audit", action="store_true", help="Run post-judge final audit and write final_audit.json")
     parser.add_argument("--run-post-judge-transition", action="store_true", help="Run post-judge final audit + persist route snapshot into execution.json")
-    parser.add_argument("--run-post-judge-mvi", action="store_true", help="Run single-step MVI payload for existing app (transition + route + gui status)")
     parser.add_argument("--health-check", action="store_true", help="Run provider/role/workspace health check")
     parser.add_argument("--bridge-status", action="store_true", help="Print bridge contract for legacy GUI flow integration")
     parser.add_argument("--gui-health-status", action="store_true", help="Print GUI-facing health status model payload")
@@ -90,8 +85,6 @@ def main() -> int:
         return _cmd_run_final_audit(run_folder, args.execution_mode)
     if args.run_post_judge_transition:
         return _cmd_run_post_judge_transition(run_folder, args.execution_mode)
-    if args.run_post_judge_mvi:
-        return _cmd_run_post_judge_mvi(run_folder, args.execution_mode)
     if args.health_check:
         return _cmd_health_check(run_folder, args.execution_mode)
     if args.bridge_status:

@@ -25,8 +25,7 @@ This document defines **minimal viable integration** of AICommander-v2 backend i
 
 1. Keep existing flow unchanged up to and including judge stage.
 2. After judge, call one of:
-   - CLI (recommended): `python -m backend.cli --run-post-judge-mvi --run-folder <run_folder>`
-   - CLI (split flow): `python -m backend.cli --run-post-judge-transition --run-folder <run_folder>`
+   - CLI: `python -m backend.cli --run-post-judge-transition --run-folder <run_folder>`
    - Python API: `run_after_judge_and_resolve_next_step(...)`
 3. Read route:
    - CLI: `python -m backend.cli --read-post-judge-route --run-folder <run_folder>`

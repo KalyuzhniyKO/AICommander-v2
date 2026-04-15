@@ -71,21 +71,3 @@ def read_post_judge_route(run_folder: Path) -> Dict[str, Any]:
 def gui_health_status_for_existing_app(run_folder: Path, execution_mode: str | None = None) -> Dict[str, Any]:
     return gui_health_status_payload(run_folder=run_folder, execution_mode=execution_mode)
 
-
-def run_post_judge_mvi_payload(run_folder: Path, execution_mode: str | None = None) -> Dict[str, Any]:
-    """
-    Single payload contract for existing app:
-      - executes post-judge transition
-      - persists final_audit.json and execution.json update
-      - returns next_route + gui_status keys in one JSON payload
-    """
-    transition = run_post_judge_transition(run_folder=run_folder, execution_mode=execution_mode)
-    route = read_post_judge_route(run_folder=run_folder)
-    gui_status = gui_health_status_for_existing_app(run_folder=run_folder, execution_mode=execution_mode)
-
-    return {
-        "status": "ok",
-        "route": route,
-        "transition": transition,
-        "gui_status": gui_status,
-    }

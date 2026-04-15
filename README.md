@@ -46,7 +46,6 @@ AICOMMANDER_FINAL_AUDITOR_API_KEY=...
 python -m backend.cli --health-check --execution-mode balanced --run-folder runs/current
 python -m backend.cli --run-final-audit --execution-mode premium --run-folder runs/current
 python -m backend.cli --run-post-judge-transition --execution-mode premium --run-folder runs/current
-python -m backend.cli --run-post-judge-mvi --execution-mode premium --run-folder runs/current
 python -m backend.cli --read-final-audit-route --run-folder runs/current
 python -m backend.cli --read-post-judge-route --run-folder runs/current
 python -m backend.cli --gui-health-status --run-folder runs/current
@@ -59,9 +58,8 @@ No giant GUI rewrite is required.
 
 1. Existing GUI and stakeholder approve/comment/reject flow stay untouched.
 2. Legacy execution keeps writing existing run-folder artifacts.
-3. After `judge`, app invokes (recommended single-call MVI):
-   - `python -m backend.cli --run-post-judge-mvi --run-folder <run_folder>`
-   - (or split calls via `--run-post-judge-transition`)
+3. After `judge`, app invokes:
+   - `python -m backend.cli --run-post-judge-transition --run-folder <run_folder>`
 4. Backend writes `final_audit.json` and updates route snapshot inside `execution.json`.
 5. App reads route via:
    - `python -m backend.cli --read-post-judge-route --run-folder <run_folder>`
