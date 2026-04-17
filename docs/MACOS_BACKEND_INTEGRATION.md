@@ -1,76 +1,109 @@
-# macOS AICommander backend integration (minimal, paste-ready)
+# macOS AICommander backend integration (PR #4 continuation)
 
-This guide provides **paste-ready Swift code** for integrating the existing backend CLI into the macOS app without backend redesign.
+This keeps the real architecture exactly as-is (CLI via `Process`), with no HTTP/URLSession redesign:
 
-Backend commands used:
+- `python -m backend.cli --run-post-judge-transition`
+- `python -m backend.cli --read-post-judge-route`
+- `python -m backend.cli --gui-health-status`
 
-- `python -m backend.cli --run-post-judge-transition --run-folder <path>`
-- `python -m backend.cli --read-post-judge-route --run-folder <path>`
-- `python -m backend.cli --gui-health-status --run-folder <path>`
+## Minimal integration instructions (existing app)
 
-## Integration call points (exact app flow)
-
-1. `OrchestrationController.swift`
-   - after judge completion: call `runPostJudgeTransition(...)`
-   - then call `readPostJudgeRoute(...)`
-   - resolve and navigate route via `RouteResolver`
-2. `StatusViewModel.swift`
-   - refresh from `guiHealthStatus(...)`
-3. `RunArtifacts.swift`
-   - keep existing artifacts + optional `final_audit.json`
+1. In `OrchestrationController.swift` (after judge completes):
+   - call `runPostJudgeTransition(runFolder:)`
+   - call `readPostJudgeRoute(runFolder:)`
+   - map `next_route` with `RouteResolver`
+2. In `StatusViewModel.swift`:
+   - call `guiHealthStatus(runFolder:)`
+   - bind key health sections to current UI
+3. In `RunArtifacts.swift`:
+   - include `final_audit.json` path (optional artifact)
 
 ---
 
-## 1) `BackendBridgeService.swift` (full file)
+## Exact backend JSON contracts
+
+### A) `--read-post-judge-route`
+
+```json
+{
+  "status": "ok",
+  "final_verdict": "approve",
+  "next_route": "done",
+  "final_audit_path": "/abs/path/to/final_audit.json"
+}
+```
+
+Possible values:
+- `status`: `ok` | `missing_final_audit`
+- `final_verdict`: typically `approve` | `revise` | `reject`
+- `next_route`: `done` | `revision_loop` | `stakeholder_reject`
+
+### B) `--gui-health-status`
+
+```json
+{
+  "provider_status": {
+    "status": "ok",
+    "provider": "openai_compatible",
+    "base_url": "https://...",
+    "api_key_present": true,
+    "endpoint_reachable": true,
+    "auth_ok": true,
+    "http_status": 200,
+    "error": null,
+    "errors": []
+  },
+  "director_role": {
+    "status": "ok",
+    "provider": "openai_compatible",
+    "model": "...",
+    "base_url": "https://...",
+    "mode": "balanced",
+    "config_valid": true,
+    "errors": []
+  },
+  "coder_role": { "...": "same shape as director_role" },
+  "reviewer_role": { "...": "same shape as director_role" },
+  "qa_role": { "...": "same shape as director_role" },
+  "judge_role": { "...": "same shape as director_role" },
+  "final_auditor_role": { "...": "same shape as director_role" },
+  "workspace_status": {
+    "status": "ok",
+    "writable": true,
+    "path": "/abs/path",
+    "error": null
+  },
+  "orchestration_status": {
+    "status": "ok",
+    "required": ["director_response.json", "execution.json", "manual_review.json", "team_summary.json"],
+    "found": ["director_response.json", "execution.json", "manual_review.json", "team_summary.json"]
+  },
+  "execution_mode": "balanced",
+  "legacy_aliases": {
+    "coder_node_lenovo": "deprecated",
+    "reviewer_node_home_pc": "deprecated",
+    "qa_node_home_pc": "deprecated"
+  },
+  "role_config_valid": true,
+  "final_auditor_config_valid": true
+}
+```
+
+---
+
+## 1) `BackendBridgeService.swift` (paste-ready)
 
 ```swift
 import Foundation
 
 enum BackendBridgeError: Error, LocalizedError {
     case commandFailed(exitCode: Int32, stderr: String)
-    case invalidUTF8
 
     var errorDescription: String? {
         switch self {
         case let .commandFailed(code, stderr):
             return "Backend CLI failed with exit code \(code): \(stderr)"
-        case .invalidUTF8:
-            return "Backend CLI returned non-UTF8 output"
         }
-    }
-}
-
-/// Typed JSON value wrapper for payload sections with flexible shapes.
-enum JSONValue: Decodable, Equatable {
-    case string(String)
-    case number(Double)
-    case bool(Bool)
-    case object([String: JSONValue])
-    case array([JSONValue])
-    case null
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if container.decodeNil() {
-            self = .null
-        } else if let value = try? container.decode(Bool.self) {
-            self = .bool(value)
-        } else if let value = try? container.decode(Double.self) {
-            self = .number(value)
-        } else if let value = try? container.decode(String.self) {
-            self = .string(value)
-        } else if let value = try? container.decode([String: JSONValue].self) {
-            self = .object(value)
-        } else if let value = try? container.decode([JSONValue].self) {
-            self = .array(value)
-        } else {
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unsupported JSON value")
-        }
-    }
-
-    var stringValue: String? {
-        if case let .string(value) = self { return value }
-        return nil
     }
 }
 
@@ -88,16 +121,77 @@ struct PostJudgeRoutePayload: Decodable {
     }
 }
 
+struct ProviderStatus: Decodable {
+    let status: String
+    let provider: String?
+    let baseURL: String?
+    let apiKeyPresent: Bool?
+    let endpointReachable: Bool?
+    let authOK: Bool?
+    let httpStatus: Int?
+    let error: String?
+    let errors: [String]?
+
+    enum CodingKeys: String, CodingKey {
+        case status
+        case provider
+        case baseURL = "base_url"
+        case apiKeyPresent = "api_key_present"
+        case endpointReachable = "endpoint_reachable"
+        case authOK = "auth_ok"
+        case httpStatus = "http_status"
+        case error
+        case errors
+    }
+}
+
+struct RoleStatus: Decodable {
+    let status: String
+    let provider: String?
+    let model: String?
+    let baseURL: String?
+    let mode: String?
+    let configValid: Bool
+    let errors: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case status
+        case provider
+        case model
+        case baseURL = "base_url"
+        case mode
+        case configValid = "config_valid"
+        case errors
+    }
+}
+
+struct WorkspaceStatus: Decodable {
+    let status: String
+    let writable: Bool
+    let path: String
+    let error: String?
+}
+
+struct OrchestrationStatus: Decodable {
+    let status: String
+    let required: [String]
+    let found: [String]
+}
+
 struct GuiHealthStatusPayload: Decodable {
-    let providerStatus: [String: JSONValue]
-    let directorRole: [String: JSONValue]
-    let coderRole: [String: JSONValue]
-    let reviewerRole: [String: JSONValue]
-    let qaRole: [String: JSONValue]
-    let judgeRole: [String: JSONValue]
-    let finalAuditorRole: [String: JSONValue]
-    let workspaceStatus: [String: JSONValue]
-    let orchestrationStatus: [String: JSONValue]
+    let providerStatus: ProviderStatus
+    let directorRole: RoleStatus
+    let coderRole: RoleStatus
+    let reviewerRole: RoleStatus
+    let qaRole: RoleStatus
+    let judgeRole: RoleStatus
+    let finalAuditorRole: RoleStatus
+    let workspaceStatus: WorkspaceStatus
+    let orchestrationStatus: OrchestrationStatus
+    let executionMode: String
+    let legacyAliases: [String: String]
+    let roleConfigValid: Bool
+    let finalAuditorConfigValid: Bool
 
     enum CodingKeys: String, CodingKey {
         case providerStatus = "provider_status"
@@ -109,6 +203,10 @@ struct GuiHealthStatusPayload: Decodable {
         case finalAuditorRole = "final_auditor_role"
         case workspaceStatus = "workspace_status"
         case orchestrationStatus = "orchestration_status"
+        case executionMode = "execution_mode"
+        case legacyAliases = "legacy_aliases"
+        case roleConfigValid = "role_config_valid"
+        case finalAuditorConfigValid = "final_auditor_config_valid"
     }
 }
 
@@ -170,10 +268,6 @@ final class BackendBridgeService {
             throw BackendBridgeError.commandFailed(exitCode: process.terminationStatus, stderr: stderrString)
         }
 
-        guard String(data: stdoutData, encoding: .utf8) != nil else {
-            throw BackendBridgeError.invalidUTF8
-        }
-
         return stdoutData
     }
 }
@@ -181,25 +275,25 @@ final class BackendBridgeService {
 
 ---
 
-## 2) `GuiHealthStatus.swift` (shared model file)
+## 2) `GuiHealthStatus.swift` (paste-ready)
 
 ```swift
 import Foundation
 
 struct GuiHealthStatus {
-    let providerSummary: String
-    let workspaceSummary: String
-    let orchestrationSummary: String
+    let providerStatus: String
+    let workspaceStatus: String
+    let orchestrationStatus: String
+    let roleConfigValid: Bool
+    let finalAuditorConfigValid: Bool
 
     static func fromPayload(_ payload: GuiHealthStatusPayload) -> GuiHealthStatus {
-        let provider = payload.providerStatus["status"]?.stringValue ?? "unknown"
-        let workspace = payload.workspaceStatus["status"]?.stringValue ?? "unknown"
-        let orchestration = payload.orchestrationStatus["status"]?.stringValue ?? "unknown"
-
-        return GuiHealthStatus(
-            providerSummary: provider,
-            workspaceSummary: workspace,
-            orchestrationSummary: orchestration
+        GuiHealthStatus(
+            providerStatus: payload.providerStatus.status,
+            workspaceStatus: payload.workspaceStatus.status,
+            orchestrationStatus: payload.orchestrationStatus.status,
+            roleConfigValid: payload.roleConfigValid,
+            finalAuditorConfigValid: payload.finalAuditorConfigValid
         )
     }
 }
@@ -207,7 +301,7 @@ struct GuiHealthStatus {
 
 ---
 
-## 3) `StatusViewModel.swift` update
+## 3) `StatusViewModel.swift` (minimal update)
 
 ```swift
 import Foundation
@@ -215,7 +309,7 @@ import Combine
 
 @MainActor
 final class StatusViewModel: ObservableObject {
-    @Published private(set) var guiHealthStatus: GuiHealthStatus?
+    @Published private(set) var guiHealth: GuiHealthStatus?
     @Published private(set) var lastError: String?
 
     private let backendBridge: BackendBridgeService
@@ -227,7 +321,7 @@ final class StatusViewModel: ObservableObject {
     func refresh(runFolder: URL, executionMode: String? = nil) {
         do {
             let payload = try backendBridge.guiHealthStatus(runFolder: runFolder, executionMode: executionMode)
-            guiHealthStatus = GuiHealthStatus.fromPayload(payload)
+            guiHealth = GuiHealthStatus.fromPayload(payload)
             lastError = nil
         } catch {
             lastError = error.localizedDescription
@@ -238,7 +332,7 @@ final class StatusViewModel: ObservableObject {
 
 ---
 
-## 4) `RouteResolver.swift` update
+## 4) `RouteResolver.swift` (minimal update)
 
 ```swift
 import Foundation
@@ -265,7 +359,7 @@ extension RouteResolver {
 
 ---
 
-## 5) `OrchestrationController.swift` update
+## 5) `OrchestrationController.swift` (minimal update)
 
 ```swift
 import Foundation
@@ -275,12 +369,12 @@ extension OrchestrationController {
         do {
             try backendBridge.runPostJudgeTransition(runFolder: runFolder)
             let routePayload = try backendBridge.readPostJudgeRoute(runFolder: runFolder)
-            let nextRoute = routeResolver.resolvePostJudgeRoute(routePayload.nextRoute)
-            navigate(to: nextRoute)
+            let appRoute = routeResolver.resolvePostJudgeRoute(routePayload.nextRoute)
+            navigate(to: appRoute)
 
             statusViewModel.refresh(runFolder: runFolder)
         } catch {
-            // Minimal fallback behavior: keep existing safe route.
+            // Preserve existing fallback behavior.
             navigate(to: .revisionLoop)
         }
     }
@@ -289,7 +383,7 @@ extension OrchestrationController {
 
 ---
 
-## 6) `RunArtifacts.swift` update
+## 6) `RunArtifacts.swift` (minimal update)
 
 ```swift
 import Foundation
@@ -306,15 +400,3 @@ struct RunArtifacts {
     }
 }
 ```
-
----
-
-## Minimal end-to-end sequence
-
-1. Judge stage completes in `OrchestrationController`.
-2. `BackendBridgeService.runPostJudgeTransition(...)` persists backend post-judge artifacts.
-3. `BackendBridgeService.readPostJudgeRoute(...)` returns `next_route`.
-4. `RouteResolver` maps backend route string to existing app route enum.
-5. `StatusViewModel.refresh(...)` pulls `gui-health-status` and updates UI status.
-
-No backend redesign and no branch workflow changes are required.
