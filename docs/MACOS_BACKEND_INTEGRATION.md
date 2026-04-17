@@ -1,88 +1,123 @@
-# macOS AICommander backend integration (minimal patch)
+# macOS AICommander backend integration (minimal, paste-ready)
 
-This guide gives **paste-ready Swift integration** for wiring the macOS app to these backend CLI hooks:
+This guide provides **paste-ready Swift code** for integrating the existing backend CLI into the macOS app without backend redesign.
 
-- `python -m backend.cli --run-post-judge-transition`
-- `python -m backend.cli --read-post-judge-route`
-- `python -m backend.cli --gui-health-status`
+Backend commands used:
 
-It keeps app structure intact (no redesign, no backend rewrite) and only adds the integration layer.
+- `python -m backend.cli --run-post-judge-transition --run-folder <path>`
+- `python -m backend.cli --read-post-judge-route --run-folder <path>`
+- `python -m backend.cli --gui-health-status --run-folder <path>`
 
-## 1) Exact app call points in current flow
+## Integration call points (exact app flow)
 
-Use these call sites in the existing macOS app repository:
-
-1. `AICommander/AppFlow/OrchestrationController.swift`
-   - Right after judge stage is marked complete, call:
-     - `runPostJudgeTransition(runFolder:)`
-     - then `readPostJudgeRoute(runFolder:)`
-   - Feed `next_route` into route resolution.
-
-2. `AICommander/AppFlow/RouteResolver.swift`
-   - Replace/augment hardcoded judge-outcome logic with backend route payload (`done`, `revision_loop`, `stakeholder_reject`).
-
-3. `AICommander/ViewModels/StatusViewModel.swift`
-   - Replace machine-status polling source with:
-     - `guiHealthStatus(runFolder:)`
-   - Map returned payload keys to current UI state.
-
-4. `AICommander/Services/BackendBridgeService.swift`
-   - Add a small Process-based Python bridge that executes backend CLI + decodes JSON.
+1. `OrchestrationController.swift`
+   - after judge completion: call `runPostJudgeTransition(...)`
+   - then call `readPostJudgeRoute(...)`
+   - resolve and navigate route via `RouteResolver`
+2. `StatusViewModel.swift`
+   - refresh from `guiHealthStatus(...)`
+3. `RunArtifacts.swift`
+   - keep existing artifacts + optional `final_audit.json`
 
 ---
 
-## 2) Paste-ready file: `AICommander/Services/BackendBridgeService.swift`
+## 1) `BackendBridgeService.swift` (full file)
 
 ```swift
 import Foundation
 
 enum BackendBridgeError: Error, LocalizedError {
-    case pythonNotFound
     case commandFailed(exitCode: Int32, stderr: String)
-    case invalidJSON(String)
+    case invalidUTF8
 
     var errorDescription: String? {
         switch self {
-        case .pythonNotFound:
-            return "python executable not found in PATH"
-        case let .commandFailed(exitCode, stderr):
-            return "Backend CLI failed with exit code \(exitCode): \(stderr)"
-        case let .invalidJSON(raw):
-            return "Backend CLI returned invalid JSON: \(raw.prefix(500))"
+        case let .commandFailed(code, stderr):
+            return "Backend CLI failed with exit code \(code): \(stderr)"
+        case .invalidUTF8:
+            return "Backend CLI returned non-UTF8 output"
         }
+    }
+}
+
+/// Typed JSON value wrapper for payload sections with flexible shapes.
+enum JSONValue: Decodable, Equatable {
+    case string(String)
+    case number(Double)
+    case bool(Bool)
+    case object([String: JSONValue])
+    case array([JSONValue])
+    case null
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if container.decodeNil() {
+            self = .null
+        } else if let value = try? container.decode(Bool.self) {
+            self = .bool(value)
+        } else if let value = try? container.decode(Double.self) {
+            self = .number(value)
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else if let value = try? container.decode([String: JSONValue].self) {
+            self = .object(value)
+        } else if let value = try? container.decode([JSONValue].self) {
+            self = .array(value)
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unsupported JSON value")
+        }
+    }
+
+    var stringValue: String? {
+        if case let .string(value) = self { return value }
+        return nil
     }
 }
 
 struct PostJudgeRoutePayload: Decodable {
     let status: String
-    let final_verdict: String
-    let next_route: String
-    let final_audit_path: String
+    let finalVerdict: String
+    let nextRoute: String
+    let finalAuditPath: String
+
+    enum CodingKeys: String, CodingKey {
+        case status
+        case finalVerdict = "final_verdict"
+        case nextRoute = "next_route"
+        case finalAuditPath = "final_audit_path"
+    }
 }
 
 struct GuiHealthStatusPayload: Decodable {
-    let provider_status: [String: String]
-    let director_role: [String: String]
-    let coder_role: [String: String]
-    let reviewer_role: [String: String]
-    let qa_role: [String: String]
-    let judge_role: [String: String]
-    let final_auditor_role: [String: String]
-    let workspace_status: [String: String]
-    let orchestration_status: [String: String]
+    let providerStatus: [String: JSONValue]
+    let directorRole: [String: JSONValue]
+    let coderRole: [String: JSONValue]
+    let reviewerRole: [String: JSONValue]
+    let qaRole: [String: JSONValue]
+    let judgeRole: [String: JSONValue]
+    let finalAuditorRole: [String: JSONValue]
+    let workspaceStatus: [String: JSONValue]
+    let orchestrationStatus: [String: JSONValue]
+
+    enum CodingKeys: String, CodingKey {
+        case providerStatus = "provider_status"
+        case directorRole = "director_role"
+        case coderRole = "coder_role"
+        case reviewerRole = "reviewer_role"
+        case qaRole = "qa_role"
+        case judgeRole = "judge_role"
+        case finalAuditorRole = "final_auditor_role"
+        case workspaceStatus = "workspace_status"
+        case orchestrationStatus = "orchestration_status"
+    }
 }
 
 final class BackendBridgeService {
     private let pythonExecutable: String
     private let backendWorkingDirectory: URL
+    private let decoder = JSONDecoder()
 
-    /// - Parameters:
-    ///   - pythonExecutable: usually "python" or "python3"
-    ///   - backendWorkingDirectory: folder where `backend/` package is importable
-    init(
-        pythonExecutable: String = "python",
-        backendWorkingDirectory: URL
-    ) {
+    init(pythonExecutable: String = "python", backendWorkingDirectory: URL) {
         self.pythonExecutable = pythonExecutable
         self.backendWorkingDirectory = backendWorkingDirectory
     }
@@ -92,7 +127,7 @@ final class BackendBridgeService {
         if let executionMode {
             args += ["--execution-mode", executionMode]
         }
-        _ = try runJSONCommand(arguments: args)
+        _ = try runRaw(arguments: args)
     }
 
     func readPostJudgeRoute(runFolder: URL) throws -> PostJudgeRoutePayload {
@@ -108,20 +143,12 @@ final class BackendBridgeService {
         return try runDecodable(arguments: args, as: GuiHealthStatusPayload.self)
     }
 
-    // MARK: - Process + JSON
-
     private func runDecodable<T: Decodable>(arguments: [String], as type: T.Type) throws -> T {
-        let json = try runJSONCommand(arguments: arguments)
-        do {
-            let data = try JSONSerialization.data(withJSONObject: json, options: [])
-            return try JSONDecoder().decode(T.self, from: data)
-        } catch {
-            throw BackendBridgeError.invalidJSON(String(describing: json))
-        }
+        let data = try runRaw(arguments: arguments)
+        return try decoder.decode(T.self, from: data)
     }
 
-    @discardableResult
-    private func runJSONCommand(arguments: [String]) throws -> [String: Any] {
+    private func runRaw(arguments: [String]) throws -> Data {
         let process = Process()
         process.currentDirectoryURL = backendWorkingDirectory
         process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
@@ -132,39 +159,86 @@ final class BackendBridgeService {
         process.standardOutput = stdoutPipe
         process.standardError = stderrPipe
 
-        do {
-            try process.run()
-        } catch {
-            throw BackendBridgeError.pythonNotFound
-        }
-
+        try process.run()
         process.waitUntilExit()
 
         let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
         let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
-
-        let stdoutString = String(data: stdoutData, encoding: .utf8) ?? ""
         let stderrString = String(data: stderrData, encoding: .utf8) ?? ""
 
         guard process.terminationStatus == 0 else {
             throw BackendBridgeError.commandFailed(exitCode: process.terminationStatus, stderr: stderrString)
         }
 
-        guard
-            let jsonData = stdoutString.data(using: .utf8),
-            let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any]
-        else {
-            throw BackendBridgeError.invalidJSON(stdoutString)
+        guard String(data: stdoutData, encoding: .utf8) != nil else {
+            throw BackendBridgeError.invalidUTF8
         }
 
-        return jsonObject
+        return stdoutData
     }
 }
 ```
 
 ---
 
-## 3) Paste-ready update: `AICommander/AppFlow/RouteResolver.swift`
+## 2) `GuiHealthStatus.swift` (shared model file)
+
+```swift
+import Foundation
+
+struct GuiHealthStatus {
+    let providerSummary: String
+    let workspaceSummary: String
+    let orchestrationSummary: String
+
+    static func fromPayload(_ payload: GuiHealthStatusPayload) -> GuiHealthStatus {
+        let provider = payload.providerStatus["status"]?.stringValue ?? "unknown"
+        let workspace = payload.workspaceStatus["status"]?.stringValue ?? "unknown"
+        let orchestration = payload.orchestrationStatus["status"]?.stringValue ?? "unknown"
+
+        return GuiHealthStatus(
+            providerSummary: provider,
+            workspaceSummary: workspace,
+            orchestrationSummary: orchestration
+        )
+    }
+}
+```
+
+---
+
+## 3) `StatusViewModel.swift` update
+
+```swift
+import Foundation
+import Combine
+
+@MainActor
+final class StatusViewModel: ObservableObject {
+    @Published private(set) var guiHealthStatus: GuiHealthStatus?
+    @Published private(set) var lastError: String?
+
+    private let backendBridge: BackendBridgeService
+
+    init(backendBridge: BackendBridgeService) {
+        self.backendBridge = backendBridge
+    }
+
+    func refresh(runFolder: URL, executionMode: String? = nil) {
+        do {
+            let payload = try backendBridge.guiHealthStatus(runFolder: runFolder, executionMode: executionMode)
+            guiHealthStatus = GuiHealthStatus.fromPayload(payload)
+            lastError = nil
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
+}
+```
+
+---
+
+## 4) `RouteResolver.swift` update
 
 ```swift
 import Foundation
@@ -176,14 +250,12 @@ enum AppRoute {
 }
 
 extension RouteResolver {
-    func resolvePostJudgeRoute(from backendRoute: String) -> AppRoute {
-        switch backendRoute {
+    func resolvePostJudgeRoute(_ route: String) -> AppRoute {
+        switch route {
         case "done":
             return .done
         case "stakeholder_reject":
             return .stakeholderReject
-        case "revision_loop":
-            fallthrough
         default:
             return .revisionLoop
         }
@@ -193,35 +265,23 @@ extension RouteResolver {
 
 ---
 
-## 4) Paste-ready update: `AICommander/ViewModels/StatusViewModel.swift`
+## 5) `OrchestrationController.swift` update
 
 ```swift
 import Foundation
-import Combine
 
-@MainActor
-final class StatusViewModel: ObservableObject {
-    @Published private(set) var providerStatus: [String: String] = [:]
-    @Published private(set) var orchestrationStatus: [String: String] = [:]
-    @Published private(set) var workspaceStatus: [String: String] = [:]
+extension OrchestrationController {
+    func handleJudgeCompleted(runFolder: URL) {
+        do {
+            try backendBridge.runPostJudgeTransition(runFolder: runFolder)
+            let routePayload = try backendBridge.readPostJudgeRoute(runFolder: runFolder)
+            let nextRoute = routeResolver.resolvePostJudgeRoute(routePayload.nextRoute)
+            navigate(to: nextRoute)
 
-    private let backendBridge: BackendBridgeService
-
-    init(backendBridge: BackendBridgeService) {
-        self.backendBridge = backendBridge
-    }
-
-    func refresh(runFolder: URL, executionMode: String? = nil) {
-        Task {
-            do {
-                let health = try backendBridge.guiHealthStatus(runFolder: runFolder, executionMode: executionMode)
-                providerStatus = health.provider_status
-                orchestrationStatus = health.orchestration_status
-                workspaceStatus = health.workspace_status
-            } catch {
-                // keep existing UI behavior; optionally publish error state
-                NSLog("Failed to refresh gui health status: \(error.localizedDescription)")
-            }
+            statusViewModel.refresh(runFolder: runFolder)
+        } catch {
+            // Minimal fallback behavior: keep existing safe route.
+            navigate(to: .revisionLoop)
         }
     }
 }
@@ -229,37 +289,32 @@ final class StatusViewModel: ObservableObject {
 
 ---
 
-## 5) Minimal end-to-end flow in `OrchestrationController.swift`
+## 6) `RunArtifacts.swift` update
 
 ```swift
-func handleJudgeCompleted(runFolder: URL) {
-    do {
-        // 1) Persist transition side effects (writes execution.json/final_audit.json)
-        try backendBridge.runPostJudgeTransition(runFolder: runFolder)
+import Foundation
 
-        // 2) Read explicit route for UI navigation
-        let routePayload = try backendBridge.readPostJudgeRoute(runFolder: runFolder)
-        let nextRoute = routeResolver.resolvePostJudgeRoute(from: routePayload.next_route)
+struct RunArtifacts {
+    let runFolder: URL
 
-        // 3) Navigate exactly once using resolved route
-        navigate(to: nextRoute)
+    var executionJSON: URL {
+        runFolder.appendingPathComponent("execution.json")
+    }
 
-        // 4) Refresh status panel from backend health payload
-        statusViewModel.refresh(runFolder: runFolder)
-    } catch {
-        // fallback remains minimal: keep existing revision loop behavior
-        navigate(to: .revisionLoop)
-        NSLog("Post-judge backend integration failed: \(error.localizedDescription)")
+    var finalAuditJSON: URL {
+        runFolder.appendingPathComponent("final_audit.json")
     }
 }
 ```
 
-This is the minimal integration sequence:
+---
 
-1. Judge completes.
-2. Call `--run-post-judge-transition`.
-3. Call `--read-post-judge-route` and map `next_route`.
-4. Navigate with `RouteResolver`.
-5. Refresh `StatusViewModel` using `--gui-health-status`.
+## Minimal end-to-end sequence
 
-No app redesign is required.
+1. Judge stage completes in `OrchestrationController`.
+2. `BackendBridgeService.runPostJudgeTransition(...)` persists backend post-judge artifacts.
+3. `BackendBridgeService.readPostJudgeRoute(...)` returns `next_route`.
+4. `RouteResolver` maps backend route string to existing app route enum.
+5. `StatusViewModel.refresh(...)` pulls `gui-health-status` and updates UI status.
+
+No backend redesign and no branch workflow changes are required.
