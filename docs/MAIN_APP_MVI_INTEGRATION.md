@@ -62,3 +62,6 @@ This document defines **minimal viable integration** of AICommander-v2 backend i
 @@
 + let finalAudit = runFolder.appendingPathComponent("final_audit.json")
 ```
+
+
+See also: `docs/MACOS_BACKEND_INTEGRATION.md` for paste-ready Swift files and call flow.
