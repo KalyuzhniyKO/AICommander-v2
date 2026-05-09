@@ -1,0 +1,25 @@
+{
+  "manager": [
+    "openrouter/provider-model-id-for-manager-1",
+    "openrouter/provider-model-id-for-manager-2"
+  ],
+  "architect": [
+    "openrouter/provider-model-id-for-architect-1",
+    "openrouter/provider-model-id-for-architect-2"
+  ],
+  "designer": [
+    "openrouter/provider-model-id-for-designer-1",
+    "openrouter/provider-model-id-for-designer-2"
+  ],
+  "coder": [
+    "openrouter/provider-model-id-for-coder-1",
+    "openrouter/provider-model-id-for-coder-2"
+  ],
+  "reviewer": [
+    "openrouter/provider-model-id-for-reviewer-1",
+    "openrouter/provider-model-id-for-reviewer-2"
+  ],
+  "premium_reviewer": [
+    "openai/optional-paid-review-model-id"
+  ]
+}

@@ -5,17 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from backend.app.config import DEFAULT_MODELS_PATH, EXAMPLE_MODELS_PATH, Settings, load_model_config
+from backend.app.config import DEFAULT_MODELS_PATH, Settings, ModelConfigError, load_model_config, models_config_missing_payload
 from backend.app.orchestration.fallback import split_model_ref
 from backend.app.providers.base import ChatMessage, ProviderError
 from backend.app.providers.openrouter import OpenRouterProvider
 from backend.app.storage.repositories import Repository
 
 CHECK_PROMPT = "Ответь одним словом: OK"
-CONFIG_MISSING_MESSAGE = (
-    "Файл config/models.json не найден. Скопируйте config/models.example.json в config/models.json "
-    "и при необходимости отредактируйте список моделей."
-)
 OPENROUTER_KEY_MISSING_MESSAGE = "OPENROUTER_API_KEY отсутствует. Добавьте ключ в .env или переменные окружения."
 
 
@@ -37,24 +33,13 @@ def check_models(settings: Settings, repository: Repository, config_path: Path |
     """Check each openrouter model from config/models.json and persist status rows."""
     model_path = config_path or DEFAULT_MODELS_PATH
     if not model_path.exists():
-        return {
-            "ok": False,
-            "status": "config_missing",
-            "error": CONFIG_MISSING_MESSAGE,
-            "hint": f"cp {EXAMPLE_MODELS_PATH.relative_to(EXAMPLE_MODELS_PATH.parents[1])} {DEFAULT_MODELS_PATH.relative_to(DEFAULT_MODELS_PATH.parents[1])}",
-            "results": [],
-        }
+        return models_config_missing_payload()
 
     try:
-        model_config = load_model_config(model_path)
-    except Exception as exc:
-        return {
-            "ok": False,
-            "status": "config_invalid",
-            "error": f"Не удалось прочитать config/models.json: {exc}",
-            "hint": "Проверьте JSON-синтаксис или заново скопируйте config/models.example.json.",
-            "results": [],
-        }
+        model_config = load_model_config(model_path, allow_example=False)
+    except ModelConfigError as exc:
+        payload = exc.to_dict()
+        return {"ok": False, **payload, "results": []}
     configured_openrouter = []
     for role, refs in model_config.items():
         for ref in refs:
