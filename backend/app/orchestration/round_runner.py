@@ -28,8 +28,22 @@ def build_round_context(task: dict, user_comment: str = "") -> str:
 def fallback_local_output(role: str, task_text: str) -> str:
     task_type = detect_task_type(task_text)
     if role == "manager":
-        return f"Тип задачи: {task_type}. Рекомендуемые роли: {', '.join(select_roles(task_text))}. Следующий шаг: дождаться комментария пользователя после этого раунда."
-    return f"Роль {role} не получила ответ модели. Проверьте OPENROUTER_API_KEY и config/models.json, затем перезапустите роль."
+        return (
+            f"Тип задачи: {task_type}. Рекомендуемые роли: {', '.join(select_roles(task_text))}. "
+            "Модели не ответили, поэтому показан локальный fallback. Проверьте OPENROUTER_API_KEY, "
+            "config/models.json и статус моделей, затем перезапустите роль."
+        )
+    return (
+        f"Все модели для роли {role} упали или не настроены. Проверьте OPENROUTER_API_KEY, "
+        "config/models.json, лимиты OpenRouter и перезапустите роль."
+    )
+
+
+def persist_all_models_failed(repository: Repository, round_id: int, role: str, outcome_errors: list[dict[str, str]]) -> None:
+    if not outcome_errors:
+        repository.add_model_error(round_id, role, "unknown", "", f"Все модели для роли {role} упали или были отфильтрованы.")
+        return
+    repository.add_model_error(round_id, role, "summary", "fallback", f"Все модели для роли {role} упали; показан локальный fallback.")
 
 
 def run_round(task_id: int, user_comment: str, settings: Settings, model_config: dict[str, list[str]], repository: Repository) -> dict:
@@ -57,6 +71,8 @@ def run_round(task_id: int, user_comment: str, settings: Settings, model_config:
         )
         output = outcome.output if outcome.success else fallback_local_output(role, task["description"])
         status = "completed" if outcome.success else "failed"
+        if not outcome.success:
+            persist_all_models_failed(repository, round_row["id"], role, outcome.errors)
         repository.save_role_output(round_row["id"], role, output, outcome.provider, outcome.model_id, status, outcome.response_time_ms)
         outputs.append(f"{role}: {output[:500]}")
     repository.update_round_summary(round_row["id"], "\n".join(outputs))
@@ -87,5 +103,7 @@ def rerun_role(round_id: int, role: str, settings: Settings, model_config: dict[
         provider_filter=lambda provider: provider == "openrouter",
     )
     output = outcome.output if outcome.success else fallback_local_output(role, task["description"])
+    if not outcome.success:
+        persist_all_models_failed(repository, round_id, role, outcome.errors)
     repository.save_role_output(round_id, role, output, outcome.provider, outcome.model_id, "completed" if outcome.success else "failed", outcome.response_time_ms)
     return repository.get_round(round_id) or round_row

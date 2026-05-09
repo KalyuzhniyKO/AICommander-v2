@@ -17,8 +17,12 @@ def run_premium_review(round_id: int, settings: Settings, model_config: dict[str
     if not settings.enable_premium_review:
         repository.update_premium_review(round_id, "skipped_disabled", "Premium Review is disabled. Set ENABLE_PREMIUM_REVIEW=true to allow paid review.")
         return repository.get_round(round_id) or round_row
+    premium_models = [ref for ref in model_config.get("premium_reviewer", []) if ref.startswith("openai/")]
     if not settings.openai_api_key:
-        repository.update_premium_review(round_id, "skipped_not_configured", "OPENAI_API_KEY is not configured.")
+        repository.update_premium_review(round_id, "skipped_not_configured", "OPENAI_API_KEY не настроен. Premium Review является опциональным и основной workflow продолжает работать.")
+        return repository.get_round(round_id) or round_row
+    if not premium_models:
+        repository.update_premium_review(round_id, "skipped_not_configured", "Premium Review не настроен: добавьте openai/<model_id> в premium_reviewer в config/models.json.")
         return repository.get_round(round_id) or round_row
     task = repository.get_task(round_row["task_id"])
     content = [f"Task: {task['description'] if task else ''}", f"Round summary: {round_row.get('summary', '')}"]
@@ -30,7 +34,7 @@ def run_premium_review(round_id: int, settings: Settings, model_config: dict[str
     ]
     outcome = run_with_fallback(
         role="premium_reviewer",
-        model_refs=model_config.get("premium_reviewer", []),
+        model_refs=premium_models,
         messages=messages,
         timeout_seconds=settings.default_timeout_seconds,
         max_attempts_per_model=settings.max_model_retries,
@@ -43,7 +47,8 @@ def run_premium_review(round_id: int, settings: Settings, model_config: dict[str
     if outcome.success:
         repository.update_premium_review(round_id, "completed", outcome.output, f"{outcome.provider}/{outcome.model_id}")
     else:
-        joined = "\n".join(item["error"] for item in outcome.errors) or "Premium Review failed."
-        status = "skipped_quota_or_tokens" if any("quota" in item["error"].lower() or "429" in item["error"] or "402" in item["error"] for item in outcome.errors) else "skipped_api_error"
+        joined = "\n".join(item["error"] for item in outcome.errors) or "Premium Review пропущен из-за ошибки API."
+        lower_errors = "\n".join(item["error"].lower() for item in outcome.errors)
+        status = "skipped_quota_or_tokens" if any(token in lower_errors for token in ["quota", "лимит", "rate", "429", "402"]) else "skipped_api_error"
         repository.update_premium_review(round_id, status, joined)
     return repository.get_round(round_id) or round_row
