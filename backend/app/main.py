@@ -11,7 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from urllib.parse import urlparse
 
-from backend.app.config import DEFAULT_MODELS_PATH, get_settings, load_model_config
+from backend.app.config import DEFAULT_MODELS_PATH, ModelConfigError, get_settings, load_model_config
 from backend.app.orchestration.model_check import check_models
 from backend.app.orchestration.premium_review import run_premium_review
 from backend.app.orchestration.round_runner import rerun_role, run_round
@@ -46,15 +46,27 @@ def api_get_task(task_id: int) -> dict[str, Any]:
 
 
 def api_create_round(task_id: int, payload: dict[str, Any]) -> dict[str, Any]:
-    return run_round(task_id, str(payload.get("user_comment") or ""), settings, load_model_config(), get_repository())
+    try:
+        model_config = load_model_config()
+    except ModelConfigError:
+        model_config = {}
+    return run_round(task_id, str(payload.get("user_comment") or ""), settings, model_config, get_repository())
 
 
 def api_rerun_role(round_id: int, role: str) -> dict[str, Any]:
-    return rerun_role(round_id, role, settings, load_model_config(), get_repository())
+    try:
+        model_config = load_model_config()
+    except ModelConfigError:
+        model_config = {}
+    return rerun_role(round_id, role, settings, model_config, get_repository())
 
 
 def api_premium_review(round_id: int) -> dict[str, Any]:
-    return run_premium_review(round_id, settings, load_model_config(), get_repository())
+    try:
+        model_config = load_model_config()
+    except ModelConfigError:
+        model_config = {}
+    return run_premium_review(round_id, settings, model_config, get_repository())
 
 
 def api_model_check() -> dict[str, Any]:
@@ -65,7 +77,13 @@ def api_model_status() -> dict[str, Any]:
     repo = get_repository()
     statuses = repo.list_model_status()
     known = {(item["role"], f"{item['provider']}/{item['model_id']}") for item in statuses}
-    for role, models in load_model_config().items():
+    config_error = None
+    try:
+        model_config = load_model_config()
+    except ModelConfigError as exc:
+        model_config = {}
+        config_error = exc.to_dict()
+    for role, models in model_config.items():
         for ref in models:
             if "/" in ref and (role, ref) not in known:
                 provider, model_id = ref.split("/", 1)
@@ -79,7 +97,7 @@ def api_model_status() -> dict[str, Any]:
                     "last_failure_at": None,
                     "response_time_ms": None,
                 })
-    return {"models": statuses, "config_file_exists": DEFAULT_MODELS_PATH.exists()}
+    return {"models": statuses, "config_file_exists": DEFAULT_MODELS_PATH.exists(), "config_error": config_error}
 
 
 try:

@@ -494,6 +494,97 @@ curl -X POST http://127.0.0.1:8000/rounds/1/premium-review
 
 Frontend при FastAPI/Uvicorn открывается по адресу `http://127.0.0.1:8000/`.
 
+
+## Тесты
+
+Автоматические тесты находятся в `tests/` и рассчитаны на запуск без реальных API-ключей. Они проверяют health endpoint, статус и проверку моделей, создание задач, запуск раундов с fallback-ошибками, получение задачи с раундами и опциональный Premium Review без обязательного OpenAI.
+
+Установка dev-зависимостей:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Запуск тестов:
+
+```bash
+pytest
+```
+
+Тесты намеренно очищают `OPENROUTER_API_KEY`, `OPENAI_API_KEY` и используют временную SQLite-базу, чтобы не ходить во внешние API и не зависеть от локального `.env`.
+
+## Команды разработчика
+
+В репозитории есть `Makefile` с простыми командами:
+
+```bash
+make install  # pip install -r requirements.txt
+make dev      # python -m backend.app.main
+make test     # pytest
+make smoke    # compileall + import backend.app.main
+```
+
+Если `make` недоступен, эти команды можно выполнить вручную:
+
+```bash
+pip install -r requirements.txt
+python -m backend.app.main
+pytest
+python -m compileall backend
+python -c "import backend.app.main; print('ok')"
+```
+
+## Проверка конфигурации моделей
+
+Локальный файл `config/models.json` не коммитится и должен быть создан вручную из примера:
+
+```bash
+cp config/models.example.json config/models.json
+```
+
+Для проверки моделей используйте UI-кнопку проверки или API:
+
+```bash
+curl -X POST http://127.0.0.1:8000/models/check
+```
+
+Backend возвращает понятные статусы вместо traceback:
+
+- `config_missing` — `config/models.json` отсутствует;
+- `config_empty` — файл пустой или не содержит ролей;
+- `config_invalid` — JSON нельзя разобрать или структура неверная;
+- `role_models_empty` — роль есть, но её fallback-список пустой;
+- `provider_prefix_missing` — модель указана без `openrouter/` или `openai/`;
+- `provider_unknown` — указан неподдерживаемый provider;
+- `openrouter_key_missing` — конфиг прочитан, но нет `OPENROUTER_API_KEY` для реальной проверки OpenRouter.
+
+`GET /models/status` можно открывать даже без `config/models.json`: endpoint должен вернуть текущее состояние и подсказку, а не падать.
+
+## Примеры model config
+
+Доступные примеры:
+
+- `config/models.example.json` — базовый пример структуры fallback-цепочек;
+- `config/models.free.example.json` — пример формата для подбора моделей, которые пользователь считает подходящими по цене/лимитам на момент настройки;
+- `config/README.md` — пояснения по выбору моделей, fallback-порядку и действиям при недоступности модели.
+
+Важно: JSON-примеры не гарантируют, что конкретные model IDs бесплатны или доступны. Бесплатные модели OpenRouter могут меняться, поэтому актуальные model IDs, цены и лимиты нужно брать в OpenRouter перед запуском.
+
+## Как понять, что проект готов к запуску
+
+Минимальный чеклист перед разработкой или локальным использованием:
+
+1. Установлены зависимости: `pip install -r requirements.txt` или `make install`.
+2. Smoke-проверка проходит: `make smoke`.
+3. Автотесты проходят: `make test` или `pytest`.
+4. `GET /health` возвращает `status: ok`.
+5. `config/models.json` создан из примера и содержит model refs в формате `provider/model_id`.
+6. Для реальных ответов обычных ролей задан `OPENROUTER_API_KEY`.
+7. Premium Review включается только намеренно через `ENABLE_PREMIUM_REVIEW=true`, `OPENAI_API_KEY` и `openai/<model_id>` в `premium_reviewer`.
+8. `.env`, локальные `.db`, кеши и временные файлы не попадают в git.
+
+Без API-ключей backend всё равно должен стартовать, создавать задачи и сохранять fallback/errors; просто реальные ответы моделей не будут получены.
+
 ## Текущий статус проекта
 
 AICommander-v2 сейчас находится в статусе **MVP**. Это рабочая основа, а не финальная версия продукта.
