@@ -36,6 +36,21 @@ def provider_for(provider_name: str, openrouter: OpenRouterProvider, openai: Ope
     raise ProviderError(f"Provider {provider_name} is not configured", "not_configured")
 
 
+def _friendly_provider_error(error: str, category: str = "api_error") -> str:
+    lower = error.lower()
+    if category == "not_configured" or "api_key" in lower:
+        if "openai" in lower:
+            return "OPENAI_API_KEY отсутствует или OpenAI provider не настроен. Premium Review останется опциональным."
+        return "OPENROUTER_API_KEY отсутствует или провайдер не настроен. Добавьте ключ в .env или переменные окружения."
+    if category == "timeout" or "timed out" in lower or "timeout" in lower:
+        return "Модель недоступна: запрос превысил timeout."
+    if category == "quota_or_tokens" or "429" in error or "402" in error or "quota" in lower or "rate" in lower:
+        return "Закончились лимиты или сработал rate limit провайдера."
+    if "unavailable" in lower or "not found" in lower:
+        return "Модель недоступна или model_id больше не поддерживается."
+    return f"Модель вернула ошибку: {error}"
+
+
 def run_with_fallback(
     *,
     role: str,
@@ -51,7 +66,7 @@ def run_with_fallback(
 ) -> FallbackOutcome:
     errors: list[dict[str, str]] = []
     if not model_refs:
-        return FallbackOutcome(success=False, errors=[{"provider": "unknown", "model_id": "", "error": f"No models configured for role {role}"}])
+        return FallbackOutcome(success=False, errors=[{"provider": "unknown", "model_id": "", "error": f"Нет моделей в config/models.json для роли {role}. Проверьте конфигурацию."}])
     for ref in model_refs:
         provider_name, model_id = split_model_ref(ref)
         if provider_filter and not provider_filter(provider_name):
@@ -63,9 +78,9 @@ def run_with_fallback(
                 repository.update_model_status(provider_name, model_id, role, "available", response_time_ms=result.response_time_ms)
                 return FallbackOutcome(True, result.content, provider_name, model_id, result.response_time_ms, errors)
             except ProviderError as exc:
-                error = str(exc)
+                error = _friendly_provider_error(str(exc), exc.category)
             except Exception as exc:
-                error = f"Unexpected provider error: {exc}"
+                error = f"Неожиданная ошибка провайдера: {exc}"
             errors.append({"provider": provider_name, "model_id": model_id, "error": error})
             repository.add_model_error(round_id, role, provider_name, model_id, error)
             repository.update_model_status(provider_name, model_id, role, "failed", last_error=error)

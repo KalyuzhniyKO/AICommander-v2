@@ -11,7 +11,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from urllib.parse import urlparse
 
-from backend.app.config import get_settings, load_model_config
+from backend.app.config import DEFAULT_MODELS_PATH, get_settings, load_model_config
+from backend.app.orchestration.model_check import check_models
 from backend.app.orchestration.premium_review import run_premium_review
 from backend.app.orchestration.round_runner import rerun_role, run_round
 from backend.app.storage.db import connect, init_db
@@ -56,6 +57,10 @@ def api_premium_review(round_id: int) -> dict[str, Any]:
     return run_premium_review(round_id, settings, load_model_config(), get_repository())
 
 
+def api_model_check() -> dict[str, Any]:
+    return check_models(settings, get_repository())
+
+
 def api_model_status() -> dict[str, Any]:
     repo = get_repository()
     statuses = repo.list_model_status()
@@ -74,7 +79,7 @@ def api_model_status() -> dict[str, Any]:
                     "last_failure_at": None,
                     "response_time_ms": None,
                 })
-    return {"models": statuses}
+    return {"models": statuses, "config_file_exists": DEFAULT_MODELS_PATH.exists()}
 
 
 try:
@@ -127,6 +132,10 @@ try:
     @app.get("/models/status")
     def model_status() -> dict[str, Any]:
         return api_model_status()
+
+    @app.post("/models/check")
+    def model_check() -> dict[str, Any]:
+        return api_model_check()
 
     try:
         app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
@@ -188,6 +197,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, api_rerun_role(int(path[1]), path[3]))
             elif len(path) == 3 and path[0] == "rounds" and path[2] == "premium-review":
                 self._send(200, api_premium_review(int(path[1])))
+            elif self.path == "/models/check":
+                self._send(200, api_model_check())
             else:
                 self._send(404, {"detail": "Not found"})
         except Exception as exc:
