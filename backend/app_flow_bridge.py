@@ -50,8 +50,11 @@ def run_post_judge_flow(run_folder: Path, execution_mode: str | None = None) -> 
     out_path = run_folder / "final_audit.json"
     save_json(out_path, final_audit)
 
+    integration_status = "ok" if final_audit.get("status") == "ok" else "final_auditor_failed"
+
     return {
-        "status": "ok",
+        "status": integration_status,
+        "final_audit_status": final_audit.get("status", "unknown"),
         "final_audit_path": str(out_path.resolve()),
         "final_verdict": final_audit.get("final_verdict", "revise"),
         "next_route": _route_from_verdict(final_audit.get("final_verdict", "revise")),
