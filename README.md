@@ -1,112 +1,268 @@
 # AICommander-v2
 
-AICommander-v2 is a human-in-the-loop AI team orchestrator MVP. A user enters a large product or engineering task, the backend chooses the needed roles, runs **one** AI-team round, stores the role outputs, and then stops until the user adds a correction/comment and explicitly starts the next round.
+AICommander-v2 — это программа для запуска команды ИИ-агентов. Пользователь пишет большую задачу, программа сама выбирает нужные роли, запускает один круг работы, показывает результат и ждёт комментарии пользователя перед следующим кругом.
 
-The main free workflow uses **OpenRouter** chat-completion models. OpenAI or other paid AI is not required for the main workflow and is only used by the optional **Premium Review / Expert Check** stage when explicitly enabled.
+Проще говоря, это **не обычный чат**. AICommander-v2 работает как оркестратор ИИ-команды: задача делится между ролями, каждая роль делает свою часть, а пользователь после каждого круга может остановиться, уточнить требования, попросить переделать роль или запустить следующий круг.
 
-## Branch for this feature
+Важно:
 
-This implementation is intended to be developed from `main` on:
+- платный ИИ не обязателен для основного сценария;
+- OpenRouter используется как основной provider для обычных ролей;
+- OpenAI используется только для необязательного этапа Premium Review;
+- локальные модели и Ollama не требуются;
+- результаты и ошибки сохраняются в SQLite.
 
-```bash
-feature/free-ai-team-orchestrator
+## Что умеет сейчас
+
+Текущий MVP уже поддерживает:
+
+- создание задачи;
+- автоматический выбор ролей под тип задачи;
+- запуск одного круга работы AI-команды;
+- OpenRouter provider для основных ролей;
+- fallback между моделями внутри каждой роли;
+- сохранение задач, кругов, ответов ролей и ошибок моделей в SQLite;
+- просмотр ошибок и статусов моделей;
+- ручной запуск следующего круга после комментария пользователя;
+- повторный запуск отдельной роли;
+- необязательный Premium Review;
+- endpoint `GET /models/status` для проверки состояния моделей;
+- endpoint `GET /health` для простой проверки backend;
+- простой frontend в папке `frontend/`.
+
+## Как работает логика
+
+Основной поток выглядит так:
+
+```text
+Пользователь → Manager → Architect / Designer / Coder / Reviewer → результат круга → комментарий пользователя → следующий круг
 ```
 
-It is not part of older migration-pack branches, `codex/cleanup-repository-structure-for-next-feature`, or the separate macOS integration work.
+1. Пользователь описывает большую задачу.
+2. `Manager` определяет тип задачи и помогает собрать план работы.
+3. Система автоматически выбирает роли, которые нужны для текущей задачи.
+4. Роли выполняются через OpenRouter и возвращают свои результаты.
+5. Backend сохраняет результат круга в SQLite.
+6. Пользователь читает результат, добавляет комментарий или исправление.
+7. Следующий круг запускается только вручную.
 
-## MVP capabilities
+Такой подход нужен, чтобы человек оставался в контуре принятия решений и мог корректировать направление работы после каждого круга.
 
-- Create a task/project with `POST /tasks`.
-- Automatically detect the task type and select roles for a single round.
-- Run role prompts through OpenRouter with per-role model fallback.
-- Store selected roles, outputs, provider/model, model errors, comments, Premium Review status, and timestamps in SQLite.
-- Add a user correction/comment and run the next round manually.
-- Rerun a specific role manually.
-- Run or repeat Premium Review manually later.
-- Inspect model availability/failure status with `GET /models/status`.
-- Use a minimal frontend in `frontend/`.
+## Роли AI-команды
 
-## Role routing
+- **Manager** — понимает исходную задачу, определяет тип работы, координирует роли и формирует общий план.
+- **Architect** — отвечает за архитектуру, технические решения, стек, API, базу данных и структуру проекта.
+- **Designer** — продумывает пользовательский опыт, экраны, сценарии, интерфейс и продуктовую логику.
+- **Coder** — предлагает план реализации, изменения в коде, файлах и технических деталях.
+- **Reviewer** — ищет ошибки, противоречия, риски, пропущенные требования и слабые места.
+- **Premium Reviewer** — необязательная платная экспертная проверка после основного круга.
 
-The MVP roles are:
+Не каждая задача требует все роли. Например, для документации могут быть достаточно `manager` и `reviewer`, а для полноценного web-приложения обычно нужны `manager`, `architect`, `designer`, `coder` и `reviewer`.
 
-- `manager` — understands the task, task type, goals, and role plan.
-- `architect` — proposes architecture, stack, folders, database, and API.
-- `designer` — proposes UI/UX, screens, and user flows.
-- `coder` — proposes implementation plan and code/file changes.
-- `reviewer` — checks errors, gaps, contradictions, and risks.
+## OpenRouter и fallback моделей
 
-Roles are not always all executed:
+OpenRouter — основной provider в обычном рабочем процессе AICommander-v2.
 
-- Website/landing: `manager`, `designer`, `coder`, `reviewer`.
-- Web app/product/API/database task: `manager`, `architect`, `designer`, `coder`, `reviewer`.
-- Code review: `manager`, `reviewer`.
-- Documentation: `manager`, `reviewer`.
-- General task fallback: `manager`, `coder`, `reviewer`.
+Модели не зашиты жёстко в код. Их список задаётся в локальном файле:
 
-## Repository structure
+```text
+config/models.json
+```
+
+Для каждой роли можно указать несколько моделей в порядке приоритета. Если первая модель не отвечает, возвращает ошибку, недоступна или упирается в лимит, программа пробует следующую модель из списка.
+
+Точные бесплатные модели OpenRouter могут меняться. Поэтому в репозитории лежит только пример `config/models.example.json`, а актуальные модели нужно проверять в кабинете OpenRouter и указывать у себя в `config/models.json`.
+
+## Premium Review
+
+Premium Review — это дополнительная экспертная проверка результата круга.
+
+Он:
+
+- выключен по умолчанию;
+- не обязателен для основной работы;
+- запускается после основного бесплатного круга;
+- использует OpenAI только если это явно включено в настройках;
+- не ломает основной процесс, если нет ключа, токенов, лимитов или доступной модели;
+- может быть запущен вручную позже через API или frontend.
+
+Если Premium Review выключен или не настроен, обычные роли всё равно продолжают работать через OpenRouter.
+
+## Структура проекта
 
 ```text
 backend/
   app/
-    main.py                  # REST API, FastAPI app, stdlib HTTP fallback
-    config.py                # .env, settings, model config loading
-    schemas.py               # lightweight request schema helpers
-    providers/
-      base.py                # provider abstraction
-      openrouter.py          # required free-workflow provider
-      openai.py              # optional Premium Review provider
-    agents/
-      base.py                # role prompts
+    main.py                  # REST API, FastAPI app и stdlib fallback-сервер
+    config.py                # загрузка .env, настроек и config/models.json
+    schemas.py               # лёгкие helpers для схем запросов
+    agents/                  # промпты и логика ролей
       manager.py
       architect.py
       designer.py
       coder.py
       reviewer.py
-    orchestration/
-      role_router.py         # automatic role selection
-      fallback.py            # model fallback and model status updates
-      round_runner.py        # one-round human-in-the-loop execution
-      premium_review.py      # optional paid expert review
-    storage/
-      db.py                  # SQLite schema
-      repositories.py        # persistence helpers
+    orchestration/           # выбор ролей, fallback моделей, запуск кругов
+      role_router.py
+      fallback.py
+      round_runner.py
+      premium_review.py
+    providers/               # OpenRouter и optional OpenAI provider
+      base.py
+      openrouter.py
+      openai.py
+    storage/                 # SQLite schema и repository helpers
+      db.py
+      repositories.py
 frontend/
-  index.html
+  index.html                 # простой web-интерфейс
   app.js
   style.css
 config/
-  models.example.json
-.env.example
-requirements.txt
+  models.example.json        # пример настройки моделей
+.env.example                 # пример переменных окружения
+requirements.txt             # зависимости Python
 ```
 
-The older migration-baseline modules under `backend/` remain in place for compatibility with previous CLI/integration entrypoints.
+В корне `backend/` также остаются старые совместимые модули для предыдущих CLI/integration entrypoints. Основной MVP AI team orchestrator находится в `backend/app/`.
 
-## Install dependencies
+## Установка
 
-The backend uses the Python standard library for provider HTTP calls and SQLite. FastAPI/Uvicorn are recommended for serving the REST API and static frontend:
+### 1. Клонировать репозиторий
+
+```bash
+git clone https://github.com/KalyuzhniyKO/AICommander-v2.git
+cd AICommander-v2
+```
+
+### 2. Создать виртуальное окружение
 
 ```bash
 python -m venv .venv
+```
+
+### 3. Активировать виртуальное окружение
+
+Linux/macOS:
+
+```bash
 source .venv/bin/activate
+```
+
+Windows:
+
+```bat
+.venv\Scripts\activate
+```
+
+### 4. Установить зависимости
+
+```bash
 pip install -r requirements.txt
 ```
 
-If FastAPI is not installed, `python -m backend.app.main` starts a small stdlib development server for smoke testing.
-
-## Environment setup
-
-Create a local `.env` from the example:
+### 5. Создать `.env`
 
 ```bash
 cp .env.example .env
 ```
 
-Then edit `.env`:
+Откройте `.env` и вставьте свой OpenRouter API key:
+
+```env
+OPENROUTER_API_KEY=ваш_openrouter_api_key
+```
+
+Не вставляйте ключ в README, frontend-код или публичные файлы.
+
+### 6. Создать локальный файл моделей
 
 ```bash
-OPENROUTER_API_KEY=your_openrouter_key
+cp config/models.example.json config/models.json
+```
+
+После этого отредактируйте `config/models.json` и укажите актуальные модели OpenRouter.
+
+### 7. Запустить backend
+
+```bash
+python -m backend.app.main
+```
+
+По умолчанию stdlib fallback-сервер запускается на:
+
+```text
+http://127.0.0.1:8000
+```
+
+Если установлен FastAPI/Uvicorn, можно запустить backend так:
+
+```bash
+uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+### 8. Открыть frontend
+
+При запуске через FastAPI откройте:
+
+```text
+http://127.0.0.1:8000/
+```
+
+Если используется stdlib fallback-сервер, он предназначен в первую очередь для проверки API. В этом случае frontend можно открыть отдельно из папки `frontend/`, но удобнее пользоваться FastAPI/Uvicorn.
+
+## Настройка моделей
+
+Скопируйте пример:
+
+```bash
+cp config/models.example.json config/models.json
+```
+
+Пример структуры `config/models.json`:
+
+```json
+{
+  "manager": [
+    "openrouter/free-model-1",
+    "openrouter/free-model-2"
+  ],
+  "architect": [
+    "openrouter/free-model-1"
+  ],
+  "designer": [
+    "openrouter/free-model-1"
+  ],
+  "coder": [
+    "openrouter/free-coder-model-1"
+  ],
+  "reviewer": [
+    "openrouter/free-model-1"
+  ],
+  "premium_reviewer": [
+    "openai/gpt-4.1",
+    "openai/gpt-4o"
+  ]
+}
+```
+
+Что означают ключи:
+
+- `manager` — модели для роли Manager;
+- `architect` — модели для роли Architect;
+- `designer` — модели для роли Designer;
+- `coder` — модели для роли Coder;
+- `reviewer` — модели для роли Reviewer;
+- `premium_reviewer` — модели для необязательного Premium Review.
+
+Значения в примере — placeholders. Они показывают формат, но не гарантируют, что конкретные модели доступны или бесплатны. Список бесплатных моделей OpenRouter может меняться, поэтому проверяйте актуальные model IDs и лимиты в своём кабинете OpenRouter.
+
+## Переменные окружения
+
+Пример `.env`:
+
+```env
+OPENROUTER_API_KEY=
 OPENAI_API_KEY=
 ENABLE_PREMIUM_REVIEW=false
 DEFAULT_TIMEOUT_SECONDS=60
@@ -114,170 +270,92 @@ MAX_MODEL_RETRIES=1
 DATABASE_URL=sqlite:///./aicommander.db
 ```
 
-Do not commit `.env`, API keys, or secrets.
+Описание переменных:
 
-## Model configuration
+- `OPENROUTER_API_KEY` — ключ OpenRouter для обычных ролей AI-команды. Для реальных ответов моделей его нужно заполнить.
+- `OPENAI_API_KEY` — ключ OpenAI для Premium Review. Не нужен, если Premium Review выключен.
+- `ENABLE_PREMIUM_REVIEW` — включает или выключает Premium Review. По умолчанию `false`.
+- `DEFAULT_TIMEOUT_SECONDS` — timeout одного запроса к модели в секундах.
+- `MAX_MODEL_RETRIES` — количество попыток для каждой модели перед переходом к следующей модели из fallback-списка.
+- `DATABASE_URL` — путь к SQLite базе. Значение `sqlite:///./aicommander.db` создаёт базу в корне проекта.
 
-Copy the editable model example:
+Дополнительно backend поддерживает `OPENROUTER_BASE_URL` и `OPENAI_BASE_URL`, но для обычного запуска их менять не нужно.
 
-```bash
-cp config/models.example.json config/models.json
-```
+## API endpoints
 
-Edit `config/models.json` to use current OpenRouter free model IDs for normal roles. Placeholder model IDs are intentionally used in the example because the free OpenRouter model list changes over time.
+- `POST /tasks` — создать новую задачу. В теле запроса передаётся `description`.
+- `GET /tasks/{task_id}` — получить задачу, её круги, ответы ролей и статусы Premium Review.
+- `POST /tasks/{task_id}/rounds` — запустить новый круг работы AI-команды для задачи. Можно передать `user_comment`.
+- `POST /rounds/{round_id}/roles/{role}/rerun` — повторно запустить одну роль в рамках выбранного круга.
+- `POST /rounds/{round_id}/premium-review` — вручную запустить Premium Review для круга.
+- `GET /models/status` — посмотреть настроенные и уже наблюдавшиеся модели, их статусы, ошибки и время ответа.
+- `GET /health` — проверить, что backend отвечает.
 
-Example shape:
-
-```json
-{
-  "manager": ["openrouter/free-model-1", "openrouter/free-model-2"],
-  "architect": ["openrouter/free-model-1"],
-  "designer": ["openrouter/free-model-1"],
-  "coder": ["openrouter/free-coder-model-1"],
-  "reviewer": ["openrouter/free-model-1"],
-  "premium_reviewer": ["openai/gpt-4.1", "openai/gpt-4o"]
-}
-```
-
-No code change is required when changing models.
-
-## Run the backend
-
-Recommended FastAPI mode:
+Пример создания задачи:
 
 ```bash
-uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+curl -X POST http://127.0.0.1:8000/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{"description":"Сделай план MVP для сервиса управления задачами"}'
 ```
 
-Stdlib fallback mode:
+Пример запуска первого круга:
+
+```bash
+curl -X POST http://127.0.0.1:8000/tasks/1/rounds \
+  -H 'Content-Type: application/json' \
+  -d '{"user_comment":"Начни с простого MVP без лишних функций"}'
+```
+
+## Проверка работы
+
+Проверить, что Python-файлы компилируются:
+
+```bash
+python -m compileall backend
+```
+
+Проверить запуск backend:
 
 ```bash
 python -m backend.app.main
 ```
 
-Health check:
+Проверить импорт основного модуля:
 
 ```bash
-curl http://127.0.0.1:8000/health
+python -c "import backend.app.main; print('ok')"
 ```
 
-## Open the frontend
+Если API-ключи не настроены, проект не должен падать при запуске. Но реальные ответы моделей получены не будут: роли вернут fallback-сообщения, а ошибки моделей можно будет увидеть в сохранённых данных и через `GET /models/status`.
 
-When running through FastAPI, open:
+## Текущий статус проекта
 
-```text
-http://127.0.0.1:8000/
-```
+AICommander-v2 сейчас находится в статусе **MVP**. Это рабочая основа, а не финальная версия продукта.
 
-The frontend supports:
+MVP уже показывает ключевую идею: пользователь ставит задачу, система запускает команду ролей, сохраняет результат и ждёт следующего решения пользователя. При этом интерфейс, тесты, настройки и developer experience ещё требуют развития.
 
-1. New task input.
-2. `Run AI team` first round.
-3. Per-role round results.
-4. Used provider/model for every role.
-5. Model/API errors.
-6. User correction/comment input.
-7. `Run next round`.
-8. Role rerun.
-9. Manual `Run Premium Review`.
-10. Premium Review status/output.
-11. Model status table.
+## Дальнейший план
 
-## API endpoints
+Планируемые улучшения:
 
-- `GET /health`
-- `POST /tasks`
-- `GET /tasks/{task_id}`
-- `POST /tasks/{task_id}/rounds`
-- `POST /rounds/{round_id}/roles/{role}/rerun`
-- `POST /rounds/{round_id}/premium-review`
-- `GET /models/status`
+- улучшить frontend;
+- добавить страницу настройки моделей;
+- добавить проверку доступности моделей кнопкой;
+- добавить импорт и экспорт задач;
+- добавить генерацию файлов проекта;
+- добавить нормальные автоматические тесты;
+- добавить Docker;
+- добавить авторизацию позже.
 
-Example no-key smoke flow (provider calls fail gracefully and are stored):
+## Правила безопасности
 
-```bash
-curl -X POST http://127.0.0.1:8000/tasks \
-  -H 'Content-Type: application/json' \
-  -d '{"description":"Сделай складскую программу с остатками, приходом, расходом, пользователями и отчетами."}'
+- Не коммитьте `.env`.
+- Не вставляйте реальные API keys в README, issues, PR или публичные файлы.
+- Не храните секреты во frontend.
+- Используйте OpenAI и Premium Review только как опциональный платный этап.
+- Для обычного workflow достаточно OpenRouter и корректного `config/models.json`.
 
-curl -X POST http://127.0.0.1:8000/tasks/1/rounds \
-  -H 'Content-Type: application/json' \
-  -d '{"user_comment":""}'
-```
+## Документация в `docs/`
 
-## Fallback behavior
-
-For each role:
-
-1. Load model IDs from `config/models.json` or `config/models.example.json`.
-2. Try the first configured OpenRouter model.
-3. On timeout, rate limit, quota/token error, unavailable model, API error, empty/bad response, or missing API key, store the error and mark the model failed.
-4. Try the next model.
-5. Store all model errors in SQLite.
-6. Store the provider/model that succeeded.
-7. Keep the round alive even if every model for one role fails.
-
-When no model succeeds, the role output records a clear local fallback message so the user can fix configuration and manually rerun the role.
-
-## Model status
-
-`GET /models/status` returns configured and observed models with:
-
-- `provider`
-- `model_id`
-- `role`
-- `status`: `available`, `failed`, or `unknown`
-- `last_error`
-- `last_success_at`
-- `last_failure_at`
-- `response_time_ms`
-
-## Premium Review / Expert Check
-
-Premium Review is optional and disabled by default:
-
-```bash
-ENABLE_PREMIUM_REVIEW=false
-```
-
-Rules:
-
-- It runs only when manually requested with `POST /rounds/{round_id}/premium-review`.
-- It does not block the free OpenRouter round workflow.
-- It uses configured `premium_reviewer` models, filtered to OpenAI in this MVP.
-- If disabled, status becomes `skipped_disabled`.
-- If enabled but `OPENAI_API_KEY` is missing, status becomes `skipped_not_configured`.
-- If quota/tokens/rate-limit errors occur, status becomes `skipped_quota_or_tokens`.
-- Other paid-provider API failures become `skipped_api_error`.
-- Success becomes `completed` and stores the review output/model.
-
-Manual repeat:
-
-```bash
-curl -X POST http://127.0.0.1:8000/rounds/1/premium-review
-```
-
-## Smoke checks
-
-Minimum local checks that do not require real API keys:
-
-```bash
-python -m compileall backend
-python - <<'PY'
-from backend.app.main import api_health
-print(api_health())
-PY
-python - <<'PY'
-from backend.app.main import app
-print('app import ok', app is not None)
-PY
-```
-
-With FastAPI/Uvicorn installed, also check:
-
-```bash
-uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
-curl http://127.0.0.1:8000/health
-```
-
-Live model calls are expected to fail gracefully when keys or valid model IDs are absent; these failures should be stored in `model_errors` and `model_status`, not crash the workflow.
+В папке `docs/` могут быть документы с историческим контекстом и планами развития, например roadmap или branching strategy. README описывает текущее состояние MVP в этой ветке. `docs/BRANCHING_STRATEGY.md` не меняется этой задачей, а `docs/ROADMAP_AI_TEAM_ORCHESTRATOR.md` стоит воспринимать как плановый/исторический документ, если его формулировки говорят о будущей реализации.
