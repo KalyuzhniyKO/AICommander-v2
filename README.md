@@ -1,177 +1,283 @@
 # AICommander-v2
 
-AICommander-v2 currently contains the cleaned backend migration baseline for a provider-based Python orchestration backend. The repository is intentionally **not** implementing the next AI-team orchestrator feature yet; that work is planned separately after this cleanup.
+AICommander-v2 is a human-in-the-loop AI team orchestrator MVP. A user enters a large product or engineering task, the backend chooses the needed roles, runs **one** AI-team round, stores the role outputs, and then stops until the user adds a correction/comment and explicitly starts the next round.
 
-Current baseline:
+The main free workflow uses **OpenRouter** chat-completion models. OpenAI or other paid AI is not required for the main workflow and is only used by the optional **Premium Review / Expert Check** stage when explicitly enabled.
 
-```text
-GUI / existing app flow
-  -> backend CLI / integration bridge
-  -> provider-based role configuration
-  -> final_auditor final audit stage
-  -> run-folder artifacts and next-route decision
+## Branch for this feature
+
+This implementation is intended to be developed from `main` on:
+
+```bash
+feature/free-ai-team-orchestrator
 ```
 
-## What is implemented now
+It is not part of older migration-pack branches, `codex/cleanup-repository-structure-for-next-feature`, or the separate macOS integration work.
 
-- `backend/` Python package with provider-based role configuration.
-- CLI entrypoint: `python -m backend.cli`.
-- Final audit stage: `final_auditor` is the current final stage after `judge`.
-- Health checks for provider config, role config, workspace writability, and expected run-folder artifacts.
-- Run-folder artifact helpers for existing legacy outputs plus `final_audit.json`.
-- Legacy/main-app bridge helpers so the existing GUI can call the backend after `judge` without a full UI rewrite.
-- Main-app MVI integration documentation in `docs/MAIN_APP_MVI_INTEGRATION.md`.
+## MVP capabilities
 
-## Backend package structure
+- Create a task/project with `POST /tasks`.
+- Automatically detect the task type and select roles for a single round.
+- Run role prompts through OpenRouter with per-role model fallback.
+- Store selected roles, outputs, provider/model, model errors, comments, Premium Review status, and timestamps in SQLite.
+- Add a user correction/comment and run the next round manually.
+- Rerun a specific role manually.
+- Run or repeat Premium Review manually later.
+- Inspect model availability/failure status with `GET /models/status`.
+- Use a minimal frontend in `frontend/`.
+
+## Role routing
+
+The MVP roles are:
+
+- `manager` — understands the task, task type, goals, and role plan.
+- `architect` — proposes architecture, stack, folders, database, and API.
+- `designer` — proposes UI/UX, screens, and user flows.
+- `coder` — proposes implementation plan and code/file changes.
+- `reviewer` — checks errors, gaps, contradictions, and risks.
+
+Roles are not always all executed:
+
+- Website/landing: `manager`, `designer`, `coder`, `reviewer`.
+- Web app/product/API/database task: `manager`, `architect`, `designer`, `coder`, `reviewer`.
+- Code review: `manager`, `reviewer`.
+- Documentation: `manager`, `reviewer`.
+- General task fallback: `manager`, `coder`, `reviewer`.
+
+## Repository structure
 
 ```text
 backend/
-  __init__.py
-  config.py
-  artifacts.py
-  final_auditor.py
-  health.py
-  pipeline.py
-  cli.py
-  bridge.py
-  app_flow_bridge.py
-  legacy_app_flow_integration.py
-  main_app_integration.py
+  app/
+    main.py                  # REST API, FastAPI app, stdlib HTTP fallback
+    config.py                # .env, settings, model config loading
+    schemas.py               # lightweight request schema helpers
+    providers/
+      base.py                # provider abstraction
+      openrouter.py          # required free-workflow provider
+      openai.py              # optional Premium Review provider
+    agents/
+      base.py                # role prompts
+      manager.py
+      architect.py
+      designer.py
+      coder.py
+      reviewer.py
+    orchestration/
+      role_router.py         # automatic role selection
+      fallback.py            # model fallback and model status updates
+      round_runner.py        # one-round human-in-the-loop execution
+      premium_review.py      # optional paid expert review
+    storage/
+      db.py                  # SQLite schema
+      repositories.py        # persistence helpers
+frontend/
+  index.html
+  app.js
+  style.css
+config/
+  models.example.json
+.env.example
+requirements.txt
 ```
 
-## Roles in the current backend baseline
+The older migration-baseline modules under `backend/` remain in place for compatibility with previous CLI/integration entrypoints.
 
-The current backend baseline uses these roles:
+## Install dependencies
 
-- `director`
-- `coder`
-- `reviewer`
-- `qa`
-- `judge`
-- `final_auditor`
-
-`final_auditor` runs after `judge`, writes `final_audit.json`, and maps the final verdict to the next route:
-
-- `approve -> done`
-- `revise -> revision_loop`
-- `reject -> stakeholder_reject`
-
-## Environment variables
-
-Do **not** commit `.env` files, API keys, or real tokens.
-
-Required/primary variables:
+The backend uses the Python standard library for provider HTTP calls and SQLite. FastAPI/Uvicorn are recommended for serving the REST API and static frontend:
 
 ```bash
-AICOMMANDER_PROVIDER=openrouter
-AICOMMANDER_PROVIDER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_API_KEY=...
-
-# execution profile: cheap|balanced|premium
-AICOMMANDER_EXECUTION_MODE=balanced
-
-AICOMMANDER_DIRECTOR_MODEL=...
-AICOMMANDER_CODER_MODEL=...
-AICOMMANDER_REVIEWER_MODEL=...
-AICOMMANDER_QA_MODEL=...
-AICOMMANDER_JUDGE_MODEL=...
-AICOMMANDER_FINAL_AUDITOR_MODEL=...
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-Optional mode-specific model overrides:
+If FastAPI is not installed, `python -m backend.app.main` starts a small stdlib development server for smoke testing.
+
+## Environment setup
+
+Create a local `.env` from the example:
 
 ```bash
-AICOMMANDER_CODER_MODEL_CHEAP=...
-AICOMMANDER_CODER_MODEL_BALANCED=...
-AICOMMANDER_CODER_MODEL_PREMIUM=...
+cp .env.example .env
 ```
 
-Optional `final_auditor` provider override:
+Then edit `.env`:
 
 ```bash
-AICOMMANDER_FINAL_AUDITOR_PROVIDER=...
-AICOMMANDER_FINAL_AUDITOR_BASE_URL=...
-AICOMMANDER_FINAL_AUDITOR_API_KEY=...
+OPENROUTER_API_KEY=your_openrouter_key
+OPENAI_API_KEY=
+ENABLE_PREMIUM_REVIEW=false
+DEFAULT_TIMEOUT_SECONDS=60
+MAX_MODEL_RETRIES=1
+DATABASE_URL=sqlite:///./aicommander.db
 ```
 
-For non-OpenRouter providers, use `AICOMMANDER_PROVIDER_API_KEY` instead of `OPENROUTER_API_KEY`.
+Do not commit `.env`, API keys, or secrets.
 
-## Backend CLI commands
+## Model configuration
 
-Show CLI help:
+Copy the editable model example:
 
 ```bash
-python -m backend.cli --help
+cp config/models.example.json config/models.json
 ```
 
-Run health checks:
+Edit `config/models.json` to use current OpenRouter free model IDs for normal roles. Placeholder model IDs are intentionally used in the example because the free OpenRouter model list changes over time.
 
-```bash
-python -m backend.cli --health-check --execution-mode balanced --run-folder runs/current
+Example shape:
+
+```json
+{
+  "manager": ["openrouter/free-model-1", "openrouter/free-model-2"],
+  "architect": ["openrouter/free-model-1"],
+  "designer": ["openrouter/free-model-1"],
+  "coder": ["openrouter/free-coder-model-1"],
+  "reviewer": ["openrouter/free-model-1"],
+  "premium_reviewer": ["openai/gpt-4.1", "openai/gpt-4o"]
+}
 ```
 
-Canonical post-judge transition: run `final_auditor`, write `final_audit.json`, and return integration outcome:
+No code change is required when changing models.
+
+## Run the backend
+
+Recommended FastAPI mode:
 
 ```bash
-python -m backend.cli --run-post-judge-transition --execution-mode premium --run-folder runs/current
+uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Backward-compatible alias for the same post-judge flow:
+Stdlib fallback mode:
 
 ```bash
-python -m backend.cli --run-final-audit --execution-mode premium --run-folder runs/current
+python -m backend.app.main
 ```
 
-Read the canonical post-judge route:
+Health check:
 
 ```bash
-python -m backend.cli --read-post-judge-route --run-folder runs/current
+curl http://127.0.0.1:8000/health
 ```
 
-Backward-compatible alias for route reading:
+## Open the frontend
 
-```bash
-python -m backend.cli --read-final-audit-route --run-folder runs/current
+When running through FastAPI, open:
+
+```text
+http://127.0.0.1:8000/
 ```
 
-Print GUI-facing health payload:
+The frontend supports:
+
+1. New task input.
+2. `Run AI team` first round.
+3. Per-role round results.
+4. Used provider/model for every role.
+5. Model/API errors.
+6. User correction/comment input.
+7. `Run next round`.
+8. Role rerun.
+9. Manual `Run Premium Review`.
+10. Premium Review status/output.
+11. Model status table.
+
+## API endpoints
+
+- `GET /health`
+- `POST /tasks`
+- `GET /tasks/{task_id}`
+- `POST /tasks/{task_id}/rounds`
+- `POST /rounds/{round_id}/roles/{role}/rerun`
+- `POST /rounds/{round_id}/premium-review`
+- `GET /models/status`
+
+Example no-key smoke flow (provider calls fail gracefully and are stored):
 
 ```bash
-python -m backend.cli --gui-health-status --run-folder runs/current
+curl -X POST http://127.0.0.1:8000/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{"description":"Сделай складскую программу с остатками, приходом, расходом, пользователями и отчетами."}'
+
+curl -X POST http://127.0.0.1:8000/tasks/1/rounds \
+  -H 'Content-Type: application/json' \
+  -d '{"user_comment":""}'
 ```
 
-Print legacy bridge contract:
+## Fallback behavior
+
+For each role:
+
+1. Load model IDs from `config/models.json` or `config/models.example.json`.
+2. Try the first configured OpenRouter model.
+3. On timeout, rate limit, quota/token error, unavailable model, API error, empty/bad response, or missing API key, store the error and mark the model failed.
+4. Try the next model.
+5. Store all model errors in SQLite.
+6. Store the provider/model that succeeded.
+7. Keep the round alive even if every model for one role fails.
+
+When no model succeeds, the role output records a clear local fallback message so the user can fix configuration and manually rerun the role.
+
+## Model status
+
+`GET /models/status` returns configured and observed models with:
+
+- `provider`
+- `model_id`
+- `role`
+- `status`: `available`, `failed`, or `unknown`
+- `last_error`
+- `last_success_at`
+- `last_failure_at`
+- `response_time_ms`
+
+## Premium Review / Expert Check
+
+Premium Review is optional and disabled by default:
 
 ```bash
-python -m backend.cli --bridge-status --run-folder runs/current
+ENABLE_PREMIUM_REVIEW=false
 ```
 
-## Smoke test
+Rules:
 
-There is no full automated test suite yet. Before opening follow-up feature work, run at least:
+- It runs only when manually requested with `POST /rounds/{round_id}/premium-review`.
+- It does not block the free OpenRouter round workflow.
+- It uses configured `premium_reviewer` models, filtered to OpenAI in this MVP.
+- If disabled, status becomes `skipped_disabled`.
+- If enabled but `OPENAI_API_KEY` is missing, status becomes `skipped_not_configured`.
+- If quota/tokens/rate-limit errors occur, status becomes `skipped_quota_or_tokens`.
+- Other paid-provider API failures become `skipped_api_error`.
+- Success becomes `completed` and stores the review output/model.
+
+Manual repeat:
 
 ```bash
-python -m backend.cli --help
+curl -X POST http://127.0.0.1:8000/rounds/1/premium-review
+```
+
+## Smoke checks
+
+Minimum local checks that do not require real API keys:
+
+```bash
+python -m compileall backend
 python - <<'PY'
-import backend
-print(backend.__all__)
+from backend.app.main import api_health
+print(api_health())
+PY
+python - <<'PY'
+from backend.app.main import app
+print('app import ok', app is not None)
 PY
 ```
 
-`--health-check` can also be used without secrets; it should return JSON with config errors instead of leaking secrets.
+With FastAPI/Uvicorn installed, also check:
 
-## Documentation
+```bash
+uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+curl http://127.0.0.1:8000/health
+```
 
-- `docs/MAIN_APP_MVI_INTEGRATION.md` — minimal integration plan for the existing app flow.
-- `docs/ROADMAP_AI_TEAM_ORCHESTRATOR.md` — planned AI team orchestrator architecture.
-- `docs/BRANCHING_STRATEGY.md` — branch/PR baseline rules after cleanup.
-
-## PR baseline decision
-
-- PR #3 is the backend baseline for this cleanup: backend package, provider-based role configuration, CLI, `final_auditor`, health checks, artifacts, pipeline, README updates, and MVI integration docs.
-- PR #1 and PR #2 are treated as deprecated/duplicative when covered by PR #3.
-- PR #4 is a separate macOS integration documentation task and is not mixed into this backend cleanup.
-
-## Next planned feature
-
-The next planned feature is a universal AI team orchestrator through OpenRouter with optional Premium Review. It should be developed from `chore/cleanup-repo-structure` or from `main` after this cleanup branch is merged.
+Live model calls are expected to fail gracefully when keys or valid model IDs are absent; these failures should be stored in `model_errors` and `model_status`, not crash the workflow.

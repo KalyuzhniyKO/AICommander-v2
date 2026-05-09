@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AICommander Team Orchestrator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <h1>AICommander AI Team Orchestrator</h1>
+    <section class="card">
+      <h2>New task</h2>
+      <textarea id="taskText" placeholder="Сделай складскую программу с остатками, приходом, расходом, пользователями и отчетами."></textarea>
+      <button id="runTeam">Run AI team</button>
+      <p id="status"></p>
+    </section>
+
+    <section class="card">
+      <h2>Human-in-the-loop next round</h2>
+      <textarea id="commentText" placeholder="Комментарий или правка пользователя для следующего раунда"></textarea>
+      <button id="runNext">Run next round</button>
+      <button id="premiumReview">Run Premium Review</button>
+      <label>Rerun role
+        <select id="roleSelect">
+          <option>manager</option><option>architect</option><option>designer</option><option>coder</option><option>reviewer</option>
+        </select>
+      </label>
+      <button id="rerunRole">Rerun role</button>
+    </section>
+
+    <section class="card">
+      <h2>Rounds by role</h2>
+      <div id="rounds"></div>
+    </section>
+
+    <section class="card">
+      <h2>Premium Review</h2>
+      <div id="premium"></div>
+    </section>
+
+    <section class="card">
+      <h2>Model status</h2>
+      <button id="refreshModels">Refresh model status</button>
+      <div id="models"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
