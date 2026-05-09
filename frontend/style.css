@@ -1,0 +1,13 @@
+:root { color-scheme: light dark; font-family: Inter, system-ui, sans-serif; }
+body { margin: 0; background: #101827; color: #eef2ff; }
+main { max-width: 1100px; margin: 0 auto; padding: 32px; }
+.card { background: #172033; border: 1px solid #2e3a55; border-radius: 16px; padding: 20px; margin: 18px 0; box-shadow: 0 12px 32px #0004; }
+textarea { width: 100%; min-height: 110px; border-radius: 10px; border: 1px solid #41506e; background: #0e1524; color: #fff; padding: 12px; box-sizing: border-box; }
+button, select { margin: 8px 8px 8px 0; padding: 10px 14px; border-radius: 10px; border: 1px solid #7282ff; background: #5465ff; color: white; cursor: pointer; }
+select { background: #0e1524; }
+.role { border-left: 4px solid #7dd3fc; padding: 12px; margin: 12px 0; background: #0e1524; border-radius: 8px; }
+.error { color: #fecaca; white-space: pre-wrap; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.meta { color: #bfdbfe; font-size: 0.9rem; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border-bottom: 1px solid #334155; padding: 8px; text-align: left; vertical-align: top; }
