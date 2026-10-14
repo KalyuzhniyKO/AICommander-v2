@@ -1,6 +1,22 @@
-# AICommander 3.0 — Sequential Codex plan
+# AICommander 3.0 — Dependency-aware parallel Codex plan
 
 [Русская версия](ROADMAP.md)
+
+## Current status and parallel work (15 October 2026)
+
+| Area | Task / PR | Status |
+|---|---|---|
+| Foundation | [#10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10) / [PR #25](https://github.com/KalyuzhniyKO/AICommander-v2/pull/25) | **Done, green CI** |
+| OSS research | [#12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12) / [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) | Documents merged; Issue remains open pending #11 |
+| Live Zorin integration | [#11](https://github.com/KalyuzhniyKO/AICommander-v2/issues/11) → [#13](https://github.com/KalyuzhniyKO/AICommander-v2/issues/13) | Owner boots Zorin; read-only inventory first |
+| Backend taskflow | [#27](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) | Mock/contract design can proceed; coordinate with PR #30 |
+| MacBook UI | [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) / [#28](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) | PR #30 is a **Draft**; pause duplicate #28 until review |
+| Test worktree | [#29](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) | Can proceed now, no Zorin required |
+
+**Start now:** review PR #30, implement #29 in a separate branch, design #27 schema with care about PR #30. **Do not start #28 as duplicate frontend implementation.**
+
+**Later:** boot Zorin → #11 verifies contracts → finalize #12 ADR → #13 OmniRouter → #14 Hermes → #15 execution → #16 QA → #17 PR/CI, then #18–#22 with security gates.
+
 
 | Stage | GitHub issue | Scope | Suggested Codex model | Reasoning effort |
 |---|---|---|---|---|
@@ -19,4 +35,4 @@
 | 12 | [#22](https://github.com/KalyuzhniyKO/AICommander-v2/issues/22) | Документация, развёртывание, бэкапы | GPT-6.1 Sol | Medium |
 | MIG | [#23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23) | Перенос в отдельный репозиторий | GPT-6.1 Sol | Low |
 
-Run stages #10→#11→#12→#13→#14→#15→#16→#17→#18→#19→#20→#21→#22 in order. Each is a separate feature branch and PR; do not proceed to the next before verifying the previous result. #23 is an optional repo migration when a dedicated repository can be created. Never push to production or merge without human approval. Actual models depend on Codex availability; record substitutions.
+Independent work may run in parallel in separate branches, but actual integrations remain dependency-gated; do not proceed to a blocked step without the prerequisite review. #23 is an optional repo migration when a dedicated repository can be created. Never push to production or merge without human approval. Actual models depend on Codex availability; record substitutions.
