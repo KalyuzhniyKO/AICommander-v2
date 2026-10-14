@@ -1,15 +1,14 @@
-[Русская версия](AGENTS.md)
+# AICommander 3.0 / Instructions for Codex
+[Русский](AGENTS.md)
 
-# AICommander-v3 / Instructions for Codex
-Read `README.md` and `docs/{PRODUCT_SPEC,IMPLEMENTATION,ROADMAP,OPEN_SOURCE_REVIEW}.md` before working.
+Read `README.en.md`, `docs/PRODUCT_SPEC.en.md`, `docs/IMPLEMENTATION.en.md`, `docs/ROADMAP.en.md`, `docs/MODEL_SELECTION.en.md` and `docs/OPEN_SOURCE_REVIEW.en.md` before work.
 
-- Each [V3] GitHub Issue is a bounded independent PR. No unrequested scope creep; include tests and explicit evidence.
-- **Do not recreate OmniRouter or Hermes.** Inspect the deployed Zorin configuration READ-ONLY (no keys in logs), document supported integration methods and use a narrow adapter.
-- Current v3 foundation is **not** a completed Hermes/Codex agent system. Don't claim planned features are implemented.
-- Separate planner output, git changes, test execution and reviewer verdict with typed artifacts; do not infer test success from LLM text.
-- No access to production warehouse DB, productive servers or secrets; all code execution in worktrees/containers with disposable databases.
-- No automatic merge, deploy, destructive operations or access outside approved workspace. Explicit user approval required.
-- Don't automate the paid ChatGPT web UI or harvest session cookies to turn it into an API; web expert escalation is manual. OpenAI API is billed separately.
-- Preserve attribution and full required licence texts if copying external open-source code (see `docs/OPEN_SOURCE_REVIEW.md`). No third-party code was copied in the foundation.
-- Evaluate before adopting CrewAI, LangGraph, OpenHands or Microsoft Agent Framework: they may duplicate Hermes. Prefer one workflow owner.
-- Re-run `pytest -q` and smoke tests before PR; never invent a passing run.
+- Execute the [V3] GitHub Issues in explicit order, one issue per feature branch and PR. Provide **actual** tests and evidence.
+- Reuse existing Hermes and OmniRouter installed on Zorin OS. First verify their actual interfaces READ-ONLY; never invent APIs or log secrets.
+- Do not claim features are implemented until running verified tests; the v3 foundation is deliberately minimal.
+- Hand structured artifacts between roles. A Developer must edit actual test worktree files; QA must report process exit codes; Reviewer must inspect git diff.
+- No access to production warehouse databases, servers, unrelated directories, passwords or SSH keys. No auto merge, deployment or destructive commands.
+- ChatGPT Web is a manual expert escalation, never a scraped API. OpenAI API is a separate paid product.
+- Credit upstream authors and include complete mandatory license notices for copied third-party code; no external code was copied into this foundation.
+- Avoid a second router/orchestrator engine until the OSS ADR demonstrates a distinct missing capability.
+- If blocked by connector/tool limits, create a GitHub Issue with exact acceptance criteria instead of silently abandoning the operation.
