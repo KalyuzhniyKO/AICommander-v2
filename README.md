@@ -20,7 +20,7 @@
 - клиент совместимого с OpenRouter API, проверка моделей и резервные модели;
 - базовые тесты без реальных API-ключей.
 
-**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, безопасная песочница, создание PR, авторизованная панель для MacBook и учёт бюджета. Запуск и прохождение тестов новой ветки ещё не подтверждены.
+**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, безопасная песочница, создание PR, авторизованная панель для MacBook и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md); это не проверка интеграции с Zorin.
 
 **Не переносим из v2:** архивные мосты для macOS, Director/Judge/Final Auditor migration pack, старые планы, пустые обёртки ролей, ненужную интеграцию с отдельным OpenAI API Premium Review. ChatGPT в браузере используется **вручную** для сложных экспертных задач.
 
@@ -47,15 +47,34 @@
 
 ## Локальный запуск базовой версии
 
+Python **3.11–3.13**. Команды для Linux/macOS:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements-dev.txt
+python -m pip install -r requirements-dev.txt
 cp .env.example .env
 cp config/models.example.json config/models.json
-pytest -q
+python -m compileall backend
+python -m pytest -q
 python -m backend.app.main
 ```
+
+Windows PowerShell:
+
+```powershell
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+Copy-Item .env.example .env
+Copy-Item config/models.example.json config/models.json
+.\.venv\Scripts\python.exe -m compileall backend
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m backend.app.main
+```
+
+Тесты используют временные БД и конфигурации, не читают локальный `.env` и блокируют реальные HTTP-вызовы моделей. GitHub Actions выполняет compileall и pytest на Python 3.11–3.13 в Linux и Windows. `MAX_MODEL_RETRIES` задаёт общее число попыток для каждой модели, включая первую; после их исчерпания используется следующая модель. Проверки не требуют API-ключа.
+
+После запуска: `GET /health`, `POST /tasks` с JSON `{"description":"Проверить документацию"}`, `GET /tasks/1`, `GET /models/status`. `POST /models/check` и создание раунда вызывают модели, если ключ настроен; примеры ID нужно заменить перед такими запросами.
 
 Открыть: `http://127.0.0.1:8000`. В конфигурации моделей указаны **заглушки**, их нужно заменить действительными ID. Прототип **без авторизации** — не публикуй его в интернет или домашнюю сеть.
 

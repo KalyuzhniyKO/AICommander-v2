@@ -14,7 +14,7 @@ The goal is real, test-backed software changes, not several independent textual 
 ## Retained from v2
 Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role prompts and keyword role routing, an OpenRouter-compatible transport with fallback and model availability checks, and credential-free test scaffolding.
 
-**Planned, not implemented:** verified Hermes/OmniRouter integration, Analyst and executing QA roles, Codex CLI tool execution, safe git worktrees, PR generation, authenticated MacBook dashboard and budget policy. Runtime test success has not yet been confirmed.
+**Planned, not implemented:** verified Hermes/OmniRouter integration, Analyst and executing QA roles, Codex CLI tool execution, safe git worktrees, PR generation, authenticated MacBook dashboard and budget policy. Local foundation tests and HTTP smoke have passed; see the implementation status for recorded results.
 
 **Deliberately excluded:** legacy macOS integration bridges, old Director/Judge/Final Auditor migration pack, obsolete roadmaps and role wrappers, and the optional OpenAI API Premium Review. ChatGPT web is an optional **manual** expert handoff; ChatGPT subscription access does not imply API entitlements.
 
@@ -38,15 +38,34 @@ Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role pro
 | GitHub Issues | [English descriptions](docs/ISSUES_EN.md) | [Russian-first issues](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24) |
 
 ## Local test bootstrap
+Python **3.11–3.13**; Linux/macOS:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements-dev.txt
+python -m pip install -r requirements-dev.txt
 cp .env.example .env
 cp config/models.example.json config/models.json
-pytest -q
+python -m compileall backend
+python -m pytest -q
 python -m backend.app.main
 ```
+Windows PowerShell:
+
+```powershell
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+Copy-Item .env.example .env
+Copy-Item config/models.example.json config/models.json
+.\.venv\Scripts\python.exe -m compileall backend
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m backend.app.main
+```
+
+Tests use temporary databases/configuration, ignore the local `.env`, and block live model HTTP calls. GitHub Actions runs compilation and tests on Python 3.11–3.13 on Linux and Windows. `MAX_MODEL_RETRIES` is the total attempts per model, including the first; exhausted attempts advance to the next model. Tests require no API key.
+
+Smoke endpoints: `GET /health`, `POST /tasks` with JSON `{"description":"Check documentation"}`, `GET /tasks/1`, `GET /models/status`. `POST /models/check` and round creation call models when a key is configured; replace placeholder IDs before using them.
+
 Open `http://127.0.0.1:8000` locally. Model IDs are placeholders. The prototype is unauthenticated: do **not** expose it outside localhost.
 
 ## Repository status

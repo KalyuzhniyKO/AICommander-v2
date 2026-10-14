@@ -1,7 +1,7 @@
 {
   "checked_on": "2026-10-14",
   "scope": "Read-only проверка upstream metadata, документации, root LICENSE и выбранных package metadata. Без установки, исполнения, копирования исходников и полного аудита лицензий зависимостей.",
-  "local_compatibility": "Не проверена: #11 открыт, docs/ZORIN_INTEGRATION.md отсутствует.",
+  "local_compatibility": "Текущая совместимость не проверена: #11 открыт, docs/ZORIN_INTEGRATION.md отсутствует. Владелец сообщил о dual boot Zorin/Windows; архивная сводка называет Hermes Agent 0.21.0 и OmniRoute 3.8.50, что не подтверждает текущее состояние служб.",
   "projects": [
     {
       "name": "CrewAI",

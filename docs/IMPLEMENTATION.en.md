@@ -9,12 +9,14 @@ FastAPI local REST endpoints; SQLite tasks, rounds, agent outputs and model erro
 - No Hermes Director and no tested OmniRouter API connection.
 - No separate Analyst or executing QA agent; existing `coder` supplies text plans.
 - `round_runner` builds context before role loop; next role does not automatically see previous role's same-round output.
-- No real worktree, Codex CLI tool, sandboxed command executor, CI, automatic PR or production gate.
+- No worktree executor, Codex CLI tool, sandboxed command executor, automatic PR or production gate. Foundation CI is added in stage 00.
 - No authentication for network access; prototype binds localhost only.
 - Free model IDs are placeholders, not confirmed active models.
 
 ### Not copied from v2
 Old CLI/bridge for macOS, Director/Judge/Final Auditor migration modules, premium OpenAI review logic/API, redundant role wrappers and old plans. v3's paid ChatGPT web review is a **manual** step; API usage is a separate product/cost.
 
-### Quality caveat
-Files were reviewed and composed via GitHub access. Runtime tests cannot be claimed passing until `pytest -q` runs on a machine with Python and dependencies. First Codex issue is to verify and repair that baseline. 
+### Stage 00 verification
+Issue #10 removes the broken legacy bridge import, closes API SQLite connections and HTTPError handles, and refreshes round summaries after role reruns. 40 offline tests cover API behavior, resources, config and bounded fallback attempts. GitHub Actions covers Python 3.11–3.13 on Linux/Windows.
+
+Actual local exit codes and output: [Python 3.13](qa-foundation-python-3.13.14.json), [Python 3.12](qa-foundation-python-3.12.10.json). Compilation, pytest and pip check exited 0 in both environments; a separate uvicorn HTTP smoke passed using temporary SQLite. Pytest emits one Starlette dependency deprecation warning about migrating from httpx to httpx2. Python 3.11 is not installed locally; verify its result in GitHub Actions.
