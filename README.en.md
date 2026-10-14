@@ -1,28 +1,48 @@
-[Русская версия](README.md)
+# AICommander 3.0 — Virtual AI Development Team
 
-# AICommander 3.0 — AI Development Team
-**Status: Foundation MVP.** Existing working components of [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2) have been selectively retained, not the whole old project.
+[**Русский / Russian version**](README.md)
 
-## Goal
-The owner uses a MacBook to give the team tasks and accept results. On Zorin OS, an **existing** Hermes installation acts as Director and an **existing** OmniRouter selects free/affordable AI models. Agents: Director, Analyst, Architect, Developer, QA and independent Reviewer. For high-complexity coding, delegate to Codex CLI; paid ChatGPT **web** is used only as a manual expert review, never via an unsupported scraping/browser automation API.
+**Status:** lean foundation MVP prepared. This is **not yet** a working integration of Hermes, OmniRouter, Codex execution or QA. The original [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2) is preserved unchanged.
 
-The end-to-end workflow is: `owner -> Director -> Analyst -> Architect (if needed) -> Developer (isolated worktree) -> QA (real tests) -> Reviewer (independent diff review) -> draft PR -> owner approval`.
+## Vision
+The human owner enters tasks from a MacBook and approves the final changes. Existing Hermes and OmniRouter run on Zorin OS. AICommander should coordinate a team without re-implementing their existing responsibilities:
 
-## Already in this foundation
-- FastAPI service and minimal web UI on localhost.
-- Creation and history of tasks, human-approved rounds, legacy role prompts and simple routing.
-- OpenRouter-compatible model calls, retry/fallback, model status checks.
-- SQLite state and baseline unit tests without live model credentials.
+**Owner → Director (Hermes) → Analyst → Architect (if needed) → Developer (Codex for complex work) → real QA tests → independent Reviewer → GitHub draft PR → owner approval.**
 
-**Not yet implemented:** verified Hermes/OmniRouter integration; Analyst/QA roles; real code editing or Codex CLI execution; safe worktree/sandbox; GitHub PR creation; authenticated remote UI; escalation and budget tracking. An AI-written answer **is not evidence** that code ran or tests passed.
+The goal is real, test-backed software changes, not several independent textual responses.
 
-## Deliberately not imported from v2
-Previous macOS app bridges, Director/Judge/Final Auditor migration pack, empty redundant agent wrapper files, obsolete roadmaps, separate OpenAI API Premium Review (not applicable to browser ChatGPT), legacy model presets.
+## Retained from v2
+Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role prompts and keyword role routing, an OpenRouter-compatible transport with fallback and model availability checks, and credential-free test scaffolding.
 
-## Local run (prototype, on test machine only)
+**Planned, not implemented:** verified Hermes/OmniRouter integration, Analyst and executing QA roles, Codex CLI tool execution, safe git worktrees, PR generation, authenticated MacBook dashboard and budget policy. Local foundation tests and HTTP smoke have passed; see the implementation status for recorded results.
+
+**Deliberately excluded:** legacy macOS integration bridges, old Director/Judge/Final Auditor migration pack, obsolete roadmaps and role wrappers, and the optional OpenAI API Premium Review. ChatGPT web is an optional **manual** expert handoff; ChatGPT subscription access does not imply API entitlements.
+
+## Development principles
+1. Reuse deployed Hermes and OmniRouter; no redundant directors or model routers.
+2. Free/cheap models for routine roles; Codex for complex coding; ChatGPT web only by manual escalation.
+3. QA executes actual commands and records exit status; reviewer examines actual Git diff.
+4. Keep production warehouse databases, production secrets and files outside the approved workspace inaccessible.
+5. One sequential GitHub Issue → one feature branch → one PR; no automatic merge or deployment.
+
+## Documentation
+
+| Topic | English | Russian |
+|---|---|---|
+| Product specification | [Spec](docs/PRODUCT_SPEC.en.md) | [ТЗ](docs/PRODUCT_SPEC.md) |
+| Implementation status | [Status](docs/IMPLEMENTATION.en.md) | [Реализовано](docs/IMPLEMENTATION.md) |
+| Codex stages | [Roadmap](docs/ROADMAP.en.md) | [Этапы](docs/ROADMAP.md) |
+| Model and reasoning effort | [Selection](docs/MODEL_SELECTION.en.md) | [Выбор моделей](docs/MODEL_SELECTION.md) |
+| Open-source reuse | [Review](docs/OPEN_SOURCE_REVIEW.en.md) | [Источники](docs/OPEN_SOURCE_REVIEW.md) |
+| Codex rules | [AGENTS](AGENTS.en.md) | [Правила](AGENTS.md) |
+| GitHub Issues | [English descriptions](docs/ISSUES_EN.md) | [Russian-first issues](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24) |
+
+## Local test bootstrap
 Python **3.11–3.13**; Linux/macOS:
+
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 cp .env.example .env
 cp config/models.example.json config/models.json
@@ -46,13 +66,9 @@ Tests use temporary databases/configuration, ignore the local `.env`, and block 
 
 Smoke endpoints: `GET /health`, `POST /tasks` with JSON `{"description":"Check documentation"}`, `GET /tasks/1`, `GET /models/status`. `POST /models/check` and round creation call models when a key is configured; replace placeholder IDs before using them.
 
-Open http://127.0.0.1:8000 . Configure real model IDs. The prototype is unauthenticated and **must not** be exposed to the network.
+Open `http://127.0.0.1:8000` locally. Model IDs are placeholders. The prototype is unauthenticated: do **not** expose it outside localhost.
 
-## Read before starting Codex tasks
-- [Product vision and roles](docs/PRODUCT_SPEC.md)
-- [Actually shipped vs planned](docs/IMPLEMENTATION.md)
-- [Phased roadmap](docs/ROADMAP.md)
-- [Open-source research and attribution](docs/OPEN_SOURCE_REVIEW.md)
-- [Codex instructions](AGENTS.md)
+## Repository status
+The GitHub integration currently cannot create a dedicated repository. Foundation lives temporarily on [`v3-foundation`](https://github.com/KalyuzhniyKO/AICommander-v2/tree/v3-foundation), leaving v2 `main` intact. [Migration Issue #23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23).
 
-**Important:** this `v3-foundation` branch is a staging area inside AICommander-v2 because the connected GitHub interface cannot create a new repository. The `main` branch of v2 is untouched. Export this *minimal tree* into a dedicated `AICommander-v3` repository when repository creation is available.
+The task queue starts at [Issue #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10); see [Epic #24](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24) for the sequential checklist and recommended models.
