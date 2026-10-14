@@ -20,14 +20,32 @@ The end-to-end workflow is: `owner -> Director -> Analyst -> Architect (if neede
 Previous macOS app bridges, Director/Judge/Final Auditor migration pack, empty redundant agent wrapper files, obsolete roadmaps, separate OpenAI API Premium Review (not applicable to browser ChatGPT), legacy model presets.
 
 ## Local run (prototype, on test machine only)
+Python **3.11–3.13**; Linux/macOS:
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt
+python -m pip install -r requirements-dev.txt
 cp .env.example .env
 cp config/models.example.json config/models.json
-pytest -q
+python -m compileall backend
+python -m pytest -q
 python -m backend.app.main
 ```
+Windows PowerShell:
+
+```powershell
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+Copy-Item .env.example .env
+Copy-Item config/models.example.json config/models.json
+.\.venv\Scripts\python.exe -m compileall backend
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m backend.app.main
+```
+
+Tests use temporary databases/configuration, ignore the local `.env`, and block live model HTTP calls. GitHub Actions runs compilation and tests on Python 3.11–3.13 on Linux and Windows. `MAX_MODEL_RETRIES` is the total attempts per model, including the first; exhausted attempts advance to the next model. Tests require no API key.
+
+Smoke endpoints: `GET /health`, `POST /tasks` with JSON `{"description":"Check documentation"}`, `GET /tasks/1`, `GET /models/status`. `POST /models/check` and round creation call models when a key is configured; replace placeholder IDs before using them.
+
 Open http://127.0.0.1:8000 . Configure real model IDs. The prototype is unauthenticated and **must not** be exposed to the network.
 
 ## Read before starting Codex tasks

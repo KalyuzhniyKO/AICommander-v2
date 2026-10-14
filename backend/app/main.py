@@ -1,7 +1,9 @@
 """AICommander v3 local foundation. No Hermes/Codex integration yet."""
 from __future__ import annotations
+from contextlib import closing
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from typing import Annotated
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from backend.app.config import get_settings, load_model_config, ModelConfigError, DEFAULT_MODELS_PATH
 from backend.app.orchestration.round_runner import run_round, rerun_role
@@ -13,49 +15,53 @@ app=FastAPI(title="AICommander v3 Foundation", version="3.0.0-dev")
 settings=get_settings()
 
 def repository():
-    conn=connect(settings.database_path)
-    init_db(conn)
-    return Repository(conn)
+    # sqlite3.Connection's context manager commits/rolls back, but does not close.
+    with closing(connect(settings.database_path)) as conn:
+        init_db(conn)
+        yield Repository(conn)
+
+
+RepositoryDependency = Annotated[Repository, Depends(repository)]
 
 @app.get("/health")
 def health():
     return {"status":"ok","foundation":True,"hermes_connected":False,"omnirouter_connected":False}
 
 @app.post("/tasks")
-def create_task(payload:dict):
+def create_task(payload:dict, repo:RepositoryDependency):
     description=str(payload.get("description") or "").strip()
     if not description:
         raise HTTPException(status_code=400, detail="description required")
-    return repository().create_task(description)
+    return repo.create_task(description)
 
 @app.get("/tasks/{task_id}")
-def get_task(task_id:int):
-    task=repository().get_task(task_id)
+def get_task(task_id:int, repo:RepositoryDependency):
+    task=repo.get_task(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
     return task
 
 @app.post("/tasks/{task_id}/rounds")
-def create_round(task_id:int,payload:dict|None=None):
+def create_round(task_id:int,repo:RepositoryDependency,payload:dict|None=None):
     try:
         models=load_model_config()
     except ModelConfigError:
         models={}
     try:
-        return run_round(task_id,str((payload or {}).get("user_comment") or ""),settings,models,repository())
+        return run_round(task_id,str((payload or {}).get("user_comment") or ""),settings,models,repo)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 @app.post("/rounds/{round_id}/roles/{role}/rerun")
-def rerun(round_id:int,role:str):
+def rerun(round_id:int,role:str,repo:RepositoryDependency):
     try:
-        return rerun_role(round_id,role,settings,load_model_config(),repository())
+        return rerun_role(round_id,role,settings,load_model_config(),repo)
     except (ValueError,ModelConfigError) as e:
         raise HTTPException(status_code=400,detail=str(e))
 
 @app.get("/models/status")
-def model_status():
-    stored=repository().list_model_status()
+def model_status(repo:RepositoryDependency):
+    stored=repo.list_model_status()
     try:
         configured=load_model_config()
         config_error=None
@@ -71,8 +77,8 @@ def model_status():
     return {"models":stored,"config_file_exists":DEFAULT_MODELS_PATH.exists(),"config_error":config_error}
 
 @app.post("/models/check")
-def model_check():
-    return check_models(settings,repository())
+def model_check(repo:RepositoryDependency):
+    return check_models(settings,repo)
 
 app.mount("/",StaticFiles(directory=str(Path(__file__).resolve().parents[2] / "frontend"),html=True),name="frontend")
 

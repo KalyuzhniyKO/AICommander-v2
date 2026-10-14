@@ -1,23 +1,60 @@
 import json
+import socket
+import urllib.request
 import pytest
 from fastapi.testclient import TestClient
 from backend.app import config as app_config
-from backend.app import main as main_app
 
 @pytest.fixture(autouse=True)
 def isolated_app(tmp_path,monkeypatch):
-    monkeypatch.delenv("OPENROUTER_API_KEY",raising=False)
+    # Never read the developer's .env, credentials or model config in tests.
+    monkeypatch.setattr(app_config,"_dotenv",lambda: None)
+    monkeypatch.setenv("OPENROUTER_API_KEY","")
+    monkeypatch.setenv("OPENROUTER_BASE_URL","https://models.invalid/api/v1")
+    monkeypatch.setenv("DEFAULT_TIMEOUT_SECONDS","1")
+    monkeypatch.setenv("MAX_MODEL_RETRIES","1")
     monkeypatch.setenv("DATABASE_URL",f"sqlite:///{tmp_path / 'test.db'}")
     models_path=tmp_path / "models.json"
     monkeypatch.setattr(app_config,"DEFAULT_MODELS_PATH",models_path)
+    from backend.app import main as main_app
     monkeypatch.setattr(main_app,"DEFAULT_MODELS_PATH",models_path)
     from backend.app.orchestration import model_check
     monkeypatch.setattr(model_check,"DEFAULT_MODELS_PATH",models_path)
-    main_app.settings=app_config.get_settings()
+    monkeypatch.setattr(main_app,"settings",app_config.get_settings())
+
+    def deny_network(*args, **kwargs):
+        pytest.fail("Real network access is forbidden; mock the provider/transport")
+
+    monkeypatch.setattr(urllib.request,"urlopen",deny_network)
+    # Windows asyncio implements socketpair with an internal loopback connection.
+    # Provider HTTP calls (including loopback endpoints) remain blocked above.
+    original_connect = socket.socket.connect
+    original_connect_ex = socket.socket.connect_ex
+
+    def guard(original):
+        def connect(sock, address):
+            if isinstance(address, tuple) and address[0] in {"127.0.0.1", "::1"}:
+                return original(sock, address)
+            return deny_network()
+        return connect
+
+    monkeypatch.setattr(socket.socket,"connect",guard(original_connect))
+    monkeypatch.setattr(socket.socket,"connect_ex",guard(original_connect_ex))
+    monkeypatch.setattr(socket,"create_connection",deny_network)
 
 @pytest.fixture
 def client():
+    from backend.app import main as main_app
     with TestClient(main_app.app) as c:yield c
+
+@pytest.fixture
+def repository(tmp_path):
+    from contextlib import closing
+    from backend.app.storage.db import connect, init_db
+    from backend.app.storage.repositories import Repository
+    with closing(connect(tmp_path / "repository.db")) as conn:
+        init_db(conn)
+        yield Repository(conn)
 
 @pytest.fixture
 def write_models_config(tmp_path):
