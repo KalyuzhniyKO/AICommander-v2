@@ -10,6 +10,7 @@ from backend.app.orchestration.round_runner import run_round, rerun_role
 from backend.app.orchestration.model_check import check_models
 from backend.app.storage.db import connect, init_db
 from backend.app.storage.repositories import Repository
+from backend.app.taskflow.api import create_router
 
 app=FastAPI(title="AICommander v3 Foundation", version="3.0.0-dev")
 settings=get_settings()
@@ -80,6 +81,7 @@ def model_status(repo:RepositoryDependency):
 def model_check(repo:RepositoryDependency):
     return check_models(settings,repo)
 
+app.include_router(create_router(repository))
 app.mount("/",StaticFiles(directory=str(Path(__file__).resolve().parents[2] / "frontend"),html=True),name="frontend")
 
 if __name__=="__main__":
