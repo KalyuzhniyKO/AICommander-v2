@@ -41,6 +41,7 @@
 | Очерёдность работы Codex | [ROADMAP](docs/ROADMAP.md) | [Roadmap](docs/ROADMAP.en.md) |
 | Выбор модели и уровня | [MODEL_SELECTION](docs/MODEL_SELECTION.md) | [Model selection](docs/MODEL_SELECTION.en.md) |
 | Использование Open Source | [OPEN_SOURCE_REVIEW](docs/OPEN_SOURCE_REVIEW.md) | [Open-source review](docs/OPEN_SOURCE_REVIEW.en.md) |
+| Решение по оркестрации (предложение, ожидает #11) | [ADR-001](docs/ADR-001-ORCHESTRATION.md) | [ADR-001 (RU)](docs/ADR-001-ORCHESTRATION.md) |
 | Инструкции Codex | [AGENTS.md](AGENTS.md) | [Codex instructions](AGENTS.en.md) |
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
 
