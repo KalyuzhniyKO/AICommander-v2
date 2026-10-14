@@ -104,4 +104,8 @@ def rerun_role(round_id: int, role: str, settings: Settings, model_config: dict[
     if not outcome.success:
         persist_all_models_failed(repository, round_id, role, outcome.errors)
     repository.save_role_output(round_id, role, output, outcome.provider, outcome.model_id, "completed" if outcome.success else "failed", outcome.response_time_ms)
-    return repository.get_round(round_id) or round_row
+    updated = repository.get_round(round_id) or round_row
+    repository.update_round_summary(round_id, "\n".join(
+        f"{item['role']}: {item['output'][:500]}" for item in updated["role_outputs"]
+    ))
+    return repository.get_round(round_id) or updated
