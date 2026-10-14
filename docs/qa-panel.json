@@ -36,5 +36,12 @@
     "ui_tests": 3,
     "warning": "StarletteDeprecationWarning: httpx → httpx2"
   },
-  "scope": "Временная SQLite, mock провайдеров, реальный Chromium и HTTP. Без Zorin, production и реальных API моделей."
+  "scope": "Временная SQLite, mock провайдеров, реальный Chromium и HTTP. Без Zorin, production и реальных API моделей.",
+  "ci": {
+    "run_id": 38636255955,
+    "url": "https://github.com/KalyuzhniyKO/AICommander-v2/actions/runs/38636255955",
+    "commit": "2df95e5",
+    "conclusion": "success",
+    "successful_jobs": 7
+  }
 }

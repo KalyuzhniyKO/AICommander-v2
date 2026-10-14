@@ -20,7 +20,7 @@
 - клиент совместимого с OpenRouter API, проверка моделей и резервные модели;
 - базовые тесты без реальных API-ключей.
 
-**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, безопасная песочница, создание PR, сквозная интеграция панели с executor и учёт бюджета. Запуск и прохождение тестов новой ветки ещё не подтверждены.
+**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, безопасная песочница, создание PR, сквозная интеграция панели с executor и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md), панели — в [отчёте #19](docs/QA_PANEL.md); это не проверка интеграции с Zorin.
 
 **Не переносим из v2:** архивные мосты для macOS, Director/Judge/Final Auditor migration pack, старые планы, пустые обёртки ролей, ненужную интеграцию с отдельным OpenAI API Premium Review. ChatGPT в браузере используется **вручную** для сложных экспертных задач.
 
@@ -41,6 +41,7 @@
 | Очерёдность работы Codex | [ROADMAP](docs/ROADMAP.md) | [Roadmap](docs/ROADMAP.en.md) |
 | Выбор модели и уровня | [MODEL_SELECTION](docs/MODEL_SELECTION.md) | [Model selection](docs/MODEL_SELECTION.en.md) |
 | Использование Open Source | [OPEN_SOURCE_REVIEW](docs/OPEN_SOURCE_REVIEW.md) | [Open-source review](docs/OPEN_SOURCE_REVIEW.en.md) |
+| Решение по оркестрации (предложение, ожидает #11) | [ADR-001](docs/ADR-001-ORCHESTRATION.md) | [ADR-001 (RU)](docs/ADR-001-ORCHESTRATION.md) |
 | Инструкции Codex | [AGENTS.md](AGENTS.md) | [Codex instructions](AGENTS.en.md) |
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
 

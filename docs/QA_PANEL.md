@@ -25,3 +25,7 @@
 ## Границы проверки
 
 Сеть моделей блокировалась fixture; провайдеры заменены mock. Тесты использовали временную БД и настоящий локальный uvicorn/Chromium. Zorin, SSH/VPN, Hermes, OmniRouter, Codex executor, реальные git diff/QA и стоимость не проверялись — их интеграции ожидают #14–#18. Подтверждение относится только к текстовым артефактам foundation. Полный интеграционный DoD #19 остаётся до выполнения зависимостей; PR подготовлен как draft. Merge/deploy и этап #20 не выполнялись.
+
+## GitHub Actions
+
+[Запуск 38636255955](https://github.com/KalyuzhniyKO/AICommander-v2/actions/runs/38636255955) для commit `2df95e5` завершился success: все шесть сочетаний Python 3.11–3.13 / Linux и Windows, а также Chromium UI job. После этого в feature-ветку включены обновления документации из v3-foundation; исходный код и тесты панели не изменились.

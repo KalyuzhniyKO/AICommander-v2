@@ -1,0 +1,229 @@
+{
+  "checked_on": "2026-10-14",
+  "scope": "Read-only проверка upstream metadata, документации, root LICENSE и выбранных package metadata. Без установки, исполнения, копирования исходников и полного аудита лицензий зависимостей.",
+  "local_compatibility": "Текущая совместимость не проверена: #11 открыт, docs/ZORIN_INTEGRATION.md отсутствует. Владелец сообщил о dual boot Zorin/Windows; архивная сводка называет Hermes Agent 0.21.0 и OmniRoute 3.8.50, что не подтверждает текущее состояние служб.",
+  "projects": [
+    {
+      "name": "CrewAI",
+      "version": "1.15.28 (package family pins; project version is dynamic)",
+      "metadata": "lib/crewai/pyproject.toml",
+      "python": ">=3.10,<3.14",
+      "authors": "crewAI, Inc.; Joao Moura",
+      "decision": "ideas_only",
+      "repository": "https://github.com/crewAIInc/crewAI",
+      "revision": "aa5f2acd9b48782b6b6a756bcef24cc54ac0530b",
+      "default_branch_committed_at": "2026-10-14T19:52:50Z",
+      "archived": false,
+      "license_spdx": "MIT",
+      "license_copyright": "Copyright (c) 2025 crewAI, Inc.",
+      "sources": {
+        "readme": "https://github.com/crewAIInc/crewAI/blob/aa5f2acd9b48782b6b6a756bcef24cc54ac0530b/README.md",
+        "license": "https://github.com/crewAIInc/crewAI/blob/aa5f2acd9b48782b6b6a756bcef24cc54ac0530b/LICENSE",
+        "python_metadata": "https://github.com/crewAIInc/crewAI/blob/aa5f2acd9b48782b6b6a756bcef24cc54ac0530b/lib/crewai/pyproject.toml"
+      },
+      "observed_releases": [
+        {
+          "tag": "1.15.28",
+          "published_at": "2026-10-14T04:47:00Z",
+          "url": "https://github.com/crewAIInc/crewAI/releases/tag/1.15.28",
+          "prerelease": false
+        }
+      ]
+    },
+    {
+      "name": "MetaGPT",
+      "version": "1.0.0 in setup.py; published release v0.8.2",
+      "metadata": "setup.py",
+      "python": ">=3.9,<3.12",
+      "authors": "FoundationAgents; Chenglin Wu / Alexander Wu",
+      "decision": "ideas_only",
+      "repository": "https://github.com/FoundationAgents/MetaGPT",
+      "revision": "11cdf466d042aece04fc6cfd13b28e1a70341b1f",
+      "default_branch_committed_at": "2026-01-21T10:12:32Z",
+      "archived": false,
+      "license_spdx": "MIT",
+      "license_copyright": "Copyright (c) 2024 Chenglin Wu",
+      "sources": {
+        "readme": "https://github.com/FoundationAgents/MetaGPT/blob/11cdf466d042aece04fc6cfd13b28e1a70341b1f/README.md",
+        "license": "https://github.com/FoundationAgents/MetaGPT/blob/11cdf466d042aece04fc6cfd13b28e1a70341b1f/LICENSE",
+        "python_metadata": "https://github.com/FoundationAgents/MetaGPT/blob/11cdf466d042aece04fc6cfd13b28e1a70341b1f/setup.py"
+      },
+      "observed_releases": [
+        {
+          "tag": "v0.8.2",
+          "published_at": "2025-03-09T15:59:39Z",
+          "url": "https://github.com/FoundationAgents/MetaGPT/releases/tag/v0.8.2",
+          "prerelease": false
+        },
+        {
+          "tag": "v0.8.1",
+          "published_at": "2024-04-22T10:56:23Z",
+          "url": "https://github.com/FoundationAgents/MetaGPT/releases/tag/v0.8.1",
+          "prerelease": false
+        },
+        {
+          "tag": "v0.8.0",
+          "published_at": "2024-03-29T11:10:54Z",
+          "url": "https://github.com/FoundationAgents/MetaGPT/releases/tag/v0.8.0",
+          "prerelease": false
+        }
+      ]
+    },
+    {
+      "name": "LangGraph",
+      "version": "1.2.15 in core package metadata",
+      "metadata": "libs/langgraph/pyproject.toml",
+      "python": ">=3.10",
+      "authors": "LangChain, Inc.",
+      "decision": "defer_until_verified_gap",
+      "repository": "https://github.com/langchain-ai/langgraph",
+      "revision": "d4149cc1f5384364d1a21092b4c2f582a6e7af8f",
+      "default_branch_committed_at": "2026-10-14T19:41:43Z",
+      "archived": false,
+      "license_spdx": "MIT",
+      "license_copyright": "Copyright (c) 2024 LangChain, Inc.",
+      "sources": {
+        "readme": "https://github.com/langchain-ai/langgraph/blob/d4149cc1f5384364d1a21092b4c2f582a6e7af8f/README.md",
+        "license": "https://github.com/langchain-ai/langgraph/blob/d4149cc1f5384364d1a21092b4c2f582a6e7af8f/LICENSE",
+        "python_metadata": "https://github.com/langchain-ai/langgraph/blob/d4149cc1f5384364d1a21092b4c2f582a6e7af8f/libs/langgraph/pyproject.toml"
+      },
+      "observed_releases": [
+        {
+          "tag": "cli==0.4.35",
+          "published_at": "2026-10-14T16:11:12Z",
+          "url": "https://github.com/langchain-ai/langgraph/releases/tag/cli%3D%3D0.4.35",
+          "prerelease": false
+        },
+        {
+          "tag": "checkpointpostgres==3.2.0",
+          "published_at": "2026-10-14T19:54:57Z",
+          "url": "https://github.com/langchain-ai/langgraph/releases/tag/checkpointpostgres%3D%3D3.2.0",
+          "prerelease": false
+        },
+        {
+          "tag": "cli==0.4.34",
+          "published_at": "2026-10-13T21:18:10Z",
+          "url": "https://github.com/langchain-ai/langgraph/releases/tag/cli%3D%3D0.4.34",
+          "prerelease": false
+        }
+      ]
+    },
+    {
+      "name": "OpenHands Software Agent SDK",
+      "version": "1.54.0",
+      "metadata": "openhands-sdk/pyproject.toml",
+      "python": ">=3.12",
+      "authors": "OpenHands contributors",
+      "decision": "deferred_executor_candidate",
+      "repository": "https://github.com/OpenHands/software-agent-sdk",
+      "revision": "75105bd40936f1962d8fa91506776a0c02ba957f",
+      "default_branch_committed_at": "2026-10-14T20:24:23Z",
+      "archived": false,
+      "license_spdx": "MIT",
+      "license_copyright": "Copyright (c) 2026 OpenHands contributors",
+      "sources": {
+        "readme": "https://github.com/OpenHands/software-agent-sdk/blob/75105bd40936f1962d8fa91506776a0c02ba957f/README.md",
+        "license": "https://github.com/OpenHands/software-agent-sdk/blob/75105bd40936f1962d8fa91506776a0c02ba957f/LICENSE",
+        "python_metadata": "https://github.com/OpenHands/software-agent-sdk/blob/75105bd40936f1962d8fa91506776a0c02ba957f/openhands-sdk/pyproject.toml"
+      },
+      "observed_releases": [
+        {
+          "tag": "v1.54.0",
+          "published_at": "2026-10-09T18:36:49Z",
+          "url": "https://github.com/OpenHands/software-agent-sdk/releases/tag/v1.54.0",
+          "prerelease": false
+        },
+        {
+          "tag": "v1.53.0",
+          "published_at": "2026-10-05T13:18:27Z",
+          "url": "https://github.com/OpenHands/software-agent-sdk/releases/tag/v1.53.0",
+          "prerelease": false
+        },
+        {
+          "tag": "v1.52.0",
+          "published_at": "2026-10-05T04:10:05Z",
+          "url": "https://github.com/OpenHands/software-agent-sdk/releases/tag/v1.52.0",
+          "prerelease": false
+        }
+      ]
+    },
+    {
+      "name": "Microsoft Agent Framework",
+      "version": "1.21.0 (Python core)",
+      "metadata": "python/packages/core/pyproject.toml",
+      "python": ">=3.10",
+      "authors": "Microsoft Corporation",
+      "decision": "ideas_only",
+      "repository": "https://github.com/microsoft/agent-framework",
+      "revision": "95511ff025d81cc546c44e653d4be65de5bd7f35",
+      "default_branch_committed_at": "2026-10-14T17:18:52Z",
+      "archived": false,
+      "license_spdx": "MIT",
+      "license_copyright": "Copyright (c) Microsoft Corporation.",
+      "sources": {
+        "readme": "https://github.com/microsoft/agent-framework/blob/95511ff025d81cc546c44e653d4be65de5bd7f35/README.md",
+        "license": "https://github.com/microsoft/agent-framework/blob/95511ff025d81cc546c44e653d4be65de5bd7f35/LICENSE",
+        "python_metadata": "https://github.com/microsoft/agent-framework/blob/95511ff025d81cc546c44e653d4be65de5bd7f35/python/packages/core/pyproject.toml"
+      },
+      "observed_releases": [
+        {
+          "tag": "dotnet-1.25.0",
+          "published_at": "2026-10-14T19:10:54Z",
+          "url": "https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.25.0",
+          "prerelease": false
+        },
+        {
+          "tag": "python-1.21.0",
+          "published_at": "2026-10-08T10:27:26Z",
+          "url": "https://github.com/microsoft/agent-framework/releases/tag/python-1.21.0",
+          "prerelease": false
+        },
+        {
+          "tag": "dotnet-1.24.0",
+          "published_at": "2026-10-07T13:26:03Z",
+          "url": "https://github.com/microsoft/agent-framework/releases/tag/dotnet-1.24.0",
+          "prerelease": false
+        }
+      ]
+    },
+    {
+      "name": "SWE-agent",
+      "version": "1.1.0 in sweagent/__init__.py",
+      "metadata": "pyproject.toml",
+      "python": ">=3.11",
+      "authors": "John Yang; Carlos E. Jimenez; Alexander Wettig; Shunyu Yao; Karthik Narasimhan; Ofir Press",
+      "decision": "ideas_only",
+      "repository": "https://github.com/SWE-agent/SWE-agent",
+      "revision": "3ea751c087f32b16e039a2233dd6eefecef325d5",
+      "default_branch_committed_at": "2026-07-16T15:21:18Z",
+      "archived": false,
+      "license_spdx": "MIT",
+      "license_copyright": "Copyright (c) 2024 John Yang, Carlos E. Jimenez, Alexander Wettig, Shunyu Yao, Karthik Narasimhan, Ofir Press",
+      "sources": {
+        "readme": "https://github.com/SWE-agent/SWE-agent/blob/3ea751c087f32b16e039a2233dd6eefecef325d5/README.md",
+        "license": "https://github.com/SWE-agent/SWE-agent/blob/3ea751c087f32b16e039a2233dd6eefecef325d5/LICENSE",
+        "python_metadata": "https://github.com/SWE-agent/SWE-agent/blob/3ea751c087f32b16e039a2233dd6eefecef325d5/pyproject.toml"
+      },
+      "observed_releases": [
+        {
+          "tag": "v1.1.0",
+          "published_at": "2025-05-22T16:11:39Z",
+          "url": "https://github.com/SWE-agent/SWE-agent/releases/tag/v1.1.0",
+          "prerelease": false
+        },
+        {
+          "tag": "v1.0.1",
+          "published_at": "2025-02-28T16:46:14Z",
+          "url": "https://github.com/SWE-agent/SWE-agent/releases/tag/v1.0.1",
+          "prerelease": false
+        },
+        {
+          "tag": "v1.0.0",
+          "published_at": "2025-02-13T16:21:23Z",
+          "url": "https://github.com/SWE-agent/SWE-agent/releases/tag/v1.0.0",
+          "prerelease": false
+        }
+      ]
+    }
+  ]
+}
