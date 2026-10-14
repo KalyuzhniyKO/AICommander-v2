@@ -16,6 +16,12 @@ FastAPI local REST endpoints; SQLite tasks, rounds, agent outputs and model erro
 ### Not copied from v2
 Old CLI/bridge for macOS, Director/Judge/Final Auditor migration modules, premium OpenAI review logic/API, redundant role wrappers and old plans. v3's paid ChatGPT web review is a **manual** step; API usage is a separate product/cost.
 
+### Research and pending UI PR
+
+- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) merged (OSS research / ADR-001); #12 remains open until #11 verifies Zorin integration contracts.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) is an open Draft for the MacBook UI. Its proposed authentication is **not yet merged** into v3-foundation.
+- [#27](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) and [#29](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) are offline packages; [#28](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) overlaps PR #30.
+
 ### Stage 00 verification
 Issue #10 removes the broken legacy bridge import, closes API SQLite connections and HTTPError handles, and refreshes round summaries after role reruns. 40 offline tests cover API behavior, resources, config and bounded fallback attempts. GitHub Actions covers Python 3.11–3.13 on Linux/Windows.
 

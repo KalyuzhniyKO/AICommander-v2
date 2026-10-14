@@ -4,6 +4,13 @@
 
 **Статус:** подготовлена минимальная основа (foundation MVP). Полноценная интеграция Hermes, OmniRouter, Codex и QA **ещё не реализована**. Рабочая версия 2 сохранена без изменений: [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2).
 
+## Текущий статус — 15 октября 2026
+
+- [PR #25](https://github.com/KalyuzhniyKO/AICommander-v2/pull/25) **объединён**: исправления foundation, тесты и [успешный CI](https://github.com/KalyuzhniyKO/AICommander-v2/actions/runs/38635577007).
+- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) **объединён**: исследование OSS и ADR-001. [Issue #12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12) остаётся открытой до проверки совместимости через #11.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) **открыт как Draft**: панель MacBook предложена, но ещё не включена в `v3-foundation`.
+- **Без Zorin:** допускается независимая работа над [#29 — Git worktree](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) и подготовка [#27 — taskflow](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27). Реализацию #27 согласовать со схемами из PR #30. [#28 — UI](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) пока не запускать, чтобы не дублировать PR #30. Проверка Hermes/OmniRoute требует ручной загрузки Zorin и завершения #11.
+
 ## Что мы создаём
 
 Ты ставишь задачу **с MacBook** и принимаешь результат. На домашнем **Zorin OS** уже установлены Hermes и OmniRouter. AICommander управляет прозрачным процессом разработки, **не дублируя** их собственные функции.
@@ -30,7 +37,7 @@
 2. Бесплатные или дешёвые модели — обычные этапы; сложная реализация — Codex; ChatGPT Web — ручная экспертиза.
 3. QA доказывает результат реальными тестами, а ревьюер проверяет Git diff.
 4. Production, реальные базы склада и секреты агентам недоступны.
-5. Каждая задача Codex — отдельный Issue и отдельный PR; никакого автоматического merge или развёртывания.
+5. Каждая задача Codex — отдельная feature-ветка и PR; **независимые задачи можно выполнять параллельно**. Merge и деплой — только с одобрения владельца.
 
 ## Документация
 
@@ -44,6 +51,7 @@
 | Решение по оркестрации (предложение, ожидает #11) | [ADR-001](docs/ADR-001-ORCHESTRATION.md) | [ADR-001 (RU)](docs/ADR-001-ORCHESTRATION.md) |
 | Инструкции Codex | [AGENTS.md](AGENTS.md) | [Codex instructions](AGENTS.en.md) |
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
+| Шаблоны GitHub и порядок работы | [WORKFLOW](docs/GITHUB_WORKFLOW.md) | [Workflow](docs/GITHUB_WORKFLOW.en.md) |
 
 ## Локальный запуск базовой версии
 
@@ -82,4 +90,4 @@ Copy-Item config/models.example.json config/models.json
 
 Пока это **отдельная ветка** [`v3-foundation`](https://github.com/KalyuzhniyKO/AICommander-v2/tree/v3-foundation) в репозитории v2: подключённый GitHub не может создать новый репозиторий. [Issue переноса #23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23). **`main` v2 не затронут.**
 
-[Очередь Codex](docs/ROADMAP.md) начинается с [Issue #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10). У каждой задачи есть зависимость, подходящая модель и уровень рассуждения.
+[Этап #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10) уже выполнен. Открытые и параллельные задачи: [дорожная карта](docs/ROADMAP.md), [Issue #24](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24).

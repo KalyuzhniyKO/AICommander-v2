@@ -20,6 +20,12 @@
 
 Устаревшие мосты macOS, legacy pipeline Director/Judge/Final Auditor, пустые обёртки и старые планы, отдельную интеграцию OpenAI API Premium Review. ChatGPT Web остаётся ручным этапом.
 
+## Исследование и PR на проверке
+
+- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) объединён: исследование OSS и ADR-001 готовы, но #12 открыта до проверки #11 на Zorin.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) — открытый Draft панели MacBook. Предлагаемая авторизация и функции интерфейса ещё **не входят** в v3-foundation.
+- [#27](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) и [#29](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) — независимая подготовка без Zorin; [#28](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) пересекается с PR #30.
+
 ## Проверка этапа 00
 [Issue #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10): исправлен импорт удалённого legacy bridge, закрываются SQLite-соединения API и HTTPError, повторный запуск роли обновляет сводку. 40 тестов проверяют API, ресурсы, конфигурацию и ограниченные попытки fallback без живых API. Добавлена матрица GitHub Actions Python 3.11–3.13 на Linux/Windows.
 
