@@ -55,3 +55,14 @@ code { color: #a7f3d0; }
   .toolbar, .section-head, .round-head, .role-head { flex-direction: column; }
   .actions { justify-content: flex-start; }
 }
+.workspace { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 22px; }
+.workspace > aside { align-self: start; position: sticky; top: 16px; }
+input { display: block; width: 100%; padding: 10px; margin: 8px 0; font: inherit; color: #eef2ff; background: #0e1524; border: 1px solid #41506e; border-radius: 10px; }
+#projectSelect { width: 100%; }
+.task-choice { display: block; width: 100%; text-align: left; background: #0e1524; overflow-wrap: anywhere; }
+.task-choice small { display: block; margin-top: 6px; color: #bfdbfe; }
+.task-choice.selected { border-color: #22d3ee; }
+button:disabled { cursor: default; opacity: .45; transform: none; }
+button.danger { background: #991b1b; border-color: #f87171; }
+:focus-visible { outline: 3px solid #22d3ee; outline-offset: 3px; }
+@media (max-width: 840px) { .workspace { grid-template-columns: 1fr; } .workspace > aside { position: static; } }

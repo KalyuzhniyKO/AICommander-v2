@@ -1,8 +1,22 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>AICommander 3.0</title><link rel="stylesheet" href="/style.css"/></head><body><main>
-<header class="hero"><div><p class="eyebrow">v3 · Foundation MVP</p><h1>AICommander 3.0 — команда ИИ</h1><p>Здесь пока работает только текстовый MVP v2. Hermes, OmniRouter, Codex и настоящий QA добавляются по этапам.</p></div><div id="status" class="status">Готов к работе</div></header>
-<section class="grid two">
-<article class="card step"><h2>Поставить задачу</h2><textarea id="taskText" placeholder="Опиши требование"></textarea><button id="runTeam" class="primary">Запустить раунд</button></article>
-<article class="card step"><h2>Уточнить задачу</h2><textarea id="commentText" placeholder="Комментарий владельца"></textarea><button id="runNext">Следующий раунд</button><label>Повторить роль <select id="roleSelect"><option>manager</option><option>architect</option><option>designer</option><option>coder</option><option>reviewer</option></select></label><button id="rerunRole">Повторить роль</button></article></section>
-<section class="card"><h2>Результаты</h2><p id="roundMeta" class="meta"></p><div id="rounds"></div></section>
-<section class="card"><h2>Статус моделей</h2><button id="checkModels">Проверить модели</button><button id="refreshModels">Обновить</button><pre id="models"></pre></section>
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AICommander — панель владельца</title><link rel="stylesheet" href="/style.css"></head>
+<body><main>
+<header class="hero"><div><p class="eyebrow">AICommander · Панель владельца</p><h1>Твоя AI-команда</h1><p>Проекты, история работы и решения в одном месте.</p></div><div id="status" class="status" role="status" aria-live="polite">Подключение…</div></header>
+<p class="notice warning">Foundation: доступны текстовые раунды. Исполнение на Zorin через Hermes/Codex, git diff и реальные QA ожидают предыдущих этапов. Подтверждение здесь принимает текстовый результат и не запускает merge или deploy.</p>
+<div class="workspace">
+<aside class="card"><h2>Проекты</h2><label for="projectSelect">Текущий проект</label><select id="projectSelect"></select>
+<form id="projectForm"><label for="projectName">Новый проект</label><input id="projectName" maxlength="120" required><button type="submit">Добавить проект</button></form>
+<h2>Задачи</h2><button id="refreshTasks">Обновить</button><div id="taskList"></div></aside>
+<section>
+<article class="card"><h2>Новая задача</h2><form id="taskForm"><label for="taskText">Что сделать</label><textarea id="taskText" required placeholder="Опиши требование и критерии приёмки"></textarea><button type="submit" class="primary">Создать задачу</button></form></article>
+<article class="card" id="taskDetail"><h2 id="taskTitle">Выбери задачу</h2><p id="taskMeta" class="meta"></p><pre id="description"></pre>
+<label for="commentText">Комментарий к решению или следующему запуску</label><textarea id="commentText"></textarea>
+<div class="actions"><button id="runTask">Запустить / Повторить</button><button id="stopTask" class="danger">Остановить</button><button id="approveTask" class="primary">Подтвердить</button><button id="rejectTask">Отклонить</button></div>
+<p class="hint">Остановка отменяет следующие вызовы. Текущий HTTP-запрос завершится по ответу или timeout; повторный запуск доступен после остановки.</p>
+<h3>Роли и артефакты</h3><div id="rounds"></div>
+<div class="grid two"><section><h3>Git diff</h3><p>Недоступен: executor ещё не подключён (#15, #17).</p></section><section><h3>Тесты / QA</h3><p>Нет отчёта реальных тестов (#16). Текст модели не считается проверкой.</p></section></div>
+<h3>Прошлые решения</h3><div id="decisions"></div></article>
+<article class="card"><h2>Модели и затраты</h2><button id="refreshModels">Обновить статус</button><p id="cost"></p><div id="models"></div></article>
+</section></div>
 </main><script src="/app.js"></script></body></html>

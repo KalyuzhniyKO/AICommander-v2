@@ -1,4 +1,5 @@
 import json
+import base64
 import socket
 import urllib.request
 import pytest
@@ -9,6 +10,8 @@ from backend.app import config as app_config
 def isolated_app(tmp_path,monkeypatch):
     # Never read the developer's .env, credentials or model config in tests.
     monkeypatch.setattr(app_config,"_dotenv",lambda: None)
+    monkeypatch.setenv("PANEL_PASSWORD", "test-panel-password-32-characters-long")
+    monkeypatch.setenv("PANEL_USER", "owner")
     monkeypatch.setenv("OPENROUTER_API_KEY","")
     monkeypatch.setenv("OPENROUTER_BASE_URL","https://models.invalid/api/v1")
     monkeypatch.setenv("DEFAULT_TIMEOUT_SECONDS","1")
@@ -45,7 +48,7 @@ def isolated_app(tmp_path,monkeypatch):
 @pytest.fixture
 def client():
     from backend.app import main as main_app
-    with TestClient(main_app.app) as c:yield c
+    with TestClient(main_app.app, base_url="http://127.0.0.1", headers={"X-AICommander-Request": "1", "Authorization": "Basic " + base64.b64encode(b"owner:test-panel-password-32-characters-long").decode()}) as c:yield c
 
 @pytest.fixture
 def repository(tmp_path):

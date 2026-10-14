@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-14",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "python": "Python 3.13.12",
+  "checks": [
+    {
+      "command": ".venv/bin/python -m compileall -q backend",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": ".venv/bin/python -m pip check",
+      "exit_code": 0,
+      "stdout": "No broken requirements found.\n",
+      "stderr": ""
+    },
+    {
+      "command": "node --check frontend/app.js",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "pytest": {
+    "command": "RUN_UI_TESTS=1 PANEL_SCREENSHOT=docs/qa-panel.png .venv/bin/python -m pytest -q",
+    "exit_code": 0,
+    "passed": 62,
+    "duration_seconds": 4.33,
+    "ui_tests": 3,
+    "warning": "StarletteDeprecationWarning: httpx → httpx2"
+  },
+  "scope": "Временная SQLite, mock провайдеров, реальный Chromium и HTTP. Без Zorin, production и реальных API моделей."
+}
