@@ -18,8 +18,6 @@ def build_round_context(task: dict, user_comment: str = "") -> str:
         parts.append(f"Раунд {rnd['round_number']} summary:\n{rnd.get('summary', '')}")
         for output in rnd.get("role_outputs", []):
             parts.append(f"{output['role']} ({output.get('provider')}/{output.get('model_id')}):\n{output.get('output', '')}")
-        if rnd.get("premium_review_output"):
-            parts.append(f"Premium Review:\n{rnd['premium_review_output']}")
     if user_comment:
         parts.append(f"Комментарий пользователя для текущего раунда:\n{user_comment}")
     return "\n\n---\n\n".join(parts)

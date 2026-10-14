@@ -1,81 +1,8 @@
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AICommander Team Orchestrator</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <main>
-    <header class="hero">
-      <div>
-        <p class="eyebrow">MVP • human-in-the-loop</p>
-        <h1>AICommander AI Team Orchestrator</h1>
-        <p>Создайте задачу, запустите круг ролей, посмотрите модели/ошибки и уточните следующий круг.</p>
-      </div>
-      <div id="status" class="status">Готов к работе.</div>
-    </header>
-
-    <section class="grid two">
-      <article class="card step">
-        <span class="badge">1</span>
-        <h2>Создать задачу и запустить первый круг</h2>
-        <textarea id="taskText" placeholder="Сделай складскую программу с остатками, приходом, расходом, пользователями и отчетами."></textarea>
-        <button id="runTeam" class="primary">Создать задачу + Run AI team</button>
-        <p class="hint">Если ключей нет, приложение не упадёт: роли сохранят fallback и понятные ошибки моделей.</p>
-      </article>
-
-      <article class="card step">
-        <span class="badge">2</span>
-        <h2>Следующий круг</h2>
-        <textarea id="commentText" placeholder="Комментарий или правка пользователя для следующего раунда"></textarea>
-        <button id="runNext">Run next round</button>
-        <p class="hint">Следующий круг учитывает исходную задачу, прошлые ответы, ваш комментарий и Premium Review, если он есть.</p>
-      </article>
-    </section>
-
-    <section class="card toolbar">
-      <div>
-        <h2>Действия для завершенного круга</h2>
-        <p class="meta" id="currentRoundMeta">Круг ещё не запущен.</p>
-      </div>
-      <div class="actions">
-        <button id="premiumReview">Run Premium Review</button>
-        <label>Перезапустить роль
-          <select id="roleSelect">
-            <option>manager</option><option>architect</option><option>designer</option><option>coder</option><option>reviewer</option>
-          </select>
-        </label>
-        <button id="rerunRole">Rerun role</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Результаты кругов</h2>
-      <div id="rounds" class="rounds empty">Пока нет кругов. Создайте задачу и запустите первый круг.</div>
-    </section>
-
-    <section class="card">
-      <h2>Premium Review</h2>
-      <div id="premium" class="premium-box">No round yet.</div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <h2>Статус моделей</h2>
-          <p class="hint">Показывает role, provider, model_id, status, last_error, last_success_at, last_failure_at и response_time_ms.</p>
-        </div>
-        <div class="actions">
-          <button id="checkModels" class="primary">Проверить модели</button>
-          <button id="refreshModels">Обновить статус</button>
-        </div>
-      </div>
-      <div id="modelCheckResult" class="notice hidden"></div>
-      <div id="models"></div>
-    </section>
-  </main>
-  <script src="app.js"></script>
-</body>
-</html>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>AICommander 3.0</title><link rel="stylesheet" href="/style.css"/></head><body><main>
+<header class="hero"><div><p class="eyebrow">v3 · Foundation MVP</p><h1>AICommander 3.0 — команда ИИ</h1><p>Здесь пока работает только текстовый MVP v2. Hermes, OmniRouter, Codex и настоящий QA добавляются по этапам.</p></div><div id="status" class="status">Готов к работе</div></header>
+<section class="grid two">
+<article class="card step"><h2>Поставить задачу</h2><textarea id="taskText" placeholder="Опиши требование"></textarea><button id="runTeam" class="primary">Запустить раунд</button></article>
+<article class="card step"><h2>Уточнить задачу</h2><textarea id="commentText" placeholder="Комментарий владельца"></textarea><button id="runNext">Следующий раунд</button><label>Повторить роль <select id="roleSelect"><option>manager</option><option>architect</option><option>designer</option><option>coder</option><option>reviewer</option></select></label><button id="rerunRole">Повторить роль</button></article></section>
+<section class="card"><h2>Результаты</h2><p id="roundMeta" class="meta"></p><div id="rounds"></div></section>
+<section class="card"><h2>Статус моделей</h2><button id="checkModels">Проверить модели</button><button id="refreshModels">Обновить</button><pre id="models"></pre></section>
+</main><script src="/app.js"></script></body></html>

@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from backend.app.providers.base import ChatMessage, ChatProvider, ProviderError
-from backend.app.providers.openai import OpenAIProvider
 from backend.app.providers.openrouter import OpenRouterProvider
 from backend.app.storage.repositories import Repository
 
@@ -28,19 +27,15 @@ def split_model_ref(ref: str) -> tuple[str, str]:
     return provider, model
 
 
-def provider_for(provider_name: str, openrouter: OpenRouterProvider, openai: OpenAIProvider | None = None) -> ChatProvider:
+def provider_for(provider_name: str, openrouter: OpenRouterProvider) -> ChatProvider:
     if provider_name == "openrouter":
         return openrouter
-    if provider_name == "openai" and openai is not None:
-        return openai
     raise ProviderError(f"Provider {provider_name} is not configured", "not_configured")
 
 
 def _friendly_provider_error(error: str, category: str = "api_error") -> str:
     lower = error.lower()
     if category == "not_configured" or "api_key" in lower:
-        if "openai" in lower:
-            return "OPENAI_API_KEY отсутствует или OpenAI provider не настроен. Premium Review останется опциональным."
         return "OPENROUTER_API_KEY отсутствует или провайдер не настроен. Добавьте ключ в .env или переменные окружения."
     if category == "timeout" or "timed out" in lower or "timeout" in lower:
         return "Модель недоступна: запрос превысил timeout."
@@ -61,7 +56,6 @@ def run_with_fallback(
     repository: Repository,
     round_id: int | None,
     openrouter: OpenRouterProvider,
-    openai: OpenAIProvider | None = None,
     provider_filter: Callable[[str], bool] | None = None,
 ) -> FallbackOutcome:
     errors: list[dict[str, str]] = []
@@ -73,7 +67,7 @@ def run_with_fallback(
             continue
         for _ in range(max(1, max_attempts_per_model)):
             try:
-                provider = provider_for(provider_name, openrouter, openai)
+                provider = provider_for(provider_name, openrouter)
                 result = provider.chat(model_id=model_id, messages=messages, timeout_seconds=timeout_seconds)
                 repository.update_model_status(provider_name, model_id, role, "available", response_time_ms=result.response_time_ms)
                 return FallbackOutcome(True, result.content, provider_name, model_id, result.response_time_ms, errors)
@@ -84,5 +78,5 @@ def run_with_fallback(
             errors.append({"provider": provider_name, "model_id": model_id, "error": error})
             repository.add_model_error(round_id, role, provider_name, model_id, error)
             repository.update_model_status(provider_name, model_id, role, "failed", last_error=error)
-            break
+            continue
     return FallbackOutcome(success=False, errors=errors)
