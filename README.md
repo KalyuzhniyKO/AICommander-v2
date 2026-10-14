@@ -1,38 +1,65 @@
-# AICommander 3.0 — AI Development Team
-**Status: Foundation MVP.** Existing working components of [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2) have been selectively retained, not the whole old project.
+# AICommander 3.0 — виртуальная команда ИИ-разработчиков
 
-## Goal
-The owner uses a MacBook to give the team tasks and accept results. On Zorin OS, an **existing** Hermes installation acts as Director and an **existing** OmniRouter selects free/affordable AI models. Agents: Director, Analyst, Architect, Developer, QA and independent Reviewer. For high-complexity coding, delegate to Codex CLI; paid ChatGPT **web** is used only as a manual expert review, never via an unsupported scraping/browser automation API.
+[**English version / Английская версия**](README.en.md)
 
-The end-to-end workflow is: `owner -> Director -> Analyst -> Architect (if needed) -> Developer (isolated worktree) -> QA (real tests) -> Reviewer (independent diff review) -> draft PR -> owner approval`.
+**Статус:** подготовлена минимальная основа (foundation MVP). Полноценная интеграция Hermes, OmniRouter, Codex и QA **ещё не реализована**. Рабочая версия 2 сохранена без изменений: [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2).
 
-## Already in this foundation
-- FastAPI service and minimal web UI on localhost.
-- Creation and history of tasks, human-approved rounds, legacy role prompts and simple routing.
-- OpenRouter-compatible model calls, retry/fallback, model status checks.
-- SQLite state and baseline unit tests without live model credentials.
+## Что мы создаём
 
-**Not yet implemented:** verified Hermes/OmniRouter integration; Analyst/QA roles; real code editing or Codex CLI execution; safe worktree/sandbox; GitHub PR creation; authenticated remote UI; escalation and budget tracking. An AI-written answer **is not evidence** that code ran or tests passed.
+Ты ставишь задачу **с MacBook** и принимаешь результат. На домашнем **Zorin OS** уже установлены Hermes и OmniRouter. AICommander управляет прозрачным процессом разработки, **не дублируя** их собственные функции.
 
-## Deliberately not imported from v2
-Previous macOS app bridges, Director/Judge/Final Auditor migration pack, empty redundant agent wrapper files, obsolete roadmaps, separate OpenAI API Premium Review (not applicable to browser ChatGPT), legacy model presets.
+**Цепочка работы:** владелец → директор (Hermes) → аналитик → архитектор (если нужен) → программист (Codex для сложных работ) → автоматические тесты/QA → независимый ревьюер → GitHub Pull Request → твоё подтверждение.
 
-## Local run (prototype, on test machine only)
+Цель — настоящие изменения в Git-ветке и проверенные тесты, а не пять текстовых советов от разных моделей.
+
+## Что уже перенесено из v2
+
+- локальный FastAPI и минимальный веб-интерфейс;
+- задачи, история раундов, результаты ролей в SQLite;
+- базовые подсказки ролям и первоначальное распределение по ключевым словам;
+- клиент совместимого с OpenRouter API, проверка моделей и резервные модели;
+- базовые тесты без реальных API-ключей.
+
+**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, безопасная песочница, создание PR, авторизованная панель для MacBook и учёт бюджета. Запуск и прохождение тестов новой ветки ещё не подтверждены.
+
+**Не переносим из v2:** архивные мосты для macOS, Director/Judge/Final Auditor migration pack, старые планы, пустые обёртки ролей, ненужную интеграцию с отдельным OpenAI API Premium Review. ChatGPT в браузере используется **вручную** для сложных экспертных задач.
+
+## Принципы работы
+
+1. Используем уже настроенные Hermes и OmniRouter, не пишем их аналоги.
+2. Бесплатные или дешёвые модели — обычные этапы; сложная реализация — Codex; ChatGPT Web — ручная экспертиза.
+3. QA доказывает результат реальными тестами, а ревьюер проверяет Git diff.
+4. Production, реальные базы склада и секреты агентам недоступны.
+5. Каждая задача Codex — отдельный Issue и отдельный PR; никакого автоматического merge или развёртывания.
+
+## Документация
+
+| Документ | Русский | English |
+|---|---|---|
+| Техническое задание | [PRODUCT_SPEC](docs/PRODUCT_SPEC.md) | [Product spec](docs/PRODUCT_SPEC.en.md) |
+| Реализовано и не реализовано | [IMPLEMENTATION](docs/IMPLEMENTATION.md) | [Implementation](docs/IMPLEMENTATION.en.md) |
+| Очерёдность работы Codex | [ROADMAP](docs/ROADMAP.md) | [Roadmap](docs/ROADMAP.en.md) |
+| Выбор модели и уровня | [MODEL_SELECTION](docs/MODEL_SELECTION.md) | [Model selection](docs/MODEL_SELECTION.en.md) |
+| Использование Open Source | [OPEN_SOURCE_REVIEW](docs/OPEN_SOURCE_REVIEW.md) | [Open-source review](docs/OPEN_SOURCE_REVIEW.en.md) |
+| Инструкции Codex | [AGENTS.md](AGENTS.md) | [Codex instructions](AGENTS.en.md) |
+| Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
+
+## Локальный запуск базовой версии
+
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements-dev.txt
 cp .env.example .env
 cp config/models.example.json config/models.json
 pytest -q
 python -m backend.app.main
 ```
-Open http://127.0.0.1:8000 . Configure real model IDs. The prototype is unauthenticated and **must not** be exposed to the network.
 
-## Read before starting Codex tasks
-- [Product vision and roles](docs/PRODUCT_SPEC.md)
-- [Actually shipped vs planned](docs/IMPLEMENTATION.md)
-- [Phased roadmap](docs/ROADMAP.md)
-- [Open-source research and attribution](docs/OPEN_SOURCE_REVIEW.md)
-- [Codex instructions](AGENTS.md)
+Открыть: `http://127.0.0.1:8000`. В конфигурации моделей указаны **заглушки**, их нужно заменить действительными ID. Прототип **без авторизации** — не публикуй его в интернет или домашнюю сеть.
 
-**Important:** this `v3-foundation` branch is a staging area inside AICommander-v2 because the connected GitHub interface cannot create a new repository. The `main` branch of v2 is untouched. Export this *minimal tree* into a dedicated `AICommander-v3` repository when repository creation is available.
+## Где находится v3
+
+Пока это **отдельная ветка** [`v3-foundation`](https://github.com/KalyuzhniyKO/AICommander-v2/tree/v3-foundation) в репозитории v2: подключённый GitHub не может создать новый репозиторий. [Issue переноса #23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23). **`main` v2 не затронут.**
+
+[Очередь Codex](docs/ROADMAP.md) начинается с [Issue #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10). У каждой задачи есть зависимость, подходящая модель и уровень рассуждения.

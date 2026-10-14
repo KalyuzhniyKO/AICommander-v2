@@ -1,13 +1,14 @@
-# AICommander-v3 / Instructions for Codex
-Read `README.md` and `docs/{PRODUCT_SPEC,IMPLEMENTATION,ROADMAP,OPEN_SOURCE_REVIEW}.md` before working.
+# Правила Codex для AICommander 3.0
+[English](AGENTS.en.md)
 
-- Each [V3] GitHub Issue is a bounded independent PR. No unrequested scope creep; include tests and explicit evidence.
-- **Do not recreate OmniRouter or Hermes.** Inspect the deployed Zorin configuration READ-ONLY (no keys in logs), document supported integration methods and use a narrow adapter.
-- Current v3 foundation is **not** a completed Hermes/Codex agent system. Don't claim planned features are implemented.
-- Separate planner output, git changes, test execution and reviewer verdict with typed artifacts; do not infer test success from LLM text.
-- No access to production warehouse DB, productive servers or secrets; all code execution in worktrees/containers with disposable databases.
-- No automatic merge, deploy, destructive operations or access outside approved workspace. Explicit user approval required.
-- Don't automate the paid ChatGPT web UI or harvest session cookies to turn it into an API; web expert escalation is manual. OpenAI API is billed separately.
-- Preserve attribution and full required licence texts if copying external open-source code (see `docs/OPEN_SOURCE_REVIEW.md`). No third-party code was copied in the foundation.
-- Evaluate before adopting CrewAI, LangGraph, OpenHands or Microsoft Agent Framework: they may duplicate Hermes. Prefer one workflow owner.
-- Re-run `pytest -q` and smoke tests before PR; never invent a passing run.
+Перед изменениями изучить `README.md`, `docs/PRODUCT_SPEC.md`, `docs/ROADMAP.md`, `docs/MODEL_SELECTION.md`, `docs/OPEN_SOURCE_REVIEW.md`.
+
+- Выполнять задачи **последовательно** согласно зависимостям GitHub Issues. Один этап — одна feature-ветка и PR с результатами тестирования.
+- Использовать подключённые **Hermes и OmniRouter** на Zorin OS: не реализовывать второй директор или маршрутизатор; сначала документировать реальные интерфейсы в режиме read-only.
+- Отличать уже работающий foundation от целевой архитектуры. Не объявлять новые функции готовыми до проверок.
+- Каждый этап передаёт предыдущие артефакты следующему. Программист меняет реальные файлы в отдельном worktree; QA записывает exit code тестов; Reviewer анализирует diff.
+- Никакого доступа к production DB склада, рабочим серверам, секретам, файлам пользователя вне workspace. Не выполнять опасные команды и не делать merge/deploy без разрешения владельца.
+- Не автоматизировать ChatGPT Web через scraping/cookies: ручная экспертиза; API оплачивается отдельно.
+- Не копировать сторонний код без проверки лицензии, полного уведомления об авторских правах и ссылки на автора/commit.
+- Не добавлять CrewAI, LangGraph, OpenHands и аналоги до ADR с проверкой, действительно ли требуется функциональность, отсутствующая в Hermes.
+- Проверить тесты перед каждым PR. Изображать успех на основании текста модели запрещено.

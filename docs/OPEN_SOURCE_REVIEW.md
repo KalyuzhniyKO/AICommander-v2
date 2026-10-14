@@ -1,21 +1,16 @@
-# Open-source reuse review (2026-10-14)
+# Заимствование проверенных решений с GitHub
 
-**Policy:** do not reinvent solved problems, but avoid installing redundant multi-agent engines atop existing Hermes + OmniRouter. **No third-party source code has been copied into this v3 foundation.** Below are references, ideas and licensing notes (licence must be rechecked at exact revision before any code is adopted).
+[English](OPEN_SOURCE_REVIEW.en.md)
 
-| Project | Authors / canonical source | Licence at review | Potential reuse | Decision |
-|---|---|---|---|---|
-| CrewAI | CrewAI Inc. https://github.com/crewAIInc/crewAI | MIT | role/crew/task contract, flows | pattern/reference, adapter only if needed |
-| MetaGPT | FoundationAgents https://github.com/FoundationAgents/MetaGPT | MIT | SOP, analyst -> architect -> engineer handoff | study ideas, not copy framework |
-| LangGraph | LangChain https://github.com/langchain-ai/langgraph | MIT for core; verify package | durable checkpointed state machines, human approval | optional library after ADR |
-| OpenHands Software Agent SDK | OpenHands contributors https://github.com/OpenHands/software-agent-sdk | MIT | isolated code execution, agent tooling | evaluate as coding executor alternative to Codex CLI |
-| Microsoft Agent Framework | Microsoft https://github.com/microsoft/agent-framework | MIT | typed multi-agent orchestration and durable state | reference, potentially overlapping Hermes |
-| SWE-agent | SWE-agent authors https://github.com/SWE-agent/SWE-agent | MIT | issue -> code -> test workflow | inspiration for GitHub integration |
+**Цель:** брать только полезные компоненты и паттерны. Hermes/OmniRouter уже действуют на Zorin OS, поэтому ещё один оркестратор без необходимости не нужен. **В foundation не копировался чужой код.**
 
-**Avoid:** microsoft/autogen for new work; its README marks the project in maintenance mode and recommends Microsoft Agent Framework: https://github.com/microsoft/autogen .
+| Проект и автор | Лицензия в проверенном репозитории | Что изучить | Решение |
+|---|---|---|---|
+| [CrewAI — crewAIInc](https://github.com/crewAIInc/crewAI) | MIT | Роли и цепочки задач | Идеи/адаптер при необходимости |
+| [MetaGPT — FoundationAgents](https://github.com/FoundationAgents/MetaGPT) | MIT | SOP команды Analyst→Architect→Developer | Паттерн, не весь фреймворк |
+| [LangGraph — LangChain](https://github.com/langchain-ai/langgraph) | MIT для основного пакета; проверить конкретный код | Состояния, checkpoints, human approvals | Возможно узкая зависимость после ADR |
+| [OpenHands SDK — сообщество OpenHands](https://github.com/OpenHands/software-agent-sdk) | MIT в проверенной версии; перепроверить commit | Изолированное исполнение и инструменты | Сравнить с Codex CLI |
+| [Microsoft Agent Framework — Microsoft](https://github.com/microsoft/agent-framework) | MIT | Типизированные процессы, делегирование | Исследовать, может дублировать Hermes |
+| [SWE-agent — авторы SWE-agent](https://github.com/SWE-agent/SWE-agent) | MIT | GitHub Issue → исправление → тест | Идеи для pipeline |
 
-## Required actions before integrating copied code
-1. Choose exact source file + commit SHA and record URL, upstream owner and purpose in this document.
-2. Check file-level licence and dependencies; some repositories have separately licensed enterprise subdirectories. Do not copy those without permission.
-3. For MIT, preserve full copyright and licence notice with substantial copied code; add `THIRD_PARTY_NOTICES.md` and required licence text.
-4. Prefer importing an upstream package where appropriate, pin versions, document changes, add tests and update notices.
-5. Confirm compatibility with Hermes/OmniRouter's actual public interfaces; no invented API.
+**Правила использования:** перед копированием указать точный путь/commit, автора, полный текст разрешающей лицензии и нужные copyright notices. Проверить лицензии файла и зависимостей, включая исключения внутри репозитория. Предпочитать поддерживаемую библиотеку копированию большого объёма исходников; фиксировать версию и проверки. Решение принимается в [Issue #12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12). Источник идей и факт копирования — разные вещи: авторство обязательно указывать для реально скопированного кода, а ссылки на идеи сохранять в этом документе.

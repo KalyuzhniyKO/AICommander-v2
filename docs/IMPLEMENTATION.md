@@ -1,18 +1,24 @@
-# Audit of the v3 foundation (2026-10-14)
+# AICommander v3 — что уже реализовано и чего ещё нет (14.10.2026)
 
-### Preserved from AICommander-v2
-FastAPI local REST endpoints; SQLite tasks, rounds, agent outputs and model errors; minimal browser interface; basic text role prompts and keyword router; OpenRouter-compatible transport; model fallback and availability test; pytest fixtures. These are MVP foundations only.
+[English](IMPLEMENTATION.en.md)
 
-### Not yet supported
-- No Hermes Director and no tested OmniRouter API connection.
-- No separate Analyst or executing QA agent; existing `coder` supplies text plans.
-- `round_runner` builds context before role loop; next role does not automatically see previous role's same-round output.
-- No real worktree, Codex CLI tool, sandboxed command executor, CI, automatic PR or production gate.
-- No authentication for network access; prototype binds localhost only.
-- Free model IDs are placeholders, not confirmed active models.
+## Перенесено из v2
 
-### Not copied from v2
-Old CLI/bridge for macOS, Director/Judge/Final Auditor migration modules, premium OpenAI review logic/API, redundant role wrappers and old plans. v3's paid ChatGPT web review is a **manual** step; API usage is a separate product/cost.
+Минимальный FastAPI API на localhost, веб-интерфейс, SQLite с задачами/раундами/ответами и ошибками моделей; простые роли и маршрутизация по ключевым словам; OpenRouter-compatible транспорт, fallback и проверка доступности моделей; тестовый каркас без живых API-ключей.
 
-### Quality caveat
-Files were reviewed and composed via GitHub access. Runtime tests cannot be claimed passing until `pytest -q` runs on a machine with Python and dependencies. First Codex issue is to verify and repair that baseline. 
+## Не реализовано
+
+- **Hermes** ещё не подключён как реальный AI-директор.
+- **OmniRouter** уже установлен на Zorin, но его рабочий контракт в этом репозитории не изучен и не подключён.
+- Нет отдельного аналитика и настоящего тестировщика; старый `coder` генерирует текст, а не исполняет код.
+- Роли одного раунда ещё не получают фактические результаты предыдущих ролей в рамках того же раунда.
+- Нет `git worktree`, Codex CLI, песочницы, GitHub PR/CI и независимого отчёта QA.
+- Веб-интерфейс пока не защищён аутентификацией. Не публиковать за пределами localhost.
+- ID моделей — шаблоны, а не подтверждённые доступные модели. Все тесты новой ветки ещё нужно запустить и подтвердить.
+
+## Что не переносили
+
+Устаревшие мосты macOS, legacy pipeline Director/Judge/Final Auditor, пустые обёртки и старые планы, отдельную интеграцию OpenAI API Premium Review. ChatGPT Web остаётся ручным этапом.
+
+## Первое действие Codex
+[Issue #10: стабилизировать foundation](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10): проверить чистую установку, `python -m compileall backend`, `pytest -q`, endpoints, зависимости и закрытие соединений. Не утверждать, что тесты проходят, пока фактически не выполнены.
