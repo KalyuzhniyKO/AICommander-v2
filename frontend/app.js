@@ -1,7 +1,17 @@
 let task = null, tasks = [], projects = [], runs = [], run = null, busy = false, pending = null;
 const el = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const labels = {planned:'Запланирован', running:'Готов к следующему шагу', failed:'Ошибка', blocked:'Заблокирован', awaiting_owner:'Ожидает решения', done:'План согласован', cancelled:'Отменён', pending:'Ожидает', ready:'Готов', completed:'Завершён', analyst:'Аналитик', architect:'Архитектор', developer:'Разработчик', create:'Создание', start:'Запуск', step:'Шаг', block:'Пауза', resume:'Продолжение', fail:'Ошибка', cancel:'Отмена', owner_approve:'Подтверждение', owner_reject:'Отклонение'};
+const labels = {planned:'Запланирован', running:'Готов к следующему шагу', failed:'Ошибка', blocked:'Заблокирован', awaiting_owner:'Ожидает решения', done:'План согласован', cancelled:'Отменён', pending:'Ожидает', ready:'Готов', completed:'Завершён', analyst:'Аналитик', architect:'Архитектор', developer:'Разработчик', create:'Создание', start:'Запуск', step:'Шаг', block:'Пауза', resume:'Продолжение', fail:'Ошибка', cancel:'Отмена', owner_approve:'Подтверждение', owner_reject:'Отклонение',
+  requirements:'Требования', design:'Проект', plan:'План'};
+const enLabels = {planned:'Planned', running:'Ready for next step', failed:'Failed', blocked:'Blocked',
+ awaiting_owner:'Awaiting owner decision', done:'Mock plan approved', cancelled:'Cancelled',
+ pending:'Pending', ready:'Ready', completed:'Completed', analyst:'Analyst', architect:'Architect',
+ developer:'Developer', create:'Created', start:'Started', step:'Step', block:'Paused',
+ resume:'Resumed', fail:'Failed', cancel:'Cancelled', owner_approve:'Approved', owner_reject:'Rejected',
+ requirements:'Requirements', design:'Design', plan:'Plan'};
+const label = key => panelLocale.language === 'en' ? (enLabels[key] || labels[key] || key) : (labels[key] || key);
+const tr = value => panelLocale.tr(value);
+let cachedModels = null;
 async function api(path, method = 'GET', payload) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
@@ -19,14 +29,14 @@ async function api(path, method = 'GET', payload) {
     return data;
   } finally { clearTimeout(timeout); }
 }
-function status(text) { el('status').textContent = text; }
+function status(text) { el('status').textContent = tr(text); }
 function controls() {
   const locked = busy || Boolean(pending), state = run?.status;
   el('projectSelect').disabled = busy;
   el('runSelect').disabled = busy;
   el('newRun').disabled = locked || !task;
   el('runTask').disabled = locked || !['planned','blocked','failed'].includes(state) || (['blocked','failed'].includes(state) && run.steps_done >= run.max_steps && run.stages.some(s => s.status !== 'completed'));
-  el('runTask').textContent = state === 'planned' ? 'Запустить процесс' : 'Продолжить / Повторить';
+  el('runTask').textContent = state === 'planned' ? tr('Запустить процесс') : tr('Продолжить / Повторить');
   el('stepTask').disabled = locked || state !== 'running';
   el('pauseTask').disabled = locked || state !== 'running';
   el('stopTask').disabled = locked || !['planned','running','blocked','failed','awaiting_owner'].includes(state);
@@ -45,20 +55,20 @@ async function action(fn) {
 }
 function renderTasks() {
   el('taskList').innerHTML = tasks.filter(t => String(t.project_id) === el('projectSelect').value).map(t =>
-    `<button class="task-choice ${task?.id === t.id ? 'selected' : ''}" data-task="${t.id}">${esc(t.title)}<small>${esc(t.flow_status ? labels[t.flow_status] : 'Нет taskflow')}</small></button>`).join('') || '<p>Пока нет задач.</p>';
+    `<button class="task-choice ${task?.id === t.id ? 'selected' : ''}" data-task="${t.id}">${esc(t.title)}<small>${esc(t.flow_status ? label(t.flow_status) : tr('Нет taskflow'))}</small></button>`).join('') || `<p>${esc(tr('Пока нет задач.'))}</p>`;
   el('taskList').querySelectorAll('[data-task]').forEach(button => button.onclick = () => action(() => selectTask(Number(button.dataset.task))));
 }
 function renderDetail() {
-  el('taskTitle').textContent = task?.title || 'Выбери задачу';
-  el('taskMeta').textContent = run ? `Задача #${task.id} · Процесс #${run.run_id} · ${labels[run.status]} · Версия ${run.version} · Шаги ${run.steps_done}/${run.max_steps}` : 'Процесс не выбран';
+  el('taskTitle').textContent = task?.title || tr('Выбери задачу');
+  el('taskMeta').textContent = run ? (panelLocale.language === 'en' ? `Task #${task.id} · Run #${run.run_id} · ${label(run.status)} · Version ${run.version} · Steps ${run.steps_done}/${run.max_steps}` : `Задача #${task.id} · Процесс #${run.run_id} · ${label(run.status)} · Версия ${run.version} · Шаги ${run.steps_done}/${run.max_steps}`) : tr('Процесс не выбран');
   el('description').textContent = task?.description || '';
-  el('runSelect').innerHTML = runs.map(r => `<option value="${r.run_id}">#${r.run_id} · ${esc(labels[r.status])}</option>`).join('');
+  el('runSelect').innerHTML = runs.map(r => `<option value="${r.run_id}">#${r.run_id} · ${esc(label(r.status))}</option>`).join('');
   if (run) el('runSelect').value = run.run_id;
   el('flowReason').textContent = run?.reason || '';
-  el('roleBoard').innerHTML = (run?.stages || []).map(s => `<article class="role"><strong>${esc(labels[s.role])}</strong><p>${esc(labels[s.status])}</p></article>`).join('');
-  el('artifacts').innerHTML = (run?.artifacts || []).map(a => `<details><summary>${esc(labels[a.role])} · ${esc(a.type)} · #${a.artifact_id} · mock</summary><p>Входы: ${esc(a.input_artifact_ids.join(', ') || 'нет')} · ${esc(a.created_at)}</p><pre>${esc(JSON.stringify(a.content,null,2))}</pre></details>`).join('') || '<p>Артефактов пока нет.</p>';
-  el('decisions').innerHTML = (run?.timeline || []).map(e => `<p>v${e.version} · ${esc(labels[e.action] || e.action)} → ${esc(labels[e.to_status])} · ${esc(e.created_at)}<br>${esc(e.reason)}</p>`).join('') || '<p>Событий пока нет.</p>';
-  el('rounds').innerHTML = (task?.rounds || []).map(r => `<article class="round-card"><h4>Legacy раунд ${r.round_number}</h4>` + r.role_outputs.map(o => `<details><summary>${esc(o.role)} · ${esc(o.status)}</summary><pre>${esc(o.output)}</pre></details>`).join('') + '</article>').join('') || '<p>Legacy-раундов нет.</p>';
+  el('roleBoard').innerHTML = (run?.stages || []).map(s => `<article class="role"><strong>${esc(label(s.role))}</strong><p>${esc(label(s.status))}</p></article>`).join('');
+  el('artifacts').innerHTML = (run?.artifacts || []).map(a => `<details><summary>${esc(label(a.role))} · ${esc(a.type)} · #${a.artifact_id} · mock</summary><p>${esc(tr('Входы:'))} ${esc(a.input_artifact_ids.join(', ') || tr('нет'))} · ${esc(a.created_at)}</p><pre>${esc(JSON.stringify(a.content,null,2))}</pre></details>`).join('') || `<p>${esc(tr('Артефактов пока нет.'))}</p>`;
+  el('decisions').innerHTML = (run?.timeline || []).map(e => `<p>v${e.version} · ${esc(label(e.action) || e.action)} → ${esc(label(e.to_status))} · ${esc(e.created_at)}<br>${esc(e.reason)}</p>`).join('') || `<p>${esc(tr('Событий пока нет.'))}</p>`;
+  el('rounds').innerHTML = (task?.rounds || []).map(r => `<article class="round-card"><h4>${esc(panelLocale.language === 'en' ? 'Legacy round' : 'Legacy раунд')} ${r.round_number}</h4>` + r.role_outputs.map(o => `<details><summary>${esc(o.role)} · ${esc(o.status)}</summary><pre>${esc(o.output)}</pre></details>`).join('') + '</article>').join('') || `<p>${esc(tr('Legacy-раундов нет.'))}</p>`;
   controls(); renderTasks();
 }
 async function selectTask(id, selectedRun) {
@@ -72,10 +82,14 @@ async function refreshTasks() {
   if (task) await selectTask(task.id, run?.run_id);
   else renderTasks();
 }
+function renderCachedModels() {
+  if (!cachedModels) return;
+  el('cost').textContent = tr('Taskflow работает с Mock Director без вызовов моделей. Учёт затрат реальных моделей ожидает #18.');
+  el('models').innerHTML = cachedModels.models.map(m => `<p>${esc(m.role)} · ${esc(m.model_id)} · ${esc(m.status)}</p>`).join('') || `<p>${esc(tr('В legacy-раундах модели ещё не вызывались.'))}</p>`;
+}
 async function refreshModels() {
-  const data = await api('/panel/status');
-  el('cost').textContent = 'Taskflow работает с Mock Director без вызовов моделей. Учёт затрат реальных моделей ожидает #18.';
-  el('models').innerHTML = data.models.map(m => `<p>${esc(m.role)} · ${esc(m.model_id)} · ${esc(m.status)}</p>`).join('') || '<p>В legacy-раундах модели ещё не вызывались.</p>';
+  cachedModels = await api('/panel/status');
+  renderCachedModels();
 }
 function renderProjects(selected) {
   el('projectSelect').innerHTML = projects.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
@@ -91,7 +105,7 @@ async function sendPending() {
       // Конфликт версии требует нового снимка и нового решения пользователя.
       if (error.httpStatus === 409) await selectTask(request.taskId, request.runId);
     } else {
-      throw new Error('Результат запроса неизвестен. Повторите тот же запрос кнопкой «Повторить запрос».');
+      throw new Error(tr('Результат запроса неизвестен. Повторите тот же запрос кнопкой «Повторить запрос».'));
     }
     throw error;
   }
@@ -136,4 +150,9 @@ async function init() {
   catch (error) { status(error.message); }
   controls();
 }
+el('languageSelect').onchange = () => panelLocale.setLanguage(el('languageSelect').value);
+document.addEventListener('panel-language-change', () => {
+  renderDetail(); renderCachedModels();
+});
+panelLocale.apply();
 init();
