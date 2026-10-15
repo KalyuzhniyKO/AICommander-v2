@@ -4,7 +4,7 @@ about: "Предложение функции с критериями приём
 title: "[V3][FEATURE] "
 ---
 
-**English version:** [Feature request](https://github.com/KalyuzhniyKO/AICommander-v2/blob/v3-foundation/docs/templates/ISSUE_TEMPLATES.en.md#feature-request)
+**English version:** [Feature request](https://github.com/KalyuzhniyKO/AICommander-v3/blob/main/docs/templates/ISSUE_TEMPLATES.en.md#feature-request)
 
 ## Цель и польза
 Зачем нужна эта функция?
