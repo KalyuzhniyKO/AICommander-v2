@@ -1,27 +1,17 @@
 {
   "manager": [
-    "openrouter/free-model-1",
-    "openrouter/free-model-2",
-    "openrouter/free-model-3"
+    "openrouter/REPLACE_WITH_REAL_MODEL_ID"
   ],
   "architect": [
-    "openrouter/free-model-1",
-    "openrouter/free-model-2"
+    "openrouter/REPLACE_WITH_REAL_MODEL_ID"
   ],
   "designer": [
-    "openrouter/free-model-1",
-    "openrouter/free-model-2"
+    "openrouter/REPLACE_WITH_REAL_MODEL_ID"
   ],
   "coder": [
-    "openrouter/free-coder-model-1",
-    "openrouter/free-model-2"
+    "openrouter/REPLACE_WITH_REAL_MODEL_ID"
   ],
   "reviewer": [
-    "openrouter/free-model-1",
-    "openrouter/free-model-2"
-  ],
-  "premium_reviewer": [
-    "openai/gpt-4.1",
-    "openai/gpt-4o"
+    "openrouter/REPLACE_WITH_REAL_MODEL_ID"
   ]
 }

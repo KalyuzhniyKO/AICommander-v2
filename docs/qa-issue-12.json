@@ -1,0 +1,89 @@
+{
+  "issue": 12,
+  "checked_on": "2026-10-14",
+  "python": "3.13.14",
+  "base_commit": "7a5f599a19b3737cd00fc4be1c4996b551c3489c",
+  "baseline_runtime_green": true,
+  "dependency_status": "PR #25 объединён; #11 открыт, текущие контракты Zorin не проверены.",
+  "checks": [
+    {
+      "scope": "Актуальная ветка PR #26 после обновления основы",
+      "command": "python -m compileall backend",
+      "exit_code": 0,
+      "output": "Listing 'backend'...\nCompiling 'backend\\\\__init__.py'...\nListing 'backend\\\\app'...\nListing 'backend\\\\app\\\\agents'...\nCompiling 'backend\\\\app\\\\main.py'...\nListing 'backend\\\\app\\\\orchestration'...\nCompiling 'backend\\\\app\\\\orchestration\\\\round_runner.py'...\nListing 'backend\\\\app\\\\providers'...\nCompiling 'backend\\\\app\\\\providers\\\\openrouter.py'...\nListing 'backend\\\\app\\\\storage'...\n"
+    },
+    {
+      "scope": "Актуальная ветка PR #26 после обновления основы",
+      "command": "python -m pytest -q",
+      "exit_code": 0,
+      "output": "........................................                                 [100%]\n============================== warnings summary ===============================\n..\\AICommander-v3-issue-10\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1\n  <test-runtime>\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n40 passed, 1 warning in 2.74s\n"
+    },
+    {
+      "scope": "Актуальная ветка PR #26 после обновления основы",
+      "command": "python -m pip check",
+      "exit_code": 0,
+      "output": "No broken requirements found.\n"
+    },
+    {
+      "scope": "Документация и границы diff",
+      "command": "Проверка pathlib/re/json и git diff --check",
+      "exit_code": 0,
+      "output": "24 относительных ссылок существуют; 6 уникальных upstream-проектов с закреплёнными SHA; conflict markers отсутствуют; diff относительно обновлённой v3-foundation содержит только README/docs."
+    }
+  ],
+  "history_before_pr25_merge": {
+    "issue": 12,
+    "checked_on": "2026-10-14",
+    "base_commit": "db0d0c80514618f4d3477242fe8c11f3ddf459a2",
+    "control_commit": "702e0a30fa0189c538a7e60b062d2ec0cad6627a",
+    "baseline_runtime_green": false,
+    "dependency_status": "Задача #11 открыта, контракт Zorin отсутствует; PR #25 открыт и не объединён",
+    "checks": [
+      {
+        "scope": "snapshot JSON syntax",
+        "command": "python -m json.tool docs/research/adr-001-upstream.json",
+        "exit_code": 0,
+        "output": "Valid JSON: docs/research/adr-001-upstream.json\n"
+      },
+      {
+        "scope": "documentation review",
+        "command": "Python pathlib/re/json validation of changed Markdown and source snapshot",
+        "exit_code": 0,
+        "output": "23 relative links resolve; 6 unique upstream records with pinned 40-character revisions; no conflict markers; tracked diff is README/docs only. No framework installed."
+      },
+      {
+        "scope": "diff whitespace",
+        "command": "git diff --check",
+        "exit_code": 0,
+        "output": ""
+      },
+      {
+        "scope": "v3-foundation baseline compilation",
+        "command": "python -m compileall backend",
+        "exit_code": 0,
+        "output": "Listing 'backend'...\nListing 'backend\\\\app'...\nListing 'backend\\\\app\\\\agents'...\nListing 'backend\\\\app\\\\orchestration'...\nListing 'backend\\\\app\\\\providers'...\nListing 'backend\\\\app\\\\storage'...\n"
+      },
+      {
+        "scope": "v3-foundation baseline tests",
+        "command": "python -m pytest -q",
+        "exit_code": 4,
+        "output": "ImportError while loading conftest '<AICommander-v3-issue-12>\\tests\\conftest.py'.\ntests\\conftest.py:4: in <module>\n    from backend.app import config as app_config\nbackend\\__init__.py:3: in <module>\n    from .main_app_integration import get_gui_status_model_for_app, run_after_judge_and_resolve_next_step\nE   ModuleNotFoundError: No module named 'backend.main_app_integration'\n"
+      },
+      {
+        "scope": "unmerged PR #25 control compilation",
+        "command": "python -m compileall backend",
+        "exit_code": 0,
+        "output": "Listing 'backend'...\nCompiling 'backend\\\\__init__.py'...\nListing 'backend\\\\app'...\nCompiling 'backend\\\\app\\\\__init__.py'...\nListing 'backend\\\\app\\\\agents'...\nCompiling 'backend\\\\app\\\\agents\\\\base.py'...\nCompiling 'backend\\\\app\\\\config.py'...\nCompiling 'backend\\\\app\\\\main.py'...\nListing 'backend\\\\app\\\\orchestration'...\nCompiling 'backend\\\\app\\\\orchestration\\\\fallback.py'...\nCompiling 'backend\\\\app\\\\orchestration\\\\model_check.py'...\nCompiling 'backend\\\\app\\\\orchestration\\\\role_router.py'...\nCompiling 'backend\\\\app\\\\orchestration\\\\round_runner.py'...\nListing 'backend\\\\app\\\\providers'...\nCompiling 'backend\\\\app\\\\providers\\\\base.py'...\nCompiling 'backend\\\\app\\\\providers\\\\openrouter.py'...\nListing 'backend\\\\app\\\\storage'...\nCompiling 'backend\\\\app\\\\storage\\\\db.py'...\nCompiling 'backend\\\\app\\\\storage\\\\repositories.py'...\n"
+      },
+      {
+        "scope": "unmerged PR #25 plus docs control tests",
+        "command": "python -m pytest -q",
+        "exit_code": 0,
+        "output": "........................................                                 [100%]\n============================== warnings summary ===============================\n..\\AICommander-v3-issue-10\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1\n  <AICommander-v3-issue-10>\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n40 passed, 1 warning in 2.26s\n"
+      }
+    ],
+    "conclusion": "Проверки документации прошли. Pytest базовой ветки падает при сборе из-за legacy-импорта, исправленного в ещё не объединённом PR #25. В отдельном worktree на основе #25 с новой документацией: 40 passed. Это не подтверждает green базовой ветки или совместимость Hermes/OmniRouter.",
+    "python": "3.13.14"
+  },
+  "conclusion": "На актуальной основе после merge #25 compileall, pytest (40 passed) и pip check завершились с кодом 0. Документация проверена. #11 остаётся открытым: окончательный выбор компонентов и внедрение ожидают подтверждённых контрактов Zorin. Исторический сбой базы сохранён отдельно и не описывает текущую ветку."
+}

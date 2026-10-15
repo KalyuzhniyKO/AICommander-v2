@@ -38,12 +38,17 @@ class OpenRouterProvider(ChatProvider):
                 body = response.read().decode("utf-8")
         except urllib.error.HTTPError as exc:
             category = "quota_or_tokens" if exc.code in {402, 403, 429} else "api_error"
-            detail = exc.read().decode("utf-8", errors="replace")[:1000]
-            raise ProviderError(f"OpenRouter HTTP {exc.code}: {detail}", category) from exc
+            # Error bodies can echo credentials/prompts. Do not persist them in SQLite.
+            exc.close()
+            raise ProviderError(f"OpenRouter HTTP {exc.code}", category) from exc
         except TimeoutError as exc:
             raise ProviderError("OpenRouter request timed out", "timeout") from exc
+        except urllib.error.URLError as exc:
+            if isinstance(exc.reason, TimeoutError):
+                raise ProviderError("OpenRouter request timed out", "timeout") from exc
+            raise ProviderError("OpenRouter request failed", "api_error") from exc
         except Exception as exc:
-            raise ProviderError(f"OpenRouter request failed: {exc}", "api_error") from exc
+            raise ProviderError("OpenRouter request failed", "api_error") from exc
         elapsed = int((time.monotonic() - start) * 1000)
         try:
             parsed = json.loads(body)

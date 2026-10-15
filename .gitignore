@@ -1,9 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
 .env
 *.db
-__pycache__/
-*.py[cod]
-.venv/
 config/models.json
 .pytest_cache/
-node_modules/
-.DS_Store

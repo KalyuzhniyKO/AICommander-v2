@@ -1,14 +1,7 @@
-.PHONY: install dev test smoke
-
+.PHONY: install test dev
 install:
-	pip install -r requirements.txt
-
+	pip install -r requirements-dev.txt
+test:
+	pytest -q
 dev:
 	python -m backend.app.main
-
-test:
-	pytest
-
-smoke:
-	python -m compileall backend
-	python -c "import backend.app.main; print('ok')"
