@@ -19,7 +19,7 @@ Old CLI/bridge for macOS, Director/Judge/Final Auditor migration modules, premiu
 ### Research and pending UI PR
 
 - [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) merged (OSS research / ADR-001); #12 remains open until #11 verifies Zorin integration contracts.
-- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) is an open Draft for the MacBook UI. This feature branch integrates the panel with the merged taskflow; main receives it only after PR review and merge.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) contains the MacBook UI prepared for review. This feature branch integrates the panel with the merged taskflow; main receives it only after PR review and merge.
 - [#27](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) and [#29](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) are offline packages; [#28](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) overlaps PR #30.
 
 ### Stage 00 verification

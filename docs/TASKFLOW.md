@@ -118,7 +118,7 @@ HTTP 404: `task_not_found` / `run_not_found`. HTTP 409: `invalid_transition`, `s
 - [Схемы CreateRun/Command/OwnerDecision](contracts/taskflow-v1.requests.json) — объект трёх самостоятельных JSON Schema.
 - [Пример awaiting_owner](contracts/taskflow-v1.example.json) — fixture с фиксированными примерными timestamps, не журнал реального исполнения.
 
-Воспроизводимое обновление: `python -m backend.app.taskflow.export_contract`. Экспорт использует только in-memory SQLite, не конфигурацию/БД приложения. Тест сравнивает сохранённые схемы с моделями и валидирует fixture; изменения контракта требуют явного обновления файлов. Документация маршрутов также доступна в локальном `/docs` FastAPI.
+Воспроизводимое обновление: `python -m backend.app.taskflow.export_contract`. Экспорт использует только in-memory SQLite, не конфигурацию/БД приложения. Тест сравнивает сохранённые схемы с моделями и валидирует fixture; изменения контракта требуют явного обновления файлов. Схемы маршрутов доступны после авторизации через `/openapi.json`. Встроенный Swagger UI `/docs` требует внешних assets, заблокированных строгим CSP панели.
 
 В основном приложении все `/taskflow/*` защищены middleware панели: HTTP Basic, серверный пароль минимум 32 символа, обязательный CSRF заголовок и проверка Origin/Host. Сам `create_router` не является независимым сервером авторизации: при подключении к другому FastAPI app требуется аналогичная защита. Поддерживаемый доступ с MacBook — localhost через SSH tunnel; см. [MACBOOK_PANEL](MACBOOK_PANEL.md). Старые API раундов по-прежнему отдельны и могут вызывать модели при наличии ключа; новые `/taskflow/*` этого не делают.
 
