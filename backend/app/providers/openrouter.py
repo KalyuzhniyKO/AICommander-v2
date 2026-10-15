@@ -29,8 +29,8 @@ class OpenRouterProvider(ChatProvider):
             headers={
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "https://github.com/KalyuzhniyKO/AICommander-v2",
-                "X-Title": "AICommander-v2",
+                "HTTP-Referer": "https://github.com/KalyuzhniyKO/AICommander-v3",
+                "X-Title": "AICommander-v3",
             },
         )
         try:
