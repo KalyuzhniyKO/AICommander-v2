@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0",
+  "run_id": 1,
+  "task_id": 1,
+  "status": "awaiting_owner",
+  "version": 5,
+  "max_steps": 3,
+  "steps_done": 3,
+  "block_code": null,
+  "reason": "",
+  "owner_decision": "pending",
+  "director": "mock",
+  "simulated": true,
+  "completion_scope": "mock_artifacts_only",
+  "created_at": "2026-10-14T00:00:00.000Z",
+  "updated_at": "2026-10-14T00:00:00.000Z",
+  "stages": [
+    {
+      "role": "analyst",
+      "position": 0,
+      "status": "completed"
+    },
+    {
+      "role": "architect",
+      "position": 1,
+      "status": "completed"
+    },
+    {
+      "role": "developer",
+      "position": 2,
+      "status": "completed"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": 1,
+      "task_id": 1,
+      "run_id": 1,
+      "status": "completed",
+      "input_artifact_ids": [],
+      "created_at": "2026-10-14T00:00:00.000Z",
+      "redacted": true,
+      "simulated": true,
+      "role": "analyst",
+      "type": "requirements",
+      "content": {
+        "objective": "Подготовить офлайн-план приёмки товара",
+        "acceptance_criteria": [
+          "Артефакты переданы последовательно; выполнение кода не имитирует успешный QA."
+        ]
+      }
+    },
+    {
+      "artifact_id": 2,
+      "task_id": 1,
+      "run_id": 1,
+      "status": "completed",
+      "input_artifact_ids": [
+        1
+      ],
+      "created_at": "2026-10-14T00:00:00.000Z",
+      "redacted": true,
+      "simulated": true,
+      "role": "architect",
+      "type": "design",
+      "content": {
+        "requirements": {
+          "objective": "Подготовить офлайн-план приёмки товара",
+          "acceptance_criteria": [
+            "Артефакты переданы последовательно; выполнение кода не имитирует успешный QA."
+          ]
+        },
+        "components": [
+          "Офлайн-проект на основе требований аналитика"
+        ]
+      }
+    },
+    {
+      "artifact_id": 3,
+      "task_id": 1,
+      "run_id": 1,
+      "status": "completed",
+      "input_artifact_ids": [
+        1,
+        2
+      ],
+      "created_at": "2026-10-14T00:00:00.000Z",
+      "redacted": true,
+      "simulated": true,
+      "role": "developer",
+      "type": "plan",
+      "content": {
+        "design": {
+          "requirements": {
+            "objective": "Подготовить офлайн-план приёмки товара",
+            "acceptance_criteria": [
+              "Артефакты переданы последовательно; выполнение кода не имитирует успешный QA."
+            ]
+          },
+          "components": [
+            "Офлайн-проект на основе требований аналитика"
+          ]
+        },
+        "steps": [
+          "Реализовать проект в отдельной задаче",
+          "Запустить реальные проверки отдельно"
+        ],
+        "execution": "not_executed"
+      }
+    }
+  ],
+  "timeline": [
+    {
+      "event_id": 1,
+      "action": "create",
+      "from_status": null,
+      "to_status": "planned",
+      "version": 1,
+      "reason": "",
+      "created_at": "2026-10-14T00:00:00.000Z"
+    },
+    {
+      "event_id": 2,
+      "action": "start",
+      "from_status": "planned",
+      "to_status": "running",
+      "version": 2,
+      "reason": "",
+      "created_at": "2026-10-14T00:00:00.000Z"
+    },
+    {
+      "event_id": 3,
+      "action": "step",
+      "from_status": "running",
+      "to_status": "running",
+      "version": 3,
+      "reason": "",
+      "created_at": "2026-10-14T00:00:00.000Z"
+    },
+    {
+      "event_id": 4,
+      "action": "step",
+      "from_status": "running",
+      "to_status": "running",
+      "version": 4,
+      "reason": "",
+      "created_at": "2026-10-14T00:00:00.000Z"
+    },
+    {
+      "event_id": 5,
+      "action": "step",
+      "from_status": "running",
+      "to_status": "awaiting_owner",
+      "version": 5,
+      "reason": "",
+      "created_at": "2026-10-14T00:00:00.000Z"
+    }
+  ]
+}

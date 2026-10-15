@@ -7,11 +7,15 @@ from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 import sqlite3
 from backend.app.security import secure_request, RedactedJSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from backend.app.config import get_settings, load_model_config, ModelConfigError, DEFAULT_MODELS_PATH
 from backend.app.orchestration.round_runner import run_round, rerun_role
 from backend.app.orchestration.model_check import check_models
 from backend.app.storage.db import connect, init_db
 from backend.app.storage.repositories import Repository
+from backend.app.taskflow.api import create_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -22,6 +26,17 @@ async def lifespan(app):
 app=FastAPI(lifespan=lifespan, default_response_class=RedactedJSONResponse, title="AICommander v3 Foundation", version="3.0.0-dev")
 app.middleware("http")(secure_request)
 settings=get_settings()
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request, exc):
+    return RedactedJSONResponse({"detail": jsonable_encoder(exc.errors())}, status_code=422)
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_error(request, exc):
+    return RedactedJSONResponse({"detail": exc.detail}, status_code=exc.status_code, headers=exc.headers)
+
 
 def repository():
     # sqlite3.Connection's context manager commits/rolls back, but does not close.
@@ -150,7 +165,7 @@ def tasks(repo:RepositoryDependency):
 
 @app.get("/panel/status")
 def panel_status(repo:RepositoryDependency):
-    return {"execution": "foundation_text_only", "hermes_connected": False,
+    return {"execution": "offline_taskflow", "director": "mock", "simulated": True, "hermes_connected": False,
             "omnirouter_connected": False, "git_diff": None, "qa": None,
             "cost": {"available": False, "total": None, "reason": "Учёт затрат ожидает #18"},
             "models": [{k: m[k] for k in ("role", "provider", "model_id", "status", "response_time_ms")}
@@ -188,6 +203,7 @@ def recover_interrupted():
         conn.execute("UPDATE tasks SET status='failed', updated_at=CURRENT_TIMESTAMP WHERE status IN ('running','stopping')")
         conn.commit()
 
+app.include_router(create_router(repository))
 app.mount("/",StaticFiles(directory=str(Path(__file__).resolve().parents[2] / "frontend"),html=True),name="frontend")
 
 if __name__=="__main__":

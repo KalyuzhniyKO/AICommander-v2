@@ -1,0 +1,42 @@
+{
+  "issue": 11,
+  "date": "2026-10-15",
+  "scope": "documentation-only partial read-only audit",
+  "checks": [
+    {
+      "check": "pytest",
+      "command": [
+        "python3",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "exit_code": 1,
+      "output": "/usr/bin/python3: No module named pytest"
+    },
+    {
+      "check": "diff_check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "check": "backend_syntax",
+      "method": "builtin compile(bytes, path, exec), no imports or pyc",
+      "files": 13,
+      "exit_code": 0
+    },
+    {
+      "check": "documentation_links_and_sensitive_patterns",
+      "exit_code": 0,
+      "scope": "new Markdown files; heuristic scan plus manual review"
+    }
+  ],
+  "integration_tests": "not run: systemd bus and socket denied; no authorized inference",
+  "review": "Diff reviewed against installed source evidence; no independent reviewer agent used",
+  "status": "blocked_runtime_verification; pytest unavailable; not integration ready"
+}

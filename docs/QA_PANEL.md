@@ -1,31 +1,33 @@
-# Отчёт проверки панели #19
+# Проверка PR #30: панель и offline taskflow
 
-Дата: 14.10.2026. Локально: macOS arm64, Python 3.13.12, Playwright 1.64.0, Chromium 156.0.8078.4. [Машиночитаемый отчёт](qa-panel.json), [снимок браузера](qa-panel.png).
+Дата: **15.10.2026**. Репозиторий AICommander-v3, целевая ветка `main` с объединёнными PR #31 (taskflow) и #33 (executor). Старые 62 теста и CI от 14.10 не используются как доказательство этой интеграции.
+
+Локально: macOS arm64, Python 3.13.12, Playwright 1.64.0 / Chromium. [Полный stdout, exit codes и SHA базы](qa-panel.json), [проверенный снимок панели](qa-panel.png).
 
 | Проверка | Результат | Exit code |
 |---|---|---|
-| `RUN_UI_TESTS=1 PANEL_SCREENSHOT=docs/qa-panel.png .venv/bin/python -m pytest -q` | 62 passed, 4.33 s | 0 |
-| `.venv/bin/python -m compileall -q backend` | Успешно | 0 |
-| `.venv/bin/python -m pip check` | No broken requirements found | 0 |
+| `RUN_UI_TESTS=1 PANEL_SCREENSHOT=docs/qa-panel.png ../AICommander-v2/.venv/bin/python -m pytest -q -rs` | **150 passed, 1 skipped**, 37.58 s | 0 |
+| `../AICommander-v2/.venv/bin/python -m compileall -q backend` | Успешно | 0 |
+| `../AICommander-v2/.venv/bin/python -m pip check` | No broken requirements found | 0 |
 | `node --check frontend/app.js` | Успешно | 0 |
-| `git diff --check` | Успешно | 0 |
 
-62 теста включают 40 прежних, 19 серверных проверок панели и 3 браузерных сценария. Остаётся одно предупреждение Starlette об использовании httpx; ошибок нет.
+Путь interpreter относится к локальному соседнему checkout; при обычной установке используется `.venv/bin/python`. Единственный skip — существующий `Windows app alias guard`, предназначенный только для Windows; он проверяется в Windows CI. Остаётся одно предупреждение Starlette о переходе с httpx на httpx2. Исходники standalone executor и контракт/машина состояний taskflow не изменены.
 
-## Что доказано
+## Проверенные сценарии
 
-- Все ресурсы, включая frontend, API и OpenAPI, требуют авторизацию. Отсутствующий/короткий серверный пароль закрывает доступ.
-- Чужой Origin, отсутствие обязательного заголовка и чужой Host отклоняются. Секреты не возвращаются в JSON; frontend не содержит пароля и localStorage.
-- Проекты и задачи сохраняются в SQLite; повторная миграция старой схемы не теряет данные.
-- Решения approve/reject/retry/stop сохраняют комментарии. Approve недоступен для ошибки или незавершённого исполнения. Старые endpoints не обходят ограничения состояния.
-- Во время заблокированного mock HTTP-вызова отдельный запрос владельца реально переводит задачу в stopping. Ни retries/fallback, ни следующие роли после stop не вызываются. Повторный запуск заблокирован до stopped.
-- Chromium проверяет создание проекта, ошибку раунда, reject/retry, историю после перезагрузки, approve и stop во время фоновой работы. Нет JS ошибок и горизонтального переполнения при ширине 390 px; HTML в ответе модели не исполняется.
-- Снимок desktop интерфейса просмотрен визуально.
+**Сервер:** все прежние foundation/taskflow/executor тесты; auth и CSRF на каждом `/taskflow/*`; настроенные credentials не отражаются в snapshot и HTTP 422; список задач показывает последний taskflow, сохраняя отдельный legacy-status; startup сохраняет версии/артефакты taskflow. Миграции проверены на трёх схемах: legacy, объединённый taskflow, ранняя панель PR #30. Проверены сохранение проектов/решений/раундов/артефактов, повторный запуск, конкурентный init, foreign_key_check и rollback DDL при ошибке.
 
-## Границы проверки
+**Шесть Chromium-сценариев** на настоящем uvicorn и временной SQLite:
 
-Сеть моделей блокировалась fixture; провайдеры заменены mock. Тесты использовали временную БД и настоящий локальный uvicorn/Chromium. Zorin, SSH/VPN, Hermes, OmniRouter, Codex executor, реальные git diff/QA и стоимость не проверялись — их интеграции ожидают #14–#18. Подтверждение относится только к текстовым артефактам foundation. Полный интеграционный DoD #19 остаётся до выполнения зависимостей; PR подготовлен как draft. Merge/deploy и этап #20 не выполнялись.
+1. Создание проекта/задачи/процесса → три шага с передачей типизированных артефактов → reject → resume без пересоздания → approve. История сохраняется после перезагрузки; ширина 390 px не создаёт горизонтальный скролл. Legacy model endpoints из панели не вызываются.
+2. Cancel после первого артефакта → новый процесс → max_steps=1 → blocked. Невозможное продолжение отключено; старый отменённый процесс доступен в истории.
+3. Изменение версии другим клиентом → stale_version → перечитывание без повторного шага.
+4. Потеря ответа после успешного commit → повтор того же ключа/тела → чтение более нового snapshot, без дублирования артефактов.
+5. HTTP 503 после commit → тот же безопасный повтор и актуальный snapshot.
+6. Ошибка Mock Director → failed → resume с оставшимся бюджетом; HTML в артефактах не исполняется; состояние сохраняется после перезагрузки.
 
-## GitHub Actions
+Снимок desktop интерфейса просмотрен визуально. JS ошибок в сценариях нет. Diff проверен на сохранение существующих taskflow/executor и отсутствие изменений frozen JSON Schema.
 
-[Запуск 38636255955](https://github.com/KalyuzhniyKO/AICommander-v2/actions/runs/38636255955) для commit `2df95e5` завершился success: все шесть сочетаний Python 3.11–3.13 / Linux и Windows, а также Chromium UI job. После этого в feature-ветку включены обновления документации из v3-foundation; исходный код и тесты панели не изменились.
+## Пределы
+
+Это интеграция панели с **Mock Director**: `done` означает согласованные mock-артефакты. Реальные модели, Hermes/OmniRouter/Codex, исполнение задачи отдельным executor из UI, git diff/QA задач, стоимость, Zorin и SSH/VPN не запускались. Внешняя сеть моделей блокировалась fixture, данные и репозитории тестов — временные. Production, merge и deploy не выполнялись. Новый CI запускается на обновлённом head PR; его результат публикуется в описании PR, без приписывания старого зелёного CI новому коду.

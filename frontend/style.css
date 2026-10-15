@@ -66,3 +66,10 @@ button:disabled { cursor: default; opacity: .45; transform: none; }
 button.danger { background: #991b1b; border-color: #f87171; }
 :focus-visible { outline: 3px solid #22d3ee; outline-offset: 3px; }
 @media (max-width: 840px) { .workspace { grid-template-columns: 1fr; } .workspace > aside { position: static; } }
+
+.run-settings { margin-top: 18px; }
+.run-settings label { display: block; }
+#runSelect { width: 100%; }
+.role-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+.role-board .role { margin: 0; }
+@media (max-width: 840px) { .role-board { grid-template-columns: 1fr; } }

@@ -2,7 +2,13 @@
 
 [**English version / Английская версия**](README.en.md)
 
-**Статус:** подготовлена минимальная основа (foundation MVP). Полноценная интеграция Hermes, OmniRouter, Codex и QA **ещё не реализована**. Рабочая версия 2 сохранена без изменений: [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2).
+**Статус:** подготовлена минимальная основа (foundation MVP). Полноценная интеграция Hermes, OmniRouter, Codex и QA **ещё не реализована**. Версия 2 сохранена в [v2-legacy](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy).
+
+## Текущий статус — 15 октября 2026
+
+- `main` репозитория AICommander-v3 содержит foundation, offline taskflow (PR #31) и отдельную библиотеку worktree executor (PR #33).
+- В PR #30 панель подключена к taskflow: версии, роли, артефакты, согласование/отказ, отмена и продолжение. Все маршруты защищены авторизацией и CSRF. [Проверки и границы](docs/QA_PANEL.md).
+- Реальная интеграция Zorin/Hermes/OmniRouter/Codex остаётся зависимой от read-only inventory #11. Mock-план не означает исполненный код или пройденный QA. Отдельный дублирующий UI #28 не запускается.
 
 ## Что мы создаём
 
@@ -20,7 +26,7 @@
 - клиент совместимого с OpenRouter API, проверка моделей и резервные модели;
 - базовые тесты без реальных API-ключей.
 
-**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, безопасная песочница, создание PR, сквозная интеграция панели с executor и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md), панели — в [отчёте #19](docs/QA_PANEL.md); это не проверка интеграции с Zorin.
+**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, настоящая песочница, создание PR внутри приложения, сквозная интеграция панели с executor и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md), панели — в [отчёте #19](docs/QA_PANEL.md); это не проверка интеграции с Zorin.
 
 **Не переносим из v2:** архивные мосты для macOS, Director/Judge/Final Auditor migration pack, старые планы, пустые обёртки ролей, ненужную интеграцию с отдельным OpenAI API Premium Review. ChatGPT в браузере используется **вручную** для сложных экспертных задач.
 
@@ -30,7 +36,7 @@
 2. Бесплатные или дешёвые модели — обычные этапы; сложная реализация — Codex; ChatGPT Web — ручная экспертиза.
 3. QA доказывает результат реальными тестами, а ревьюер проверяет Git diff.
 4. Production, реальные базы склада и секреты агентам недоступны.
-5. Каждая задача Codex — отдельный Issue и отдельный PR; никакого автоматического merge или развёртывания.
+5. Каждая задача Codex — отдельная feature-ветка и PR; **независимые задачи можно выполнять параллельно**. Merge и деплой — только с одобрения владельца.
 
 ## Документация
 
@@ -44,6 +50,7 @@
 | Решение по оркестрации (предложение, ожидает #11) | [ADR-001](docs/ADR-001-ORCHESTRATION.md) | [ADR-001 (RU)](docs/ADR-001-ORCHESTRATION.md) |
 | Инструкции Codex | [AGENTS.md](AGENTS.md) | [Codex instructions](AGENTS.en.md) |
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
+| Шаблоны GitHub и порядок работы | [WORKFLOW](docs/GITHUB_WORKFLOW.md) | [Workflow](docs/GITHUB_WORKFLOW.en.md) |
 
 ## Локальный запуск базовой версии
 
@@ -81,10 +88,8 @@ Copy-Item config/models.example.json config/models.json
 
 ## Где находится v3
 
-Пока это **отдельная ветка** [`v3-foundation`](https://github.com/KalyuzhniyKO/AICommander-v2/tree/v3-foundation) в репозитории v2: подключённый GitHub не может создать новый репозиторий. [Issue переноса #23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23). **`main` v2 не затронут.**
+Основная ветка AICommander-v3 — `main`; v2 сохранена в `v2-legacy`. PR #30 объединяет интерфейс с уже реализованными offline taskflow и отдельной библиотекой executor, не вызывая внешний executor из mock-процесса.
 
-[Очередь Codex](docs/ROADMAP.md) начинается с [Issue #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10). У каждой задачи есть зависимость, подходящая модель и уровень рассуждения.
+## Панель владельца (#30)
 
-## Панель владельца (#19)
-
-Проекты, сохранённые задачи/роли, текстовые артефакты, история approve/reject/retry/stop и фоновое выполнение доступны на одной странице. Остановка проверена в браузере во время вызова провайдера. Git diff, настоящий QA и затраты обозначены как недоступные до зависимостей. Инструкции: [MACBOOK_PANEL](docs/MACBOOK_PANEL.md), результаты: [QA_PANEL](docs/QA_PANEL.md).
+Защищённая панель подключена к `/taskflow/*`: процессы, этапы, типизированные артефакты, timeline, approve/reject/cancel и возобновление. Это Mock Director без вызовов моделей и исполнения кода. Legacy-раунды доступны отдельно через прежний API и показываются как история. [Запуск](docs/MACBOOK_PANEL.md), [проверки](docs/QA_PANEL.md).

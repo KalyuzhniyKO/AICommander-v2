@@ -4,6 +4,13 @@
 
 **Status:** lean foundation MVP prepared. This is **not yet** a working integration of Hermes, OmniRouter, Codex execution or QA. The original [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2) is preserved unchanged.
 
+## Verified status — 15 October 2026
+
+- [PR #25](https://github.com/KalyuzhniyKO/AICommander-v2/pull/25) **merged**: foundation fixes, tests and [green CI](https://github.com/KalyuzhniyKO/AICommander-v2/actions/runs/38635577007).
+- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) **merged**: OSS research and ADR-001; [Issue #12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12) remains open until #11 confirms real compatibility.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) is an **open Draft** proposing the MacBook panel, not yet merged.
+- **Without Zorin:** independent [#29 — Git worktree](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) work and [#27 — taskflow](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) contract design may proceed; coordinate implementation with PR #30 backend changes. **Pause [#28 — UI](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28)** to avoid duplicating PR #30. Live Hermes/OmniRoute requires owner booting Zorin and read-only #11.
+
 ## Vision
 The human owner enters tasks from a MacBook and approves the final changes. Existing Hermes and OmniRouter run on Zorin OS. AICommander should coordinate a team without re-implementing their existing responsibilities:
 
@@ -23,7 +30,7 @@ Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role pro
 2. Free/cheap models for routine roles; Codex for complex coding; ChatGPT web only by manual escalation.
 3. QA executes actual commands and records exit status; reviewer examines actual Git diff.
 4. Keep production warehouse databases, production secrets and files outside the approved workspace inaccessible.
-5. One sequential GitHub Issue → one feature branch → one PR; no automatic merge or deployment.
+5. Each Codex task gets its own feature branch and PR; **independent tasks may run in parallel**. No auto-merge or deployment.
 
 ## Documentation
 
@@ -36,6 +43,7 @@ Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role pro
 | Open-source reuse | [Review](docs/OPEN_SOURCE_REVIEW.en.md) | [Источники](docs/OPEN_SOURCE_REVIEW.md) |
 | Codex rules | [AGENTS](AGENTS.en.md) | [Правила](AGENTS.md) |
 | GitHub Issues | [English descriptions](docs/ISSUES_EN.md) | [Russian-first issues](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24) |
+| GitHub templates and workflow | [Workflow](docs/GITHUB_WORKFLOW.en.md) | [Процесс](docs/GITHUB_WORKFLOW.md) |
 
 ## Local test bootstrap
 Python **3.11–3.13**; Linux/macOS:
@@ -71,4 +79,8 @@ Open `http://127.0.0.1:8000` locally. Model IDs are placeholders. The prototype 
 ## Repository status
 The GitHub integration currently cannot create a dedicated repository. Foundation lives temporarily on [`v3-foundation`](https://github.com/KalyuzhniyKO/AICommander-v2/tree/v3-foundation), leaving v2 `main` intact. [Migration Issue #23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23).
 
-The task queue starts at [Issue #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10); see [Epic #24](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24) for the sequential checklist and recommended models.
+[Stage #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10) is complete. See the [parallel roadmap](docs/ROADMAP.en.md) and [Issue #24](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24).
+
+## Owner panel / taskflow (PR #30)
+
+The target repository is AICommander-v3, branch main; v2 is preserved in v2-legacy. This feature branch integrates the protected owner panel with the existing offline taskflow API: run history, typed artifacts, role stages, versioned/idempotent commands and owner decisions. Access requires server-side HTTP Basic credentials and an SSH tunnel to loopback. Approval accepts mock artifacts only; the separate executor, real model calls, QA and deployments are not invoked by this workflow. [Russian runbook](docs/MACBOOK_PANEL.md), [QA](docs/QA_PANEL.md).

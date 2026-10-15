@@ -62,7 +62,7 @@ class Repository:
         return {"id": cur.lastrowid, "name": name}
 
     def list_tasks(self):
-        return [dict(r) for r in self.conn.execute("SELECT * FROM tasks ORDER BY id DESC")]
+        return [dict(r) for r in self.conn.execute("SELECT t.*, r.id AS latest_run_id, r.status AS flow_status FROM tasks t LEFT JOIN taskflow_runs r ON r.id=(SELECT MAX(id) FROM taskflow_runs WHERE task_id=t.id) ORDER BY t.id DESC")]
 
     def transition(self, task_id, states, target, action=None, comment=""):
         placeholders = ",".join("?" for _ in states)
