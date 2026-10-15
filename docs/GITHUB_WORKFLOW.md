@@ -1,25 +1,23 @@
-# Как ведём GitHub-проект AICommander 3.0
+# GitHub-процесс AICommander 3.0
 
-[English version](GITHUB_WORKFLOW.en.md) · [Дорожная карта](ROADMAP.md)
+[English](GITHUB_WORKFLOW.en.md) · [Дорожная карта](ROADMAP.md) · [Аудит](AUDIT_2026-10-15.md)
 
-## Рабочая ветка
-Для v3 изменения идут в отдельных feature-ветках с PR **в `v3-foundation`**. Оригинальная `main` репозитория AICommander-v2 не меняется. Перенос в отдельный AICommander-v3 предусмотрен [#23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23).
+## Ветки и репозиторий
 
-## Шаблоны
-- [Сообщение об ошибке](../.github/ISSUE_TEMPLATE/bug_report.md).
-- [Новая функция](../.github/ISSUE_TEMPLATE/feature_request.md).
-- [Задача Codex](../.github/ISSUE_TEMPLATE/codex_task.md).
-- [Pull Request](../.github/pull_request_template.md).
-- [Английские шаблоны Issues](templates/ISSUE_TEMPLATES.en.md) и [PR](templates/PULL_REQUEST_TEMPLATE.en.md).
+- [AICommander-v3](https://github.com/KalyuzhniyKO/AICommander-v3), **основная ветка `main`**: актуальная v3 после [PR #35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35).
+- **`v2-legacy`**: резерв исходной v2 в этом же репозитории.
+- **`v3-foundation`**: историческая ветка интеграции. **Новые PR открывать в `main`**.
+- Переименование [#23](https://github.com/KalyuzhniyKO/AICommander-v3/issues/23) выполнено, создавать второй репозиторий не нужно.
 
-**Особенность GitHub:** формы создания Issue и шаблон PR могут не появиться в интерфейсе, пока они находятся только в ветке `v3-foundation`, а ветка по умолчанию — `main`. До отдельного репозитория v3 их можно использовать вручную; ради форм не меняем оригинальную `main`.
+## Процесс
 
-## Порядок работы
-1. Создать Issue на русском; добавить ссылку на английский текст, критерии готовности и зависимости.
-2. Проверить существующие PR. В частности, [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) пересекается с [#28](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28): не выполнять обе UI-работы параллельно.
-3. Не конфликтующие задачи делать в отдельных ветках. При изменениях одних API/таблиц согласовать контракт до начала работы.
-4. В каждом PR указать изменённые файлы, результаты **реально выполненных** тестов, ссылку на CI и ограничения, включая отсутствие доступа к Zorin.
-5. Состояния Issue и PR различаются. Например, [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) объединён, но [#12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12) ждёт фактической проверки Hermes/OmniRoute после #11.
-6. Merge и деплой — только после проверки владельцем. Не выдавать мок за работающую интеграцию.
+1. Создать Issue на русском с английской версией по ссылке, критериями приёмки, зависимостями и границами доступа.
+2. Проверить существующие PR. [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) — **Draft и конфликтует с `main`**, поэтому [#28](https://github.com/KalyuzhniyKO/AICommander-v3/issues/28) не делать отдельно как дублирующую UI-реализацию.
+3. Открывать отдельные feature-ветки и PR в `main`. Независимые работы допускается выполнять параллельно; общие API/SQLite миграции согласовывать и тестировать после объединения.
+4. Указывать фактически выполненные тесты и CI, изменённые файлы, риски, ограничения, отсутствие live Zorin/Hermes. **Не считать старые зелёные проверки доказательством готовности при изменившейся базе**.
+5. Перед merge проверить diff, фактическое `mergeable`, актуальный head SHA и все проверки; по безопасности — закрытые endpoints, CSRF, миграции и отсутствие секретов.
+6. Merge и deploy — только с разрешения владельца. **Mock owner approve в taskflow не является разрешением на Git merge/deploy.**
 
-**Безопасность:** не включать реальные секреты, токены, приватные адреса, пользовательские данные или дампы production DB в публичные Issues, PR, логи и скриншоты.
+Шаблоны [bug report](../.github/ISSUE_TEMPLATE/bug_report.md), [feature request](../.github/ISSUE_TEMPLATE/feature_request.md), [Codex task](../.github/ISSUE_TEMPLATE/codex_task.md) и [PR](../.github/pull_request_template.md) теперь находятся в основной `main`, поэтому доступны GitHub. Подключённый к ChatGPT GitHub может помогать с review/docs/PR **без Codex**, но это не означает, что само приложение AICommander умеет автоматически управлять GitHub.
+
+**Безопасность:** публичные Issues/PR не должны содержать production DB, credentials, домашние IP, SSH-конфигурации или данные пользователей.
