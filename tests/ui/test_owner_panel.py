@@ -251,3 +251,33 @@ def test_language_switch_preserves_task_artifacts_and_does_not_write(browser_pag
     expect(page.locator('#taskDetail > details > summary')).to_have_text('История legacy-раундов (отдельно от taskflow)')
     assert current(page) == before
     assert not writes, 'Switching languages must not send mutations or model requests'
+
+
+def test_mock_director_chat_shows_only_stored_evidence(browser_page):
+    """Chat-looking bubbles are a read-only view, not fabricated Hermes/QA."""
+    page, expect = browser_page
+    expect(page.locator('#directorMessages .chat-bubble')).to_have_count(1)
+    description = '<img src=x onerror=alert(1)> проверка безопасности'
+    create_task(page, expect, description)
+    expect(page.locator('#directorMessages .chat-bubble')).to_have_count(2)
+    expect(page.locator('#directorMessages')).to_contain_text(description)
+    assert page.locator('#directorMessages img').count() == 0
+    expect(page.locator('#directorDisclaimer')).to_contain_text('Настоящий Hermes')
+
+    new_run(page, expect)
+    start(page, expect)
+    step(page, expect, 1)
+    record = current(page)
+    assert len(record['artifacts']) == 1
+    expect(page.locator('#directorMessages .chat-bubble')).to_have_count(3)
+    expect(page.locator('#directorMessages')).to_contain_text(f"#{record['artifacts'][0]['artifact_id']}")
+    expect(page.locator('#directorMessages')).to_contain_text('реальное программирование и QA не выполнялись')
+
+    page.locator('#languageSelect').select_option('en')
+    expect(page.locator('#directorHeading')).to_have_text('Director activity · demo')
+    expect(page.locator('#directorMessages')).to_contain_text('Saved status')
+    expect(page.locator('#directorMessages')).to_contain_text(description)
+    assert page.locator('#directorMessages img').count() == 0
+    assert current(page) == record
+    page.set_viewport_size({'width':390,'height':844})
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')

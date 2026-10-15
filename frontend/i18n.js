@@ -39,6 +39,8 @@
     ['#rejectTask','Reject'],
     ['#retryRequest','Retry request'],
     ['#taskDetail > .hint','Each step creates one mock artifact. Cancellation is final; create a new run to restart. Rejected plans can resume without recreating artifacts.'],
+    ['#directorHeading','Director activity · demo'],
+    ['#directorDisclaimer','This displays the stored Mock Director process. Real Hermes and code execution are not connected.'],
     ['#taskDetail > h3:nth-of-type(1)','Role stages'],
     ['#taskDetail > h3:nth-of-type(2)','Typed mock artifacts'],
     ['#taskDetail > h3:nth-of-type(3)','Events and owner decisions'],
@@ -55,6 +57,8 @@
     tr(value) { return this.language === 'en' ? dictionary[value] || value : value; },
     apply() {
       document.documentElement.lang = this.language;
+      const thread = document.getElementById('directorMessages');
+      if (thread) thread.setAttribute('aria-label', this.language === 'en' ? 'Mock process history' : 'История mock-процесса');
       for (const [selector, english] of selectors) {
         const element = document.querySelector(selector);
         if (!element) continue;
