@@ -44,6 +44,7 @@ Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role pro
 | Codex rules | [AGENTS](AGENTS.en.md) | [Правила](AGENTS.md) |
 | GitHub Issues | [English descriptions](docs/ISSUES_EN.md) | [Russian-first issues](https://github.com/KalyuzhniyKO/AICommander-v3/issues/24) |
 | GitHub templates and workflow | [Workflow](docs/GITHUB_WORKFLOW.en.md) | [Процесс](docs/GITHUB_WORKFLOW.md) |
+| Offline OmniRoute transport scaffold (not integrated) | [EN](docs/OMNIROUTE_ADAPTER.en.md) | [RU](docs/OMNIROUTE_ADAPTER.md) |
 
 ## Local test bootstrap
 Python **3.11–3.13**; Linux/macOS:
