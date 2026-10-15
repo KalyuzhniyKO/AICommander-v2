@@ -1,6 +1,6 @@
 # Zorin: read-only аудит Hermes и OmniRoute
 
-[English summary](ZORIN_INTEGRATION.en.md) · [Issue #11](https://github.com/KalyuzhniyKO/AICommander-v2/issues/11)
+[English summary](ZORIN_INTEGRATION.en.md) · [Issue #11](https://github.com/KalyuzhniyKO/AICommander-v3/issues/11)
 
 Дата: 15.10.2026. **Аудит частичный: runtime-критерии Issue #11 не выполнены.**
 Установленные исходники дают основу для проектирования #13, но запуск интеграции
