@@ -4,7 +4,64 @@
 
 Дата: 15.10.2026. **Аудит частичный: runtime-критерии Issue #11 не выполнены.**
 Установленные исходники дают основу для проектирования #13, но запуск интеграции
-остаётся заблокирован до проверки служб, авторизации и доступного inventory.
+остаётся заблокирован до проверки авторизованного inventory и Hermes → OmniRoute.
+Служба OmniRoute и HTTP-доступ проверены повторным SSH-аудитом ниже.
+
+## Повторная проверка Codex по SSH — 15.10.2026
+
+Этот раздел дополняет первоначальный ограниченный аудит ниже и заменяет его
+выводы о невозможности проверки systemd и HTTP **для текущего SSH-сеанса**.
+Подключение выполнено с MacBook по существующему SSH-алиасу, с
+`BatchMode=yes` и `StrictHostKeyChecking=yes`: сохранённый host key принят без
+изменения known_hosts. Это подтверждает соответствие сохранённому ключу, а не
+новую независимую сверку fingerprint. Пароль не использовался. Адрес, логин,
+приватные пути и fingerprints не включены в публичные артефакты.
+
+| Проверено Codex сейчас | Фактический результат | Ограничение |
+|---|---|---|
+| ОС через `/etc/os-release` | Zorin OS 18.1; `uname -s` → Linux | Текущая загруженная ОС |
+| User unit `omniroute.service` | loaded / active / running / enabled; ненулевой MainPID | `systemctl --user show`, только разрешённые свойства; без журналов, Environment и argv |
+| System unit `omniroute.service` | not-found / inactive / dead | OmniRoute запущен как **user** service |
+| User и system unit `hermes.service` | not-found / inactive / dead | Отсутствие этих двух unit не доказывает отсутствия CLI или иных способов запуска Hermes |
+| Loopback `GET /api/health` | HTTP 200, `status=ok` | Без credentials и redirects |
+| Loopback `GET /api/monitoring/health` | HTTP 200, `status=healthy` | Опубликовано только разрешённое поле status |
+| Loopback `GET /v1/models`, `/api/v1/models` | HTTP 401 для обоих | Без авторизации; не означает пустой inventory |
+| MacBook → OmniRoute в LAN | `/api/health` → 200; `/v1/models` → 401 | Без credentials; не проверка TLS или доступа из интернета |
+| TCP listener 20128 | Одна запись, bind на все интерфейсы | Публикуется классификация, не адрес |
+| OmniRoute установленный пакет | 3.8.51; Node requirement `>=22.22.2 <23 || >=24.0.0 <27` | Версия из package.json, не отдельный ответ runtime API |
+| Node службы | v24.20.0; `/proc/<MainPID>/exe` совпадает с launcher Node | Node в обычном неинтерактивном SSH PATH — **v20.20.0**, не подходит требованиям пакета |
+| Hermes install stamp | 0.21.5+5343.ga3b56ca; commit a3b56cac95488242856b6fb1f121842a38c3e391; dirty=false | Метаданные установки, не доказательство работающей модели |
+| Launcher-файлы Hermes/OmniRoute | Найдены в пользовательском bin; подтверждены цели запуска | В неинтерактивном SSH PATH команды `hermes`, `omniroute`, `codex` не найдены; это не доказательство отсутствия установок |
+| Контракты Hermes | `--provider`, `--model`, `--format`, `--resume`, custom Chat Completions и delegation присутствуют в исходниках | CLI, bootstrap и делегирование не запускались |
+
+Контрольные SHA-256 `hermes_cli/_parser.py`, `hermes_cli/runtime_provider.py`,
+`tools/delegate_tool.py` и OmniRoute `bin/cli/api.mjs` совпали с первым аудитом.
+Поэтому описанные ниже исходные контракты относятся к той же проверенной ревизии.
+
+**Авторизованный inventory сознательно не проверен:** владелец выбрал оставить
+его непроверенным. Не читались API keys, contexts, token salt, приватные конфиги,
+чаты или runtime DB. Проверен только исходный код штатной CLI-авторизации:
+`getCliToken()` может создать salt-файл при его отсутствии; поэтому запуск CLI
+нельзя автоматически считать операцией без записи. Этот код не исполнялся.
+Не использовались обходы авторизации, логин или вызовы моделей.
+
+**Передача дальше:** служба и HTTP-доступ теперь подтверждены непосредственными
+проверками Codex. Для завершения #11 остаются авторизованный provider/model
+inventory и отдельная проверка Hermes → OmniRoute, включая tool-call/stream и
+маршрут дочерних агентов. Этап #13 этим PR не разрешается; #11 остаётся открытой.
+В #14 понадобится явно выбрать launcher/PATH и транспорт Hermes, а не полагаться
+на интерактивную оболочку или неподтверждённый web endpoint.
+
+Санитизированный capture: [zorin-live-probes.json](contracts/zorin-live-probes.json).
+Это **наблюдения и сокращённая allowlist-проекция**, не полный HTTP fixture и не
+готовая схема ответа inventory. Повторный QA: [qa-issue-11-live.json](qa-issue-11-live.json).
+
+## Первоначальный аудит и сообщения владельца
+
+Нижеследующие разделы сохранены как история первого аудита. Фразы «SSH не
+использовался» и ограничения bus/socket относятся к нему, а не к повторной
+SSH-проверке выше. Статусы, которые ранее сообщал владелец, теперь независимо
+проверены Codex в пределах таблицы выше.
 
 ## Дополнительные runtime-проверки владельца (вне sandbox Codex)
 
