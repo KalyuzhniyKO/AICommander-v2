@@ -4,7 +4,7 @@ about: "Воспроизводимая ошибка, требующая испр
 title: "[V3][BUG] "
 ---
 
-**English version:** [Bug report](https://github.com/KalyuzhniyKO/AICommander-v2/blob/v3-foundation/docs/templates/ISSUE_TEMPLATES.en.md#bug-report)
+**English version:** [Bug report](https://github.com/KalyuzhniyKO/AICommander-v3/blob/main/docs/templates/ISSUE_TEMPLATES.en.md#bug-report)
 
 ## Описание
 Какое поведение нарушено?
