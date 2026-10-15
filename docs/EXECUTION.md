@@ -18,7 +18,7 @@ from backend.app.execution import CommandSpec, OfflineExecutor
 
 root = Path("offline-fixtures").resolve()  # уже существует
 # Прямой интерпретатор для stdlib fixture, без Store app alias/venv launcher.
-python = str(Path(sys.base_prefix) / "python.exe") if os.name == "nt" else sys.executable
+python = str(Path(sys.base_prefix) / "python.exe") if os.name == "nt" else str(Path(sys.executable).resolve())
 executor = OfflineExecutor(
     allowed_root=root,
     repository=root / "fixture",

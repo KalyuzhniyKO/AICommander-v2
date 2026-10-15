@@ -55,5 +55,14 @@
   ],
   "tested_code_base_commit": "2ff59c08ae25ad4aad6c397a3050a740e9be2ea6",
   "base_update": "Fast-forward incorporated documentation/templates only; runtime and tests unchanged.",
-  "log_normalization": "Absolute virtual-environment path replaced with <venv>."
+  "log_normalization": "Absolute virtual-environment path replaced with <venv>.",
+  "ci_followup": {
+    "initial_run": "https://github.com/KalyuzhniyKO/AICommander-v2/actions/runs/38681588133",
+    "finding": "Linux sys.executable is a symlink; fixture and documentation now use its resolved direct executable path. Runtime module unchanged.",
+    "local_followup": {
+      "command": "python -m pytest tests/test_execution.py::test_real_diff_command_exit_and_original_repository_unchanged -q",
+      "exit_code": 0,
+      "result": "1 passed"
+    }
+  }
 }

@@ -14,7 +14,7 @@ from backend.app.execution import CommandSpec, ExecutionError, OfflineExecutor
 
 
 GIT = shutil.which("git")
-PYTHON = str(Path(sys.base_prefix) / "python.exe") if os.name == "nt" else sys.executable
+PYTHON = str(Path(sys.base_prefix) / "python.exe") if os.name == "nt" else str(Path(sys.executable).resolve())
 pytestmark = pytest.mark.skipif(GIT is None, reason="Git is required")
 
 
