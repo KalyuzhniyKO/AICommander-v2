@@ -1,6 +1,6 @@
 # OFFLINE-C: Git worktree и локальные тесты
 
-[English](EXECUTION.en.md) · [Issue #29](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29)
+[English](EXECUTION.en.md) · [Issue #29](https://github.com/KalyuzhniyKO/AICommander-v3/issues/29)
 
 `backend.app.execution` — независимый модуль для **доверенных одноразовых Git-репозиториев**. Он создаёт отдельную ветку и worktree, показывает фактический diff, запускает заранее разрешённую команду и возвращает её настоящий exit code. Нет подключения к API, taskflow, frontend, Codex CLI, Hermes или OmniRouter. Родительская #15 этим не завершена.
 

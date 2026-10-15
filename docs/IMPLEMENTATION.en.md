@@ -18,9 +18,9 @@ Old CLI/bridge for macOS, Director/Judge/Final Auditor migration modules, premiu
 
 ### Research and pending UI PR
 
-- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) merged (OSS research / ADR-001); #12 remains open until #11 verifies Zorin integration contracts.
-- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) contains the MacBook UI prepared for review. This feature branch integrates the panel with the merged taskflow; main receives it only after PR review and merge.
-- [#27](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) and [#29](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) are offline packages; [#28](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) overlaps PR #30.
+- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v3/pull/26) merged (OSS research / ADR-001); #12 remains open until #11 verifies Zorin integration contracts.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) contains the merged MacBook UI. PR #30 is merged: the authenticated panel and its offline taskflow integration are available in main.
+- [#27](https://github.com/KalyuzhniyKO/AICommander-v3/issues/27) and [#29](https://github.com/KalyuzhniyKO/AICommander-v3/issues/29) are merged offline packages (#31/#33); [#28](https://github.com/KalyuzhniyKO/AICommander-v3/issues/28) overlaps PR #30.
 
 ### Stage 00 verification
 Issue #10 removes the broken legacy bridge import, closes API SQLite connections and HTTPError handles, and refreshes round summaries after role reruns. 40 offline tests cover API behavior, resources, config and bounded fallback attempts. GitHub Actions covers Python 3.11–3.13 on Linux/Windows.
@@ -29,3 +29,7 @@ Actual local exit codes and output: [Python 3.13](qa-foundation-python-3.13.14.j
 
 ### Panel/taskflow integration (2026-10-15)
 The panel uses existing taskflow commands, typed artifacts, stages and timeline. It preserves expected_version and idempotency keys, refreshes after conflicts and replays, and keeps legacy rounds separate. Additive panel migrations preserve legacy, taskflow and early panel databases. See [runbook](MACBOOK_PANEL.md) and [actual QA](QA_PANEL.md). All completion remains mock artifacts only.
+
+## Repository audit
+
+[Audit updated after PR #30 and #37 (RU)](AUDIT_2026-10-15.md) records code, CI and limited Zorin evidence. The main branch is v3; v2-legacy preserves v2. Live model inventory and Hermes → OmniRoute inference remain unverified.

@@ -6,7 +6,7 @@
 Summarize the implemented change.
 
 ## Linked work
-Issue number, dependencies, overlapping PRs and target `v3-foundation`.
+Issue number, dependencies, overlapping PRs and target `main`.
 
 ## Actual verification
 | Command / workflow | Exit code and result | Log / CI URL |
@@ -21,7 +21,7 @@ Files and modules, API/database changes, new dependencies and licensing attribut
 ## Security, evidence and owner approval
 - [ ] No secrets, private user data or production warehouse databases.
 - [ ] Changes were exercised only in approved test environments.
-- [ ] Do not modify original v2 `main`.
+- [ ] Do not modify original `v2-legacy` backup.
 - [ ] No automatic merge or deployment.
 - [ ] Clearly separate mock, live and unverified integration results.
 - [ ] Owner review is required before merge or deployment.

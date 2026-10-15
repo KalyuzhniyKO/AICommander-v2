@@ -1,6 +1,6 @@
 # Zorin integration audit — English summary
 
-[Full Russian report](ZORIN_INTEGRATION.md) · [Issue #11](https://github.com/KalyuzhniyKO/AICommander-v2/issues/11)
+[Full Russian report](ZORIN_INTEGRATION.md) · [Issue #11](https://github.com/KalyuzhniyKO/AICommander-v3/issues/11)
 
 Read-only audit, 2026-10-15. **Partial evidence; Issue #11 runtime acceptance criteria remain unmet.**
 

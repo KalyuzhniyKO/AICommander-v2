@@ -17,4 +17,4 @@ Describe the user problem, owner/agent workflow, required inputs and outputs, co
 ## Codex task
 **Title:** `[V3][CODEX] `
 
-Specify a bounded goal, ordered tasks, parent Issue/PR, base `v3-foundation`, whether Zorin is required, parallel conflicts, proposed model and reasoning effort, allowed files/tools, prohibited production operations, actual tests, exit codes and owner approval. The model must report real results and its substitutions; never invent test success.
+Specify a bounded goal, ordered tasks, parent Issue/PR, base `main`, whether Zorin is required, parallel conflicts, proposed model and reasoning effort, allowed files/tools, prohibited production operations, actual tests, exit codes and owner approval. The model must report real results and its substitutions; never invent test success.

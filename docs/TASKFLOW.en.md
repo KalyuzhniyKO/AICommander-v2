@@ -1,6 +1,6 @@
 # Offline taskflow v1
 
-[Russian primary documentation](TASKFLOW.md) · [Issue #27](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27)
+[Russian primary documentation](TASKFLOW.md) · [Issue #27](https://github.com/KalyuzhniyKO/AICommander-v3/issues/27)
 
 The `/taskflow` namespace implements a persisted, deterministic Mock Director workflow only. Analyst requirements are passed as typed content into Architect design and then Developer plan. No real model, Hermes, OmniRouter, Codex, shell execution or QA occurs. Parent issue #14 remains open.
 
