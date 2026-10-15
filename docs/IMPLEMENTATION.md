@@ -1,32 +1,29 @@
-# AICommander v3 — что уже реализовано и чего ещё нет (14.10.2026)
+# AICommander 3.0 — реализация и ограничения (15.10.2026)
 
-[English](IMPLEMENTATION.en.md)
+[English](IMPLEMENTATION.en.md) · [Аудит исходников и CI](AUDIT_2026-10-15.md)
 
-## Перенесено из v2
+**Подтверждение:** код `main` после [PR #35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35); [GitHub Actions — 6/6 success](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38708568156). Это **не** проверка реальной интеграции Zorin/Hermes/Codex.
 
-Минимальный FastAPI API на localhost, веб-интерфейс, SQLite с задачами/раундами/ответами и ошибками моделей; простые роли и маршрутизация по ключевым словам; OpenRouter-compatible транспорт, fallback и проверка доступности моделей; тестовый каркас без живых API-ключей.
+| Модуль | Реализовано | Предел |
+|---|---|---|
+| FastAPI/SQLite | Локальные `/tasks`, раунды, ответы, ошибки, простой UI | Нет аутентификации; нельзя открывать в сеть |
+| Старые роли | keyword-router, Manager/Architect/Designer/Coder/Reviewer, прямой OpenRouter, fallback | Роли дают текст; внутри одного раунда не передают фактические ответы друг другу |
+| Offline taskflow | `/taskflow/*`, MockDirector, Analyst/Architect/Developer, структурированные артефакты, версии, идемпотентность, миграция БД, owner approve/reject | Только mock, без Hermes/моделей/Git/Codex |
+| Offline executor | `backend/app/execution/*`: доверенные Git fixtures, worktree, allowlist команд, реальные exit codes/timeout/diff | Библиотека без HTTP/API/taskflow; **не sandbox ОС/сети** |
+| CI | Python 3.11–3.13 на Linux/Windows, pytest, compileall, pip check | Нет macOS/Zorin/browser E2E в `main` |
 
-## Не реализовано
+## Не реализовано / не проверено
 
-- **Hermes** ещё не подключён как реальный AI-директор.
-- **OmniRouter** уже установлен на Zorin, но его рабочий контракт в этом репозитории не изучен и не подключён.
-- Нет отдельного аналитика и настоящего тестировщика; старый `coder` генерирует текст, а не исполняет код.
-- Роли одного раунда ещё не получают фактические результаты предыдущих ролей в рамках того же раунда.
-- Нет исполнителя `git worktree`, Codex CLI, песочницы, автоматического GitHub PR и независимого QA-агента. CI foundation добавлен в этапе 00.
-- Веб-интерфейс пока не защищён аутентификацией. Не публиковать за пределами localhost.
-- ID моделей — шаблоны, а не подтверждённые доступные модели.
+- Реальный AI-директор Hermes, действующий OmniRouter, inventory подключённых моделей, выбор по стоимости и бюджетные ограничения. **OpenRouterProvider не равен OmniRouter**.
+- Реальное исполнение Codex CLI, QA/reviewer и генерация draft PR внутри AICommander.
+- Защищённая MacBook-панель, аутентификация `/taskflow/*` и идентификация владельца. `owner_approve` — mock-переход в БД, не разрешение на merge.
+- Системная изоляция недоверенного кода, пилот на warehouse_config, деплой/восстановление в production.
+- Сквозное подтверждение работающих Hermes/OmniRouter/Zorin. [Аудит Zorin](ZORIN_INTEGRATION.md) частичный и отделяет owner-reported результаты от проверенного по исходникам.
 
-## Что не переносили
+## PR и ветки
 
-Устаревшие мосты macOS, legacy pipeline Director/Judge/Final Auditor, пустые обёртки и старые планы, отдельную интеграцию OpenAI API Premium Review. ChatGPT Web остаётся ручным этапом.
+- [PR #31](https://github.com/KalyuzhniyKO/AICommander-v3/pull/31) (offline taskflow) и [PR #33](https://github.com/KalyuzhniyKO/AICommander-v3/pull/33) (offline executor) **merged** в текущий `main` через [#35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35). Это не означает завершения реальных интеграционных Issues #14/#15.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) — защищённая панель MacBook **Draft и с конфликтами**, не объединена; её старый зелёный CI не годится для нового `main`.
+- Репозиторий переименован в AICommander-v3. v2 сохранён **в `v2-legacy` этого же репозитория**. Новые PR — в `main`.
 
-## Исследование и PR на проверке
-
-- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) объединён: исследование OSS и ADR-001 готовы, но #12 открыта до проверки #11 на Zorin.
-- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) — открытый Draft панели MacBook. Предлагаемая авторизация и функции интерфейса ещё **не входят** в v3-foundation.
-- [#27](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) и [#29](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) — независимая подготовка без Zorin; [#28](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) пересекается с PR #30.
-
-## Проверка этапа 00
-[Issue #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10): исправлен импорт удалённого legacy bridge, закрываются SQLite-соединения API и HTTPError, повторный запуск роли обновляет сводку. 40 тестов проверяют API, ресурсы, конфигурацию и ограниченные попытки fallback без живых API. Добавлена матрица GitHub Actions Python 3.11–3.13 на Linux/Windows.
-
-Реальные локальные результаты с exit codes: [Python 3.13](qa-foundation-python-3.13.14.json), [Python 3.12](qa-foundation-python-3.12.10.json). В обоих окружениях `compileall`, `pytest` и `pip check` завершились с кодом 0, HTTP smoke отдельного uvicorn-процесса прошёл на временной SQLite БД. В pytest остаётся предупреждение зависимости Starlette о переходе с httpx на httpx2. Локально Python 3.11 не установлен; его результат нужно проверять в GitHub Actions.
+**Безопасность:** до авторизации не открывать нынешнее приложение по LAN/интернету, не передавать секреты и production DB.
