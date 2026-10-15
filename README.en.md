@@ -2,14 +2,14 @@
 
 [**Русский / Russian version**](README.md)
 
-**Status:** lean foundation MVP prepared. This is **not yet** a working integration of Hermes, OmniRouter, Codex execution or QA. The original v2 is preserved on [v2-legacy](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy).
+**Status:** lean foundation MVP prepared. Live-tested opt-in OmniRoute transport and standalone Hermes routing probes are available; the full Director/Codex/QA workflow remains incomplete. The original v2 is preserved on [v2-legacy](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy).
 
 ## Verified status — 15 October 2026
 
 - [PR #25](https://github.com/KalyuzhniyKO/AICommander-v3/pull/25) **merged**: foundation fixes, tests and [green CI](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38635577007).
 - [PR #26](https://github.com/KalyuzhniyKO/AICommander-v3/pull/26) **merged**: OSS research and ADR-001; [Issue #12](https://github.com/KalyuzhniyKO/AICommander-v3/issues/12) remains open until #11 confirms real compatibility.
 - [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) is **merged**: authenticated owner panel integrated with offline taskflow, [7/7 CI](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38716011625).
-- Offline taskflow (PR #31) and worktree executor (PR #33) are merged; the executor remains a separate library. Do not duplicate UI #28. PR #37 confirms limited OmniRoute service/HTTP evidence; authorized inventory and Hermes inference remain unverified.
+- Offline taskflow (PR #31) and worktree executor (PR #33) are merged; the executor remains a separate library. Do not duplicate UI #28. PR #37 established service/HTTP evidence; subsequent [live QA](docs/qa-issue-13-live.json) verified authorized inventory, text inference, Hermes streaming and one delegated child route.
 
 ## Vision
 The human owner enters tasks from a MacBook and approves the final changes. Existing Hermes and OmniRouter run on Zorin OS. AICommander should coordinate a team without re-implementing their existing responsibilities:
@@ -21,7 +21,7 @@ The goal is real, test-backed software changes, not several independent textual 
 ## Retained from v2
 Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role prompts and keyword role routing, an OpenRouter-compatible transport with fallback and model availability checks, and credential-free test scaffolding.
 
-**Remaining integrations:** real Hermes/OmniRouter, executing QA/Reviewer, Codex CLI, OS sandbox, GitHub PR generation and budget policy. The authenticated mock-taskflow panel and independent offline worktree library are implemented. [Verified scope and tests](docs/QA_PANEL.md).
+**Remaining integrations:** Hermes Director in taskflow, executing QA/Reviewer, Codex CLI, OS sandbox, GitHub PR generation and budget policy. The authenticated mock-taskflow panel and independent offline worktree library are implemented. [Verified scope and tests](docs/QA_PANEL.md).
 
 **Deliberately excluded:** legacy macOS integration bridges, old Director/Judge/Final Auditor migration pack, obsolete roadmaps and role wrappers, and the optional OpenAI API Premium Review. ChatGPT web is an optional **manual** expert handoff; ChatGPT subscription access does not imply API entitlements.
 
@@ -44,6 +44,7 @@ Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role pro
 | Codex rules | [AGENTS](AGENTS.en.md) | [Правила](AGENTS.md) |
 | GitHub Issues | [English descriptions](docs/ISSUES_EN.md) | [Russian-first issues](https://github.com/KalyuzhniyKO/AICommander-v3/issues/24) |
 | GitHub templates and workflow | [Workflow](docs/GITHUB_WORKFLOW.en.md) | [Процесс](docs/GITHUB_WORKFLOW.md) |
+| OmniRoute opt-in transport and live smoke | [EN](docs/OMNIROUTE_ADAPTER.en.md) | [RU](docs/OMNIROUTE_ADAPTER.md) |
 
 ## Local test bootstrap
 Python **3.11–3.13**; Linux/macOS:
@@ -88,4 +89,4 @@ The target repository is AICommander-v3, branch main; v2 is preserved in v2-lega
 
 ## Repository audit
 
-[Audit updated after PR #30 and #37 (RU)](docs/AUDIT_2026-10-15.md) records code, CI and limited Zorin evidence. The main branch is v3; v2-legacy preserves v2. Live model inventory and Hermes → OmniRoute inference remain unverified.
+[Audit updated after PR #30 and #37 (RU)](docs/AUDIT_2026-10-15.md) records code, CI and limited Zorin evidence. The main branch is v3; v2-legacy preserves v2. Subsequent [live QA #13](docs/qa-issue-13-live.json) verifies bounded inventory/inference routes, not a full development team.

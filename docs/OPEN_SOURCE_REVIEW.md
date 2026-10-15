@@ -6,12 +6,13 @@
 
 Подробное сравнение, закреплённые commit SHA, версии, Python, LICENSE и условия пересмотра: [ADR-001-ORCHESTRATION](ADR-001-ORCHESTRATION.md). Машиночитаемые источники: [adr-001-upstream.json](research/adr-001-upstream.json).
 
-**Решение предложено, но ещё не принято:** сейчас не добавлять ни один из шести пакетов. Использовать идеи ролей/SOP/событий без копирования кода; LangGraph оставить условным кандидатом для доказанного пробела persistence, OpenHands SDK — отложенной альтернативой executor. [Сопоставление от 15.10.2026](ADR-001-ORCHESTRATION.md#сопоставление-с-проверенным-zorin-и-текущим-foundation)
-учитывает проверенные SSH/health OmniRoute, исходные контракты Hermes и уже
-реализованные mock taskflow/offline executor/панель. Необходимость нового
-framework не доказана. Полная runtime-совместимость не подтверждена: #11 ещё
-открыт, авторизованный inventory по выбору владельца не проверяется. Обновление
-документа не разрешает переход к #13.
+**Решение принято после ограниченных live-проверок:** не добавлять ни один из
+шести frameworks. Сохраняем Hermes, OmniRoute и узкий транспорт; LangGraph и
+OpenHands остаются условными кандидатами только при доказанном новом пробеле.
+Авторизованный inventory, text inference, streaming Hermes и один child route
+подтверждены [live QA #13](qa-issue-13-live.json). Это не готовый Hermes Director
+в taskflow, не OS sandbox и не проверка всех tools/моделей. Новых frameworks и
+копирования upstream-кода нет. [Полное решение](ADR-001-ORCHESTRATION.md).
 
 Проверка 14.10.2026 уточнила исходный обзор: MetaGPT допускает Python `>=3.9,<3.12`, OpenHands SDK — `>=3.12`; SWE-agent рекомендует successor mini-SWE-agent. Сводная таблица ниже — первоначальные направления изучения; итоговый выбор и актуальные ревизии зафиксированы в ADR.
 

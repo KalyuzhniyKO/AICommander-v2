@@ -8,6 +8,7 @@ from backend.app.orchestration.fallback import run_with_fallback
 from backend.app.orchestration.role_router import select_roles, detect_task_type
 from backend.app.providers.base import ChatMessage
 from backend.app.providers.openrouter import OpenRouterProvider
+from backend.app.providers.omniroute import OmniRouteProvider
 from backend.app.storage.repositories import Repository
 
 
@@ -28,12 +29,12 @@ def fallback_local_output(role: str, task_text: str) -> str:
     if role == "manager":
         return (
             f"Тип задачи: {task_type}. Рекомендуемые роли: {', '.join(select_roles(task_text))}. "
-            "Модели не ответили, поэтому показан локальный fallback. Проверьте OPENROUTER_API_KEY, "
+            "Модели не ответили, поэтому показан локальный fallback. Проверьте настройки OMNIROUTE_* / OPENROUTER_*, "
             "config/models.json и статус моделей, затем перезапустите роль."
         )
     return (
-        f"Все модели для роли {role} упали или не настроены. Проверьте OPENROUTER_API_KEY, "
-        "config/models.json, лимиты OpenRouter и перезапустите роль."
+        f"Все модели для роли {role} упали или не настроены. Проверьте OMNIROUTE_* / OPENROUTER_*, "
+        "config/models.json и лимиты выбранного провайдера; повтор роли — отдельное решение пользователя."
     )
 
 
@@ -67,8 +68,9 @@ def run_round(task_id: int, user_comment: str, settings: Settings, model_config:
             repository=repository,
             round_id=round_row["id"],
             openrouter=openrouter,
+            omniroute=OmniRouteProvider(settings.omniroute),
             cancelled=lambda: repository.cancelled(task_id),
-            provider_filter=lambda provider: provider == "openrouter",
+            provider_filter=lambda provider: provider in {"openrouter", "omniroute"},
         )
         if repository.cancelled(task_id):
             break
@@ -103,8 +105,9 @@ def rerun_role(round_id: int, role: str, settings: Settings, model_config: dict[
         repository=repository,
         round_id=round_id,
         openrouter=openrouter,
+        omniroute=OmniRouteProvider(settings.omniroute),
         cancelled=lambda: repository.cancelled(task["id"]),
-        provider_filter=lambda provider: provider == "openrouter",
+        provider_filter=lambda provider: provider in {"openrouter", "omniroute"},
     )
     if repository.cancelled(task["id"]):
         return repository.get_round(round_id) or round_row

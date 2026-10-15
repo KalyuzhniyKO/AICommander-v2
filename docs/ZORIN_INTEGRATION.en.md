@@ -2,7 +2,42 @@
 
 [Full Russian report](ZORIN_INTEGRATION.md) · [Issue #11](https://github.com/KalyuzhniyKO/AICommander-v3/issues/11)
 
-Read-only audit, 2026-10-15. **Partial evidence; Issue #11 runtime acceptance criteria remain unmet.**
+Initial read-only audit followed by explicitly authorized live probes on 2026-10-15.
+**Connection inventory and minimal runtime paths for #11 are now verified.**
+This is not a claim of a complete AI team, OS sandbox or reboot recovery.
+
+### Authorized live follow-up
+
+Management API confirmed 7 connections, 67 catalog records and 6 configured
+combos. Active provider types include antigravity/codex/gemini; the Codex catalog
+alias is `cx`. Catalog entries and stored active status are not successful tests
+of every model/provider or of automatic fallback. Management CLI auth accepted
+management GETs but not inference `/v1/models` (401).
+
+Temporary inference Bearer keys scoped to `gemini/gemini-2.5-flash-lite`, expiring
+in 10 minutes with 0.02–0.05 USD daily caps, validated `data[].id` inventory (200)
+and nonempty Chat Completions `OK`. The adapter, opt-in smoke CLI and isolated
+application legacy round succeeded; the round produced 2 completed OmniRoute
+role outputs in temporary Python 3.12/SQLite. All temporary keys were revoked.
+No credentials left Zorin or appeared in public artifacts.
+
+Installed Hermes also returned `OK` in text and streaming modes from a temporary
+HERMES_HOME with tools disabled. A direct call to its built-in `delegate_task`
+completed one child: parent/child used the same custom model and loopback gateway,
+zero tools and one iteration. This tests the mechanism, not LLM selection of the
+tool. A Python audit guard blocked external connects; this is not an OS sandbox.
+Existing PM-selected dependencies were explicitly selected for the isolated home;
+user chats/config and installed Hermes source/dependencies were not changed.
+
+The earlier choice to skip inventory was superseded by the owner's live-check
+request for these bounded probes. Dashboard password and persistent services were
+not changed. Reboot recovery, arbitrary tools and all provider/fallback routes
+remain later-stage work. [Live evidence](qa-issue-13-live.json),
+[inventory projection](contracts/omniroute-live-inventory.json),
+[transport documentation](OMNIROUTE_ADAPTER.en.md).
+
+The following sections describe historical observations and limitations **before**
+the authorized live follow-up; they do not override the results above.
 
 ### Codex SSH follow-up — 2026-10-15
 

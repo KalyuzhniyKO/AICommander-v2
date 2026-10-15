@@ -1,0 +1,233 @@
+{
+  "issue": 13,
+  "date": "2026-10-15",
+  "python": "3.13.12",
+  "scope": "final app wiring and live smoke",
+  "checks": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "exit_code": 0,
+      "output": "....................................s................................... [ 29%]\n........................................................................ [ 59%]\n........................................................................ [ 88%]\n...................ssssssss                                              [100%]\n=============================== warnings summary ===============================\n../AICommander-v3-zorin-inventory/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1\n  <TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n234 passed, 9 skipped, 1 warning in 31.08s\n"
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "output": "No broken requirements found.\n"
+    },
+    {
+      "check": "syntax_links_json_and_sensitive_pattern_scan",
+      "exit_code": 0,
+      "local_links": 114,
+      "syntax_files": 30
+    },
+    {
+      "check": "git_diff_whitespace",
+      "exit_code": 0
+    }
+  ],
+  "live": {
+    "authorized_by_owner": true,
+    "model_id": "gemini/gemini-2.5-flash-lite",
+    "credential_lifecycle": {
+      "temporary": true,
+      "max_lifetime_minutes": 10,
+      "configured_daily_cap_usd": [
+        0.02,
+        0.05
+      ],
+      "model_scoped": true,
+      "no_log_requested": true,
+      "all_test_keys_revoked": true,
+      "active_temporary_keys_after_cleanup": 0,
+      "credentials_exported": false,
+      "cost_is_zero_claimed": false
+    },
+    "inventory": {
+      "management_connections": 7,
+      "management_catalog_rows": 67,
+      "configured_combos": 6,
+      "inference_http_status": 200,
+      "advertised_id_count": 3,
+      "tested_id_present": true,
+      "all_models_verified": false
+    },
+    "adapter": {
+      "health_status": "ok",
+      "chat_nonempty": true,
+      "chat_reply_ok": true,
+      "raw_response_returned": false
+    },
+    "cli": {
+      "exit_code": 0,
+      "health_models_passed": true,
+      "inference_reply_ok": true,
+      "response_time_ms": 1694
+    },
+    "hermes_sdk_versions": {
+      "python": "3.14.7",
+      "openai": "2.24.0",
+      "httpx": "0.28.1",
+      "pydantic": "2.13.4",
+      "anthropic": null
+    },
+    "hermes_streaming": [
+      {
+        "check": "adapter_health",
+        "result": {
+          "status": "ok"
+        }
+      },
+      {
+        "check": "adapter_inventory",
+        "count": 3,
+        "selected_model_present": true
+      },
+      {
+        "check": "hermes_to_omniroute",
+        "result_type": "dict",
+        "nonempty_final": true,
+        "reply_ok": true,
+        "stream_callback_events": 1,
+        "tools_count": 0,
+        "network": {
+          "loopback_connects": 4,
+          "blocked_connects": 1
+        },
+        "provider": "custom",
+        "model": "gemini/gemini-2.5-flash-lite"
+      },
+      {
+        "check": "hermes_process",
+        "exit_code": 0,
+        "stderr_present": false
+      },
+      {
+        "check": "temporary_key_revoked",
+        "http_status": 200
+      }
+    ],
+    "hermes_delegation": [
+      {
+        "check": "adapter_health",
+        "result": {
+          "status": "ok"
+        }
+      },
+      {
+        "check": "adapter_inventory",
+        "count": 3,
+        "selected_model_present": true
+      },
+      {
+        "check": "hermes_delegation_to_omniroute",
+        "result_count": 1,
+        "statuses": [
+          "completed"
+        ],
+        "has_error": false,
+        "routes": [
+          {
+            "provider": "custom",
+            "loopback_omniroute": true,
+            "model": "gemini/gemini-2.5-flash-lite",
+            "tools_count": 0,
+            "max_iterations": 1
+          },
+          {
+            "provider": "custom",
+            "loopback_omniroute": true,
+            "model": "gemini/gemini-2.5-flash-lite",
+            "tools_count": 0,
+            "max_iterations": 1
+          }
+        ],
+        "network": {
+          "loopback_connects": 4,
+          "blocked_connects": 1
+        }
+      },
+      {
+        "check": "hermes_process",
+        "exit_code": 0,
+        "stderr_present": false
+      },
+      {
+        "check": "temporary_key_revoked",
+        "http_status": 200
+      }
+    ],
+    "application": [
+      {
+        "check": "application_http",
+        "health": 200,
+        "models_status": 200,
+        "create_task": 200
+      },
+      {
+        "check": "round_http",
+        "status": 200
+      },
+      {
+        "check": "application_to_omniroute_round",
+        "roles_count": 2,
+        "all_outputs_completed": true,
+        "providers": [
+          "omniroute"
+        ],
+        "states": [
+          "completed",
+          "completed"
+        ]
+      },
+      {
+        "check": "application_process",
+        "exit_code": 0,
+        "stderr_present": true
+      },
+      {
+        "check": "temporary_key_revoked",
+        "http_status": 200
+      }
+    ],
+    "limits": [
+      "text adapter has no SSE/tool API; Hermes streaming tested separately",
+      "built-in delegation called directly; not autonomous LLM tool choice",
+      "temporary profiles, venv and DB removed; persistent app/Hermes deployment not performed",
+      "no reboot recovery, OS sandbox or all-model/fallback test",
+      "Dashboard password unchanged; browser login not tested"
+    ]
+  },
+  "history": [
+    {
+      "check": "8-token inference",
+      "result": "HTTP 200 but empty content; adapter rejected bad_response; 64-token retry returned OK"
+    },
+    {
+      "check": "isolated Hermes dependency selection",
+      "result": "new HERMES_HOME initially lacked dotenv; fixed test harness to select existing committed dependency site, no Hermes dependency install"
+    },
+    {
+      "check": "first app TestClient harness",
+      "result": "exit 1 before app evidence; corrected Authorization header usage; final run passed"
+    }
+  ],
+  "tested_source_sha256": {
+    "backend/app/providers/omniroute.py": "cf637da207b94e8b99364bd879f10974dd45910bbe90d0167fdd7e572e4933eb",
+    "backend/app/providers/omniroute_smoke.py": "3a32e7fcc7d17652bdd3aa8409a145f4251e21cb0d0780c1697e2f0ad549432e",
+    "backend/app/config.py": "6df4a48c340ce88884b96a268fdad77c6fcf1a85e2f39568c7915d3448dd2003",
+    "backend/app/orchestration/fallback.py": "759d4abb054fc616feb586d09b80006dfa8a43e38c4ad3723e0ef6978283bcd9",
+    "backend/app/orchestration/model_check.py": "1e27729869f13dbebe3086b925bbc2358edab47d7d8e8772d882e5d766c4649e",
+    "backend/app/orchestration/round_runner.py": "29bac97e9de231ea889e02ea2aec8cc75f68a66e882d5df11043c37356f09ca4"
+  },
+  "review": "manual diff, credential-flow, retry and live evidence review; no independent reviewer agent"
+}
