@@ -1,6 +1,7 @@
 """Minimal SQLite schema: tasks, rounds, model status and errors."""
 import sqlite3
 from pathlib import Path
+from .migrations import migrate_taskflow
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS tasks(id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL,description TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'active',created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
@@ -20,3 +21,4 @@ def connect(db_path:Path)->sqlite3.Connection:
 def init_db(conn:sqlite3.Connection)->None:
     conn.executescript(SCHEMA)
     conn.commit()
+    migrate_taskflow(conn)
