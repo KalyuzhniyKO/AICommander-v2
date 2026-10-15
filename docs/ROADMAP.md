@@ -29,7 +29,7 @@
 | 10 | [#20](https://github.com/KalyuzhniyKO/AICommander-v3/issues/20) | Безопасность и восстановление | GPT-6 Astra | **High** | Security review, изоляция, отрицательные тесты |
 | 11 | [#21](https://github.com/KalyuzhniyKO/AICommander-v3/issues/21) | Сквозной пилот warehouse_config | GPT-6 Astra | **High** | Интеграция нескольких систем, валидация |
 | 12 | [#22](https://github.com/KalyuzhniyKO/AICommander-v3/issues/22) | Документация, развёртывание, бэкапы | GPT-6.1 Sol | **Medium** | Runbook и проверяемое восстановление |
-| MIG | [#23](https://github.com/KalyuzhniyKO/AICommander-v3/issues/23) | Переименование репозитория — выполнено | GPT-6.1 Sol | **Low** | Рутинный перенос только минимальных файлов |
+| MIG | [#23](https://github.com/KalyuzhniyKO/AICommander-v3/issues/23) | Переименование репозитория — выполнено | — | — | `main` = v3, `v2-legacy` = резерв v2 |
 
 ## Очередность
 Актуальный порядок приведён выше. Независимые этапы можно выполнять параллельно, но реальные интеграции — только после выполнения зависимостей и проверки. Создавать отдельный репозиторий v3 больше не нужно.
