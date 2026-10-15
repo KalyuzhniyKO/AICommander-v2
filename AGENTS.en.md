@@ -3,7 +3,7 @@
 
 Read `README.en.md`, `docs/PRODUCT_SPEC.en.md`, `docs/IMPLEMENTATION.en.md`, `docs/ROADMAP.en.md`, `docs/MODEL_SELECTION.en.md` and `docs/OPEN_SOURCE_REVIEW.en.md` before work.
 
-- Execute the [V3] GitHub Issues in explicit order, one issue per feature branch and PR. Provide **actual** tests and evidence.
+- Respect dependencies: dependent integration steps are sequential, independent work may run in parallel. New PRs target `main`; one Issue per feature branch/PR, with **actual** tests and evidence.
 - Reuse existing Hermes and OmniRouter installed on Zorin OS. First verify their actual interfaces READ-ONLY; never invent APIs or log secrets.
 - Do not claim features are implemented until running verified tests; the v3 foundation is deliberately minimal.
 - Hand structured artifacts between roles. A Developer must edit actual test worktree files; QA must report process exit codes; Reviewer must inspect git diff.

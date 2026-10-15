@@ -1,47 +1,38 @@
-# Поэтапная разработка AICommander 3.0 через Codex
+# AICommander 3.0 — дорожная карта
 
-[English](ROADMAP.en.md) · [Рекомендации по моделям](MODEL_SELECTION.md)
+[English](ROADMAP.en.md) · [Аудит](AUDIT_2026-10-15.md)
 
-Каждый ограниченный этап — отдельная GitHub Issue, ветка и PR с реальными проверками. **Независимые работы допускается выполнять параллельно**, интеграции выполняются по зависимостям. В текущем коде Hermes/OmniRouter ещё не подключены.
+## Фактическое состояние на 15.10.2026
 
-## Фактическое состояние и параллельные работы (15.10.2026)
+- Репозиторий переименован в **AICommander-v3**; [PR #35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35) перенёс v3 в основную ветку **`main`** после [6/6 успешных тестов CI](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38708568156); v2 сохранена в `v2-legacy`. Новые PR направлять в `main`.
+- [#10 / PR #25](https://github.com/KalyuzhniyKO/AICommander-v3/pull/25) — foundation и [#12 / PR #26](https://github.com/KalyuzhniyKO/AICommander-v3/pull/26) — OSS research/ADR merged; #12 открыта до реальной проверки совместимости.
+- [#27 / PR #31](https://github.com/KalyuzhniyKO/AICommander-v3/pull/31) — **offline taskflow готов в main**. [#29 / PR #33](https://github.com/KalyuzhniyKO/AICommander-v3/pull/33) — **offline worktree executor готов в main**; родительские #14/#15 этим не завершены.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) — защищённая MacBook-панель с offline taskflow **объединена в main**, CI 7/7. [#28](https://github.com/KalyuzhniyKO/AICommander-v3/issues/28) не запускать параллельно как дубль.
+- [#11](https://github.com/KalyuzhniyKO/AICommander-v3/issues/11) — **частичный** Zorin-аудит; runtime-инвентаризация моделей и фактический Hermes → OmniRouter inference ещё не выполнены.
+- **Далее:** верификация #11 → #13 OmniRouter → #14 Hermes → #15–#17 реальный Codex/QA/PR → #18–#20 бюджет, панель, безопасность → #21–#22 пилот и установка. Независимые задачи можно делать параллельно с отдельными PR.
+- **Рекомендованные модели в таблице ниже — исторические ориентиры, доступность конкретных названий/уровней в текущем Codex не подтверждена.**
 
-| Направление | Задача / PR | Состояние |
-|---|---|---|
-| Основа | [#10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10) / [PR #25](https://github.com/KalyuzhniyKO/AICommander-v2/pull/25) | **Готово, CI зелёный** |
-| Исследование OSS | [#12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12) / [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) | Документы объединены; Issue открыта до проверки #11 |
-| Zorin-интеграция | [#11](https://github.com/KalyuzhniyKO/AICommander-v2/issues/11) → [#13](https://github.com/KalyuzhniyKO/AICommander-v2/issues/13) | Ожидает загрузки Zorin и read-only проверки |
-| Backend-логика | [#27](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) | Контракты и mock-часть можно разрабатывать; учесть PR #30 |
-| MacBook UI | [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) / [#28](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) | PR #30 — **Draft**; #28 приостановить до его оценки |
-| Git worktree | [#29](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) | Можно выполнять сейчас без Zorin |
-
-**Рекомендуемая волна сейчас:** ревью PR #30 + отдельная работа #29; исследование контрактов #27 параллельно, реализацию и миграции согласовать после ревью PR #30. Интерфейс #28 не запускать как отдельную дублирующую реализацию.
-
-**Следующая интеграционная волна:** после загрузки Zorin #11 → подтверждение решения ADR #12 → #13 OmniRouter → #14 Hermes → #15 исполнение кода → #16 QA → #17 PR/CI. Дальше #18–#22 по фактическим зависимостям, безопасности и требованиям владельца.
-
-
+## План интеграционных этапов
 
 | Шаг | Issue | Что сделать | Рекомендуемая модель Codex | Уровень | Почему |
 |---|---|---|---|---|---|
-| 00 | [#10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10) | Проверка основы и CI | GPT-6.1 Sol | **Medium** | Проверка кода, тестов и небольшой рефакторинг |
-| 01 | [#11](https://github.com/KalyuzhniyKO/AICommander-v2/issues/11) | Проверка Hermes и OmniRouter (read-only) | GPT-6.1 Sol | **Medium** | Инвентаризация с точной фиксацией интерфейсов |
-| 02 | [#12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12) | Анализ OSS и лицензий | GPT-6.1 Sol | **High** | Сравнение фреймворков и архитектурный ADR |
-| 03 | [#13](https://github.com/KalyuzhniyKO/AICommander-v2/issues/13) | Адаптер OmniRouter | GPT-6.1 Sol | **High** | Контракт API, обработка ошибок, мок-тесты |
-| 04 | [#14](https://github.com/KalyuzhniyKO/AICommander-v2/issues/14) | Директор и межролевой workflow | GPT-6 Astra | **High** | Сложная архитектура состояний и передач |
-| 05 | [#15](https://github.com/KalyuzhniyKO/AICommander-v2/issues/15) | Изолированный Codex executor | GPT-6 Astra | **High** | Инструменты, песочница, права и выполнение кода |
-| 06 | [#16](https://github.com/KalyuzhniyKO/AICommander-v2/issues/16) | QA и независимый Reviewer | GPT-6.1 Sol | **High** | Доказуемые тесты и анализ diff |
-| 07 | [#17](https://github.com/KalyuzhniyKO/AICommander-v2/issues/17) | GitHub PR и CI | GPT-6.1 Sol | **Medium** | Практическая интеграция API и веток |
-| 08 | [#18](https://github.com/KalyuzhniyKO/AICommander-v2/issues/18) | Free-first, лимиты и эскалация | GPT-6.1 Sol | **Medium** | Контроль бюджета, обработка rate limits |
-| 09 | [#19](https://github.com/KalyuzhniyKO/AICommander-v2/issues/19) | Панель для MacBook | GPT-6.1 Sol | **Medium** | Web UI и защищённое управление |
-| 10 | [#20](https://github.com/KalyuzhniyKO/AICommander-v2/issues/20) | Безопасность и восстановление | GPT-6 Astra | **High** | Security review, изоляция, отрицательные тесты |
-| 11 | [#21](https://github.com/KalyuzhniyKO/AICommander-v2/issues/21) | Сквозной пилот warehouse_config | GPT-6 Astra | **High** | Интеграция нескольких систем, валидация |
-| 12 | [#22](https://github.com/KalyuzhniyKO/AICommander-v2/issues/22) | Документация, развёртывание, бэкапы | GPT-6.1 Sol | **Medium** | Runbook и проверяемое восстановление |
-| MIG | [#23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23) | Перенос в отдельный репозиторий | GPT-6.1 Sol | **Low** | Рутинный перенос только минимальных файлов |
+| 00 | [#10](https://github.com/KalyuzhniyKO/AICommander-v3/issues/10) | Проверка основы и CI | GPT-6.1 Sol | **Medium** | Проверка кода, тестов и небольшой рефакторинг |
+| 01 | [#11](https://github.com/KalyuzhniyKO/AICommander-v3/issues/11) | Проверка Hermes и OmniRouter (read-only) | GPT-6.1 Sol | **Medium** | Инвентаризация с точной фиксацией интерфейсов |
+| 02 | [#12](https://github.com/KalyuzhniyKO/AICommander-v3/issues/12) | Анализ OSS и лицензий | GPT-6.1 Sol | **High** | Сравнение фреймворков и архитектурный ADR |
+| 03 | [#13](https://github.com/KalyuzhniyKO/AICommander-v3/issues/13) | Адаптер OmniRouter | GPT-6.1 Sol | **High** | Контракт API, обработка ошибок, мок-тесты |
+| 04 | [#14](https://github.com/KalyuzhniyKO/AICommander-v3/issues/14) | Директор и межролевой workflow | GPT-6 Astra | **High** | Сложная архитектура состояний и передач |
+| 05 | [#15](https://github.com/KalyuzhniyKO/AICommander-v3/issues/15) | Изолированный Codex executor | GPT-6 Astra | **High** | Инструменты, песочница, права и выполнение кода |
+| 06 | [#16](https://github.com/KalyuzhniyKO/AICommander-v3/issues/16) | QA и независимый Reviewer | GPT-6.1 Sol | **High** | Доказуемые тесты и анализ diff |
+| 07 | [#17](https://github.com/KalyuzhniyKO/AICommander-v3/issues/17) | GitHub PR и CI | GPT-6.1 Sol | **Medium** | Практическая интеграция API и веток |
+| 08 | [#18](https://github.com/KalyuzhniyKO/AICommander-v3/issues/18) | Free-first, лимиты и эскалация | GPT-6.1 Sol | **Medium** | Контроль бюджета, обработка rate limits |
+| 09 | [#19](https://github.com/KalyuzhniyKO/AICommander-v3/issues/19) | Панель для MacBook | GPT-6.1 Sol | **Medium** | Web UI и защищённое управление |
+| 10 | [#20](https://github.com/KalyuzhniyKO/AICommander-v3/issues/20) | Безопасность и восстановление | GPT-6 Astra | **High** | Security review, изоляция, отрицательные тесты |
+| 11 | [#21](https://github.com/KalyuzhniyKO/AICommander-v3/issues/21) | Сквозной пилот warehouse_config | GPT-6 Astra | **High** | Интеграция нескольких систем, валидация |
+| 12 | [#22](https://github.com/KalyuzhniyKO/AICommander-v3/issues/22) | Документация, развёртывание, бэкапы | GPT-6.1 Sol | **Medium** | Runbook и проверяемое восстановление |
+| MIG | [#23](https://github.com/KalyuzhniyKO/AICommander-v3/issues/23) | Переименование репозитория — выполнено | — | — | `main` = v3, `v2-legacy` = резерв v2 |
 
 ## Очередность
-См. таблицу параллельных работ выше: последовательный запуск всех задач больше не является обязательным, но интеграционные блокировки сохраняются.
-
-**Дополнительное действие:** [#23 — перенести v3 в самостоятельный репозиторий](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23) при появлении возможности создать репозиторий. Оно не блокирует работу с `v3-foundation`.
+Актуальный порядок приведён выше. Независимые этапы можно выполнять параллельно, но реальные интеграции — только после выполнения зависимостей и проверки. Создавать отдельный репозиторий v3 больше не нужно.
 
 ## Зависимости и критерии
 - #10 проверяет фактический запуск и тесты foundation.

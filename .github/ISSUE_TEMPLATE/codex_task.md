@@ -4,7 +4,7 @@ about: "Ограниченная задача с моделью, результ�
 title: "[V3][CODEX] "
 ---
 
-**English version:** [Codex task](https://github.com/KalyuzhniyKO/AICommander-v2/blob/v3-foundation/docs/templates/ISSUE_TEMPLATES.en.md#codex-task)
+**English version:** [Codex task](https://github.com/KalyuzhniyKO/AICommander-v3/blob/main/docs/templates/ISSUE_TEMPLATES.en.md#codex-task)
 
 ## Цель
 Конкретный проверяемый результат.
@@ -16,7 +16,7 @@ title: "[V3][CODEX] "
 
 ## Контекст
 - Родительская Issue / PR:
-- Базовая ветка: `v3-foundation`
+- Базовая ветка: `main`
 - Требуется Zorin: да / нет
 - Возможна параллельная работа: да / нет, с чем
 
@@ -29,7 +29,7 @@ title: "[V3][CODEX] "
 Каталоги, файлы, mock-данные и инструменты.
 
 ## Запрещено
-Production DB, секреты, чужие каталоги, недокументированные изменения Hermes/OmniRoute, auto-merge/deploy и изменения v2 `main`.
+Production DB, секреты, чужие каталоги, недокументированные изменения Hermes/OmniRoute, auto-merge/deploy и изменение резервной `v2-legacy` без явного разрешения.
 
 ## Критерии готовности (DoD)
 - [ ] Отдельная feature-ветка и PR

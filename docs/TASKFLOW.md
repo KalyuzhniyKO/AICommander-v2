@@ -1,6 +1,6 @@
 # Офлайн-процесс задач: контракт v1
 
-[English](TASKFLOW.en.md) · [Issue #27](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) · родительский этап [#14](https://github.com/KalyuzhniyKO/AICommander-v2/issues/14)
+[English](TASKFLOW.en.md) · [Issue #27](https://github.com/KalyuzhniyKO/AICommander-v3/issues/27) · родительский этап [#14](https://github.com/KalyuzhniyKO/AICommander-v3/issues/14)
 
 Компонент работает только с **Mock Director**: детерминированно создаёт требования, проект и план, сохраняет их и передаёт содержимое следующей роли. Он не подключает Hermes/OmniRouter/Codex, не вызывает модели, не исполняет shell, не изменяет файлы проекта и не выполняет QA. Родительская задача #14 этим компонентом не завершена.
 
