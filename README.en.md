@@ -2,14 +2,12 @@
 
 [**Русский / Russian version**](README.md)
 
-**Status:** lean foundation MVP prepared. This is **not yet** a working integration of Hermes, OmniRouter, Codex execution or QA. The original [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2) is preserved unchanged.
+**Verified status — 15 October 2026:** this is a **development foundation**, not an operational Hermes/Codex AI team. See the [evidence-based audit (RU)](docs/AUDIT_2026-10-15.md) and [implementation status (EN)](docs/IMPLEMENTATION.en.md).
 
-## Verified status — 15 October 2026
-
-- [PR #25](https://github.com/KalyuzhniyKO/AICommander-v2/pull/25) **merged**: foundation fixes, tests and [green CI](https://github.com/KalyuzhniyKO/AICommander-v2/actions/runs/38635577007).
-- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) **merged**: OSS research and ADR-001; [Issue #12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12) remains open until #11 confirms real compatibility.
-- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) is an **open Draft** proposing the MacBook panel, not yet merged.
-- **Without Zorin:** independent [#29 — Git worktree](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) work and [#27 — taskflow](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27) contract design may proceed; coordinate implementation with PR #30 backend changes. **Pause [#28 — UI](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28)** to avoid duplicating PR #30. Live Hermes/OmniRoute requires owner booting Zorin and read-only #11.
+- Repository was renamed [AICommander-v3](https://github.com/KalyuzhniyKO/AICommander-v3); [PR #35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35) merged v3 into the default **`main`** branch after [six passing CI jobs](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38708568156).
+- Original v2 is preserved in **`v2-legacy`** in the same repository. `v3-foundation` is historical; new PRs target `main`.
+- [PR #31](https://github.com/KalyuzhniyKO/AICommander-v3/pull/31) mock taskflow and [PR #33](https://github.com/KalyuzhniyKO/AICommander-v3/pull/33) offline Git worktree executor are merged, but **not** wired into live Hermes/Codex.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) for the MacBook panel remains a **conflicting Draft**, not merged.
 
 ## Vision
 The human owner enters tasks from a MacBook and approves the final changes. Existing Hermes and OmniRouter run on Zorin OS. AICommander should coordinate a team without re-implementing their existing responsibilities:
@@ -18,12 +16,13 @@ The human owner enters tasks from a MacBook and approves the final changes. Exis
 
 The goal is real, test-backed software changes, not several independent textual responses.
 
-## Retained from v2
-Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role prompts and keyword role routing, an OpenRouter-compatible transport with fallback and model availability checks, and credential-free test scaffolding.
+## Implemented in `main`
 
-**Planned, not implemented:** verified Hermes/OmniRouter integration, Analyst and executing QA roles, Codex CLI tool execution, safe git worktrees, PR generation, authenticated MacBook dashboard and budget policy. Local foundation tests and HTTP smoke have passed; see the implementation status for recorded results.
+FastAPI, SQLite, a simple localhost UI, text role rounds and bounded fallback via **direct OpenRouter** (not the installed OmniRouter). A separate **offline mock taskflow** supports typed Analyst → Architect → Developer artifacts, states, idempotency and owner decision, without real models or code changes. An independent **OfflineExecutor library** manages trusted disposable Git worktrees, approved commands, diffs and actual exit codes; it is **not connected to taskflow/UI** and is **not an OS/network sandbox**.
 
-**Deliberately excluded:** legacy macOS integration bridges, old Director/Judge/Final Auditor migration pack, obsolete roadmaps and role wrappers, and the optional OpenAI API Premium Review. ChatGPT web is an optional **manual** expert handoff; ChatGPT subscription access does not imply API entitlements.
+**Not implemented or verified:** live Hermes → OmniRouter, Codex CLI, independent QA/Reviewer, GitHub PR automation, cost controls, authenticated MacBook dashboard, and a real Zorin E2E test. All current endpoints, including taskflow owner decisions, **have no authentication**. Do not expose this prototype to LAN/internet or use production data. Mock approval is not authorization for actual Git merge/deploy.
+
+**Deliberately excluded from v2:** obsolete macOS bridges, legacy Director/Judge/Final Auditor migration pack, outdated roadmaps and the optional OpenAI API Premium Review. ChatGPT Web remains a manual expert step.
 
 ## Development principles
 1. Reuse deployed Hermes and OmniRouter; no redundant directors or model routers.
@@ -42,7 +41,7 @@ Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role pro
 | Model and reasoning effort | [Selection](docs/MODEL_SELECTION.en.md) | [Выбор моделей](docs/MODEL_SELECTION.md) |
 | Open-source reuse | [Review](docs/OPEN_SOURCE_REVIEW.en.md) | [Источники](docs/OPEN_SOURCE_REVIEW.md) |
 | Codex rules | [AGENTS](AGENTS.en.md) | [Правила](AGENTS.md) |
-| GitHub Issues | [English descriptions](docs/ISSUES_EN.md) | [Russian-first issues](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24) |
+| GitHub Issues | [English descriptions](docs/ISSUES_EN.md) | [Russian-first issues](https://github.com/KalyuzhniyKO/AICommander-v3/issues/24) |
 | GitHub templates and workflow | [Workflow](docs/GITHUB_WORKFLOW.en.md) | [Процесс](docs/GITHUB_WORKFLOW.md) |
 
 ## Local test bootstrap
@@ -77,6 +76,5 @@ Smoke endpoints: `GET /health`, `POST /tasks` with JSON `{"description":"Check d
 Open `http://127.0.0.1:8000` locally. Model IDs are placeholders. The prototype is unauthenticated: do **not** expose it outside localhost.
 
 ## Repository status
-The GitHub integration currently cannot create a dedicated repository. Foundation lives temporarily on [`v3-foundation`](https://github.com/KalyuzhniyKO/AICommander-v2/tree/v3-foundation), leaving v2 `main` intact. [Migration Issue #23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23).
 
-[Stage #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10) is complete. See the [parallel roadmap](docs/ROADMAP.en.md) and [Issue #24](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24).
+The current v3 code is on [`main`](https://github.com/KalyuzhniyKO/AICommander-v3/tree/main), with v2 preserved on [`v2-legacy`](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy). New PRs target `main`. Review the [roadmap](docs/ROADMAP.en.md), [GitHub workflow](docs/GITHUB_WORKFLOW.en.md) and [audit](docs/AUDIT_2026-10-15.md).
