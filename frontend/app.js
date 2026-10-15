@@ -58,6 +58,39 @@ function renderTasks() {
     `<button class="task-choice ${task?.id === t.id ? 'selected' : ''}" data-task="${t.id}">${esc(t.title)}<small>${esc(t.flow_status ? label(t.flow_status) : tr('Нет taskflow'))}</small></button>`).join('') || `<p>${esc(tr('Пока нет задач.'))}</p>`;
   el('taskList').querySelectorAll('[data-task]').forEach(button => button.onclick = () => action(() => selectTask(Number(button.dataset.task))));
 }
+// The thread is a *view* of persisted taskflow snapshots. No invented LLM chat,
+ // shell execution, model call, or QA report is generated here.
+function renderDirector() {
+  const thread = el('directorMessages');
+  if (!thread) return;
+  const en = panelLocale.language === 'en';
+  const bubble = (kind, heading, content) =>
+    `<article class="chat-bubble ${kind}"><strong>${esc(heading)}</strong><p>${esc(content)}</p></article>`;
+  if (!task) {
+    thread.innerHTML = bubble('mock', 'Mock Director',
+      en ? 'Select a task to view its saved mock workflow.' : 'Выбери задачу, чтобы увидеть сохранённый mock-процесс.');
+    return;
+  }
+  const messages = [bubble('owner', en ? 'Owner · saved requirement' : 'Владелец · сохранённое требование', task.description)];
+  if (!run) {
+    messages.push(bubble('mock', 'Mock Director',
+      en ? 'No run selected. Create a run; this does not contact Hermes or execute code.'
+         : 'Процесс не выбран. Создай процесс; это не вызывает Hermes и не исполняет код.'));
+  } else {
+    const state = en
+      ? `Saved status: ${label(run.status)}. Steps ${run.steps_done}/${run.max_steps}. This is only a mock process; no real coding or QA occurred.`
+      : `Сохранённый статус: ${label(run.status)}. Шаги ${run.steps_done}/${run.max_steps}. Это только mock-процесс, реальное программирование и QA не выполнялись.`;
+    messages.push(bubble('mock', en ? 'Mock Director · saved state' : 'Mock Director · сохранённое состояние', state));
+    for (const artifact of run.artifacts || []) {
+      const description = en
+        ? `Stored typed artifact: ${artifact.type}. Open the artifact panel below for the actual content. Not a verified code change.`
+        : `Сохранён типизированный артефакт: ${artifact.type}. Фактическое содержимое ниже в блоке артефактов. Это не подтверждённое изменение кода.`;
+      messages.push(bubble('artifact', `${label(artifact.role)} · #${artifact.artifact_id}`, description));
+    }
+  }
+  thread.innerHTML = messages.join('');
+}
+
 function renderDetail() {
   el('taskTitle').textContent = task?.title || tr('Выбери задачу');
   el('taskMeta').textContent = run ? (panelLocale.language === 'en' ? `Task #${task.id} · Run #${run.run_id} · ${label(run.status)} · Version ${run.version} · Steps ${run.steps_done}/${run.max_steps}` : `Задача #${task.id} · Процесс #${run.run_id} · ${label(run.status)} · Версия ${run.version} · Шаги ${run.steps_done}/${run.max_steps}`) : tr('Процесс не выбран');
@@ -69,7 +102,7 @@ function renderDetail() {
   el('artifacts').innerHTML = (run?.artifacts || []).map(a => `<details><summary>${esc(label(a.role))} · ${esc(a.type)} · #${a.artifact_id} · mock</summary><p>${esc(tr('Входы:'))} ${esc(a.input_artifact_ids.join(', ') || tr('нет'))} · ${esc(a.created_at)}</p><pre>${esc(JSON.stringify(a.content,null,2))}</pre></details>`).join('') || `<p>${esc(tr('Артефактов пока нет.'))}</p>`;
   el('decisions').innerHTML = (run?.timeline || []).map(e => `<p>v${e.version} · ${esc(label(e.action) || e.action)} → ${esc(label(e.to_status))} · ${esc(e.created_at)}<br>${esc(e.reason)}</p>`).join('') || `<p>${esc(tr('Событий пока нет.'))}</p>`;
   el('rounds').innerHTML = (task?.rounds || []).map(r => `<article class="round-card"><h4>${esc(panelLocale.language === 'en' ? 'Legacy round' : 'Legacy раунд')} ${r.round_number}</h4>` + r.role_outputs.map(o => `<details><summary>${esc(o.role)} · ${esc(o.status)}</summary><pre>${esc(o.output)}</pre></details>`).join('') + '</article>').join('') || `<p>${esc(tr('Legacy-раундов нет.'))}</p>`;
-  controls(); renderTasks();
+  controls(); renderTasks(); renderDirector();
 }
 async function selectTask(id, selectedRun) {
   task = await api('/tasks/' + id);
