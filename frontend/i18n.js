@@ -44,7 +44,7 @@
     ['#taskDetail > h3:nth-of-type(3)','Events and owner decisions'],
     ['#taskDetail .grid.two section:first-child p','The worktree component is separate. Mock runs do not execute code or produce Git diffs.'],
     ['#taskDetail .grid.two section:last-child p','No real task QA report yet (#16). A model response is not test evidence.'],
-    ['#taskDetail details > summary','Legacy round history (separate from taskflow)'],
+    ['#taskDetail > details > summary','Legacy round history (separate from taskflow)'],
     ['#taskDetail .grid.two section:first-child h3','Git diff'],
     ['#taskDetail .grid.two section:last-child h3','Tests / QA'],
     ['section > article.card:last-child > h2','Models and costs'],
