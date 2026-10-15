@@ -2,14 +2,13 @@
 
 [**English version / Английская версия**](README.en.md)
 
-**Статус:** подготовлена минимальная основа (foundation MVP). Полноценная интеграция Hermes, OmniRouter, Codex и QA **ещё не реализована**. Рабочая версия 2 сохранена без изменений: [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2).
+**Статус:** подготовлена минимальная основа (foundation MVP). Полноценная интеграция Hermes, OmniRouter, Codex и QA **ещё не реализована**. Версия 2 сохранена в [v2-legacy](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy).
 
 ## Текущий статус — 15 октября 2026
 
-- [PR #25](https://github.com/KalyuzhniyKO/AICommander-v2/pull/25) **объединён**: исправления foundation, тесты и [успешный CI](https://github.com/KalyuzhniyKO/AICommander-v2/actions/runs/38635577007).
-- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) **объединён**: исследование OSS и ADR-001. [Issue #12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12) остаётся открытой до проверки совместимости через #11.
-- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) **открыт как Draft**: панель MacBook предложена, но ещё не включена в `v3-foundation`.
-- **Без Zorin:** допускается независимая работа над [#29 — Git worktree](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) и подготовка [#27 — taskflow](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27). Реализацию #27 согласовать со схемами из PR #30. [#28 — UI](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) пока не запускать, чтобы не дублировать PR #30. Проверка Hermes/OmniRoute требует ручной загрузки Zorin и завершения #11.
+- `main` репозитория AICommander-v3 содержит foundation, offline taskflow (PR #31) и отдельную библиотеку worktree executor (PR #33).
+- В PR #30 панель подключена к taskflow: версии, роли, артефакты, согласование/отказ, отмена и продолжение. Все маршруты защищены авторизацией и CSRF. [Проверки и границы](docs/QA_PANEL.md).
+- Реальная интеграция Zorin/Hermes/OmniRouter/Codex остаётся зависимой от read-only inventory #11. Mock-план не означает исполненный код или пройденный QA. Отдельный дублирующий UI #28 не запускается.
 
 ## Что мы создаём
 
@@ -27,7 +26,7 @@
 - клиент совместимого с OpenRouter API, проверка моделей и резервные модели;
 - базовые тесты без реальных API-ключей.
 
-**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, безопасная песочница, создание PR, авторизованная панель для MacBook и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md); это не проверка интеграции с Zorin.
+**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, настоящая песочница, создание PR внутри приложения, сквозная интеграция панели с executor и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md), панели — в [отчёте #19](docs/QA_PANEL.md); это не проверка интеграции с Zorin.
 
 **Не переносим из v2:** архивные мосты для macOS, Director/Judge/Final Auditor migration pack, старые планы, пустые обёртки ролей, ненужную интеграцию с отдельным OpenAI API Premium Review. ChatGPT в браузере используется **вручную** для сложных экспертных задач.
 
@@ -63,6 +62,7 @@ source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 cp .env.example .env
 cp config/models.example.json config/models.json
+# Укажите PANEL_PASSWORD (минимум 32 символа) в .env.
 python -m compileall backend
 python -m pytest -q
 python -m backend.app.main
@@ -82,12 +82,14 @@ Copy-Item config/models.example.json config/models.json
 
 Тесты используют временные БД и конфигурации, не читают локальный `.env` и блокируют реальные HTTP-вызовы моделей. GitHub Actions выполняет compileall и pytest на Python 3.11–3.13 в Linux и Windows. `MAX_MODEL_RETRIES` задаёт общее число попыток для каждой модели, включая первую; после их исчерпания используется следующая модель. Проверки не требуют API-ключа.
 
-После запуска: `GET /health`, `POST /tasks` с JSON `{"description":"Проверить документацию"}`, `GET /tasks/1`, `GET /models/status`. `POST /models/check` и создание раунда вызывают модели, если ключ настроен; примеры ID нужно заменить перед такими запросами.
+Все API требуют HTTP Basic; изменяющие запросы также требуют `X-AICommander-Request: 1`. После авторизации: `GET /health`, `POST /tasks` с JSON `{"description":"Проверить документацию"}`, `GET /tasks/1`, `GET /models/status`. `POST /models/check` и создание раунда вызывают модели, если ключ настроен; примеры ID нужно заменить перед такими запросами.
 
-Открыть: `http://127.0.0.1:8000`. В конфигурации моделей указаны **заглушки**, их нужно заменить действительными ID. Прототип **без авторизации** — не публикуй его в интернет или домашнюю сеть.
+Открыть: `http://127.0.0.1:8000`. В конфигурации моделей указаны **заглушки**, их нужно заменить действительными ID. Панель требует браузерную авторизацию и серверный PANEL_PASSWORD. Для MacBook используйте только [SSH tunnel](docs/MACBOOK_PANEL.md); публичное размещение и прямой доступ из LAN не поддерживаются.
 
 ## Где находится v3
 
-Пока это **отдельная ветка** [`v3-foundation`](https://github.com/KalyuzhniyKO/AICommander-v2/tree/v3-foundation) в репозитории v2: подключённый GitHub не может создать новый репозиторий. [Issue переноса #23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23). **`main` v2 не затронут.**
+Основная ветка AICommander-v3 — `main`; v2 сохранена в `v2-legacy`. PR #30 объединяет интерфейс с уже реализованными offline taskflow и отдельной библиотекой executor, не вызывая внешний executor из mock-процесса.
 
-[Этап #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10) уже выполнен. Открытые и параллельные задачи: [дорожная карта](docs/ROADMAP.md), [Issue #24](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24).
+## Панель владельца (#30)
+
+Защищённая панель подключена к `/taskflow/*`: процессы, этапы, типизированные артефакты, timeline, approve/reject/cancel и возобновление. Это Mock Director без вызовов моделей и исполнения кода. Legacy-раунды доступны отдельно через прежний API и показываются как история. [Запуск](docs/MACBOOK_PANEL.md), [проверки](docs/QA_PANEL.md).

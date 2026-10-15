@@ -54,6 +54,8 @@ def run_round(task_id: int, user_comment: str, settings: Settings, model_config:
     context = build_round_context(task, user_comment)
     outputs = []
     for role in selected_roles:
+        if repository.cancelled(task_id):
+            break
         agent = get_agent(role)
         messages = [ChatMessage("system", agent.system_prompt), ChatMessage("user", agent.build_user_prompt(context))]
         outcome = run_with_fallback(
@@ -65,8 +67,11 @@ def run_round(task_id: int, user_comment: str, settings: Settings, model_config:
             repository=repository,
             round_id=round_row["id"],
             openrouter=openrouter,
+            cancelled=lambda: repository.cancelled(task_id),
             provider_filter=lambda provider: provider == "openrouter",
         )
+        if repository.cancelled(task_id):
+            break
         output = outcome.output if outcome.success else fallback_local_output(role, task["description"])
         status = "completed" if outcome.success else "failed"
         if not outcome.success:
@@ -98,8 +103,11 @@ def rerun_role(round_id: int, role: str, settings: Settings, model_config: dict[
         repository=repository,
         round_id=round_id,
         openrouter=openrouter,
+        cancelled=lambda: repository.cancelled(task["id"]),
         provider_filter=lambda provider: provider == "openrouter",
     )
+    if repository.cancelled(task["id"]):
+        return repository.get_round(round_id) or round_row
     output = outcome.output if outcome.success else fallback_local_output(role, task["description"])
     if not outcome.success:
         persist_all_models_failed(repository, round_id, role, outcome.errors)

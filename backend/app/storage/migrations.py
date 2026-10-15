@@ -55,3 +55,24 @@ def migrate_taskflow(conn):
     except BaseException:
         conn.rollback()
         raise
+
+
+def migrate_panel(conn):
+    """Добавить панель атомарно к legacy, taskflow или ранней БД PR #30."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute("CREATE TABLE IF NOT EXISTS panel_migrations(version INTEGER PRIMARY KEY)")
+        if conn.execute("SELECT 1 FROM panel_migrations WHERE version=1").fetchone() is None:
+            conn.execute("CREATE TABLE IF NOT EXISTS projects(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL UNIQUE)")
+            conn.execute("INSERT OR IGNORE INTO projects(id,name) VALUES(1,'Foundation')")
+            conn.execute("CREATE TABLE IF NOT EXISTS owner_decisions(id INTEGER PRIMARY KEY AUTOINCREMENT,task_id INTEGER NOT NULL,action TEXT NOT NULL,comment TEXT NOT NULL DEFAULT '',created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(task_id) REFERENCES tasks(id))")
+            if "project_id" not in {r[1] for r in conn.execute("PRAGMA table_info(tasks)")}:
+                # SQLite запрещает ненулевой DEFAULT для нового FK в непустой таблице.
+                conn.execute("ALTER TABLE tasks ADD COLUMN project_id INTEGER REFERENCES projects(id)")
+                conn.execute("UPDATE tasks SET project_id=1 WHERE project_id IS NULL")
+            conn.execute("CREATE TRIGGER IF NOT EXISTS tasks_default_project AFTER INSERT ON tasks WHEN NEW.project_id IS NULL BEGIN UPDATE tasks SET project_id=1 WHERE id=NEW.id; END")
+            conn.execute("INSERT INTO panel_migrations(version) VALUES(1)")
+        conn.commit()
+    except BaseException:
+        conn.rollback()
+        raise

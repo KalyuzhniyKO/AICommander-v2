@@ -80,3 +80,7 @@ Open `http://127.0.0.1:8000` locally. Model IDs are placeholders. The prototype 
 The GitHub integration currently cannot create a dedicated repository. Foundation lives temporarily on [`v3-foundation`](https://github.com/KalyuzhniyKO/AICommander-v2/tree/v3-foundation), leaving v2 `main` intact. [Migration Issue #23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23).
 
 [Stage #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10) is complete. See the [parallel roadmap](docs/ROADMAP.en.md) and [Issue #24](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24).
+
+## Owner panel / taskflow (PR #30)
+
+The target repository is AICommander-v3, branch main; v2 is preserved in v2-legacy. This feature branch integrates the protected owner panel with the existing offline taskflow API: run history, typed artifacts, role stages, versioned/idempotent commands and owner decisions. Access requires server-side HTTP Basic credentials and an SSH tunnel to loopback. Approval accepts mock artifacts only; the separate executor, real model calls, QA and deployments are not invoked by this workflow. [Russian runbook](docs/MACBOOK_PANEL.md), [QA](docs/QA_PANEL.md).
