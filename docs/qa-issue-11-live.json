@@ -1,0 +1,60 @@
+{
+  "issue": 11,
+  "date": "2026-10-15",
+  "python": "3.13.12",
+  "scope": "docs and sanitized observations only",
+  "checks": [
+    {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "exit_code": 0,
+      "output": "....................................s................................... [ 64%]\n........................................                                 [100%]\n=============================== warnings summary ===============================\n.venv/lib/python3.13/site-packages/fastapi/testclient.py:1\n  <WORKTREE>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n111 passed, 1 skipped, 1 warning in 30.66s"
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "output": "No broken requirements found."
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "check": "backend_syntax",
+      "method": "builtin compile; no imports or pyc",
+      "files": 27,
+      "exit_code": 0
+    },
+    {
+      "check": "documentation_local_links_json_and_sensitive_patterns",
+      "exit_code": 0,
+      "scope": "all four changed/new docs; manual diff review plus heuristic scan"
+    }
+  ],
+  "ssh_probes_exit_code": 0,
+  "inventory": "not_checked_owner_choice",
+  "inference": "not_run",
+  "status": "partial_runtime_verified_issue_remains_open",
+  "review": "manual diff and allowlist review; no independent reviewer",
+  "pytest_summary": {
+    "passed": 111,
+    "skipped": 1,
+    "warnings": 1,
+    "skip_reason": "Windows app alias guard; test only runs on Windows",
+    "warning": "Starlette TestClient httpx deprecation"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "issue": 11,
+  "date": "2026-10-15",
+  "kind": "sanitized_live_observations_not_full_response_fixtures",
+  "connection": {
+    "transport": "ssh",
+    "batch_mode": true,
+    "strict_host_key_checking": true,
+    "password_used": false
+  },
+  "os": "Zorin OS 18.1",
+  "service": {
+    "scope": "user",
+    "id": "omniroute.service",
+    "load_state": "loaded",
+    "active_state": "active",
+    "sub_state": "running",
+    "unit_file_state": "enabled",
+    "main_pid_nonzero": true
+  },
+  "http_probes": [
+    {
+      "origin": "zorin_loopback",
+      "path": "/api/health",
+      "status_code": 200,
+      "allowed_status_field": "ok"
+    },
+    {
+      "origin": "zorin_loopback",
+      "path": "/api/monitoring/health",
+      "status_code": 200,
+      "allowed_status_field": "healthy"
+    },
+    {
+      "origin": "zorin_loopback",
+      "path": "/v1/models",
+      "status_code": 401
+    },
+    {
+      "origin": "zorin_loopback",
+      "path": "/api/v1/models",
+      "status_code": 401
+    },
+    {
+      "origin": "macbook_lan",
+      "path": "/api/health",
+      "status_code": 200
+    },
+    {
+      "origin": "macbook_lan",
+      "path": "/v1/models",
+      "status_code": 401
+    }
+  ],
+  "credentials_sent": false,
+  "listener_all_interfaces": true,
+  "versions": {
+    "omniroute_package": "3.8.51",
+    "service_node": "v24.20.0",
+    "ssh_shell_node": "v20.20.0",
+    "system_python": "3.12.3",
+    "hermes_install_stamp": "0.21.5+5343.ga3b56ca"
+  },
+  "inventory": "not_checked_owner_choice",
+  "hermes_inference": "not_run",
+  "issue_complete": false
+}
