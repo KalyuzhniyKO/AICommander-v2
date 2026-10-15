@@ -1,19 +1,35 @@
-# AICommander 3.0 — verified implementation (15 October 2026)
+[Русская версия](IMPLEMENTATION.md)
 
-[Русская версия](IMPLEMENTATION.md) · [Evidence-based audit (RU)](AUDIT_2026-10-15.md)
+# Audit of the v3 foundation (2026-10-14)
 
-**Evidence:** `main` source after [PR #35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35), plus [six passing GitHub Actions jobs](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38708568156) on Python 3.11–3.13 / Linux and Windows. This is **not** live Zorin/MacBook integration verification.
+### Preserved from AICommander-v2
+FastAPI local REST endpoints; SQLite tasks, rounds, agent outputs and model errors; minimal browser interface; basic text role prompts and keyword router; OpenRouter-compatible transport; model fallback and availability test; pytest fixtures. These are MVP foundations only.
 
-| Component | Present | Boundary |
-|---|---|---|
-| FastAPI, SQLite, UI | Tasks, rounds, simple local frontend | All API routes **unauthenticated** |
-| Legacy text roles | Keyword routing, direct OpenRouter model client and fallback | Not the installed OmniRouter; no automatic same-round role-to-role outputs |
-| Offline taskflow | MockDirector, Analyst → Architect → Developer typed artifacts, persistence, idempotency, owner decisions | Mock only; no real Hermes/models/Codex |
-| Offline executor | Trusted disposable Git fixtures/worktrees, approved commands, actual exit codes, bounded outputs | Separate library, not linked to taskflow/UI; **not an OS/network sandbox** |
-| CI | pytest, compileall, pip check on Linux/Windows | No macOS, browser E2E or live Zorin tests in `main` |
+### Not yet supported
+- No Hermes Director and no tested OmniRouter API connection.
+- No separate Analyst or executing QA agent; existing `coder` supplies text plans.
+- `round_runner` builds context before role loop; next role does not automatically see previous role's same-round output.
+- An offline worktree executor is available as a separate library (PR #33); it is not connected to taskflow and is not an OS sandbox. Real Codex execution, QA and automatic PR integration remain unavailable.
+- PR #30 protects the main app with HTTP Basic, CSRF and loopback Host checks; use an SSH tunnel.
+- Free model IDs are placeholders, not confirmed active models.
 
-**Not implemented or verified:** Hermes Director → OmniRouter live inference, Codex CLI orchestration, independent QA/Reviewer, automatic GitHub draft PR, cost management, authenticated MacBook owner UI, production deployment or warehouse_config pilot. Model IDs in examples are not evidence of availability.
+### Not copied from v2
+Old CLI/bridge for macOS, Director/Judge/Final Auditor migration modules, premium OpenAI review logic/API, redundant role wrappers and old plans. v3's paid ChatGPT web review is a **manual** step; API usage is a separate product/cost.
 
-**Security:** `/taskflow/*/owner-decision` is also unauthenticated. Mock approval is a database state change, **not permission to merge or deploy**. The default CLI binds localhost but an alternative ASGI bind could expose the server; never publish it to a LAN or the internet. The [Zorin inventory](ZORIN_INTEGRATION.md) is partial with separately identified owner-reported checks.
+### Research and pending UI PR
 
-**Branches/PR:** [PR #35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35) merged v3 to default `main`; old v2 is preserved under [`v2-legacy`](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy). [PR #31](https://github.com/KalyuzhniyKO/AICommander-v3/pull/31) and [#33](https://github.com/KalyuzhniyKO/AICommander-v3/pull/33) delivered offline components. [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) MacBook UI remains a conflicting Draft, not part of `main`. New PRs target `main`.
+- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v3/pull/26) merged (OSS research / ADR-001); #12 remains open until #11 verifies Zorin integration contracts.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) contains the merged MacBook UI. PR #30 is merged: the authenticated panel and its offline taskflow integration are available in main.
+- [#27](https://github.com/KalyuzhniyKO/AICommander-v3/issues/27) and [#29](https://github.com/KalyuzhniyKO/AICommander-v3/issues/29) are merged offline packages (#31/#33); [#28](https://github.com/KalyuzhniyKO/AICommander-v3/issues/28) overlaps PR #30.
+
+### Stage 00 verification
+Issue #10 removes the broken legacy bridge import, closes API SQLite connections and HTTPError handles, and refreshes round summaries after role reruns. 40 offline tests cover API behavior, resources, config and bounded fallback attempts. GitHub Actions covers Python 3.11–3.13 on Linux/Windows.
+
+Actual local exit codes and output: [Python 3.13](qa-foundation-python-3.13.14.json), [Python 3.12](qa-foundation-python-3.12.10.json). Compilation, pytest and pip check exited 0 in both environments; a separate uvicorn HTTP smoke passed using temporary SQLite. Pytest emits one Starlette dependency deprecation warning about migrating from httpx to httpx2. Python 3.11 is not installed locally; verify its result in GitHub Actions.
+
+### Panel/taskflow integration (2026-10-15)
+The panel uses existing taskflow commands, typed artifacts, stages and timeline. It preserves expected_version and idempotency keys, refreshes after conflicts and replays, and keeps legacy rounds separate. Additive panel migrations preserve legacy, taskflow and early panel databases. See [runbook](MACBOOK_PANEL.md) and [actual QA](QA_PANEL.md). All completion remains mock artifacts only.
+
+## Repository audit
+
+[Audit updated after PR #30 and #37 (RU)](AUDIT_2026-10-15.md) records code, CI and limited Zorin evidence. The main branch is v3; v2-legacy preserves v2. Live model inventory and Hermes → OmniRoute inference remain unverified.

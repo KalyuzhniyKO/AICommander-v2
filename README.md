@@ -2,13 +2,13 @@
 
 [**English version / Английская версия**](README.en.md)
 
-**Статус на 15.10.2026:** это тестовая основа AICommander 3.0, **не готовая автономная AI-команда**. Подтверждённое состояние и ограничения: [аудит проекта](docs/AUDIT_2026-10-15.md).
+**Статус:** подготовлена минимальная основа (foundation MVP). Полноценная интеграция Hermes, OmniRouter, Codex и QA **ещё не реализована**. Версия 2 сохранена в [v2-legacy](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy).
 
-- Репозиторий **[AICommander-v3](https://github.com/KalyuzhniyKO/AICommander-v3)** уже переименован.
-- [PR #35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35) перенёс версию 3 в **основную ветку `main`**; [все шесть CI-проверок](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38708568156) прошли.
-- Исходная v2 сохранена **в этом же репозитории** в [`v2-legacy`](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy). Ветка `v3-foundation` теперь историческая; новые PR направлять в `main`.
-- [PR #31](https://github.com/KalyuzhniyKO/AICommander-v3/pull/31) (offline taskflow) и [PR #33](https://github.com/KalyuzhniyKO/AICommander-v3/pull/33) (offline Git worktree executor) объединены. Их части **ещё не интегрированы** с Hermes/OmniRouter/Codex.
-- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) (защищённый интерфейс MacBook) остаётся **Draft, конфликтует с актуальным `main`, не объединён**.
+## Текущий статус — 15 октября 2026
+
+- `main` репозитория AICommander-v3 содержит foundation, offline taskflow (PR #31) и отдельную библиотеку worktree executor (PR #33).
+- В объединённом PR #30 панель подключена к taskflow: версии, роли, артефакты, согласование/отказ, отмена и продолжение. Все маршруты защищены авторизацией и CSRF. [Проверки и границы](docs/QA_PANEL.md).
+- Реальная интеграция Zorin/Hermes/OmniRouter/Codex остаётся зависимой от read-only inventory #11. Mock-план не означает исполненный код или пройденный QA. Отдельный дублирующий UI #28 не запускается.
 
 ## Что мы создаём
 
@@ -18,16 +18,17 @@
 
 Цель — настоящие изменения в Git-ветке и проверенные тесты, а не пять текстовых советов от разных моделей.
 
-## Что реализовано в `main`
+## Что уже перенесено из v2
 
-- FastAPI, SQLite, простой локальный веб-интерфейс, текстовые роли и раунды, fallback и **прямой OpenRouter** (не установленный OmniRouter).
-- **Отдельный offline taskflow:** `/taskflow/*`, MockDirector, аналитик → архитектор → разработчик, типизированные артефакты, состояния, идемпотентность и owner approve/reject. **Нет реальных вызовов Hermes, моделей, Git/QA.**
-- **OfflineExecutor:** библиотека для доверенных одноразовых репозиториев, worktree, утверждённые команды, diff и exit code. **Не подключён к API/UI и не является OS/network sandbox.**
-- Шесть успешных проверок GitHub Actions для Python 3.11–3.13 на Linux/Windows; это **не** тестирование на Zorin, macOS и с живыми моделями.
+- локальный FastAPI и минимальный веб-интерфейс;
+- задачи, история раундов, результаты ролей в SQLite;
+- базовые подсказки ролям и первоначальное распределение по ключевым словам;
+- клиент совместимого с OpenRouter API, проверка моделей и резервные модели;
+- базовые тесты без реальных API-ключей.
 
-**Пока отсутствует:** работающий Hermes → OmniRouter, Codex CLI executor, QA/Reviewer, автоматические GitHub PR, защищённый MacBook UI и контроль бюджета. Все текущие endpoints, включая `owner-decision`, **не требуют аутентификации**; не открывайте сервер в LAN или интернет. `owner_approve` — только mock-статус БД, а не разрешение на реальный merge/deploy.
+**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, настоящая песочница, создание PR внутри приложения, сквозная интеграция панели с executor и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md), панели — в [отчёте #19](docs/QA_PANEL.md); это не проверка интеграции с Zorin.
 
-**Не переносили из v2:** устаревшие мосты macOS, Director/Judge/Final Auditor migration pack, старые планы и отдельную интеграцию OpenAI API Premium Review. ChatGPT Web — ручной экспертный этап.
+**Не переносим из v2:** архивные мосты для macOS, Director/Judge/Final Auditor migration pack, старые планы, пустые обёртки ролей, ненужную интеграцию с отдельным OpenAI API Premium Review. ChatGPT в браузере используется **вручную** для сложных экспертных задач.
 
 ## Принципы работы
 
@@ -61,6 +62,7 @@ source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 cp .env.example .env
 cp config/models.example.json config/models.json
+# Укажите PANEL_PASSWORD (минимум 32 символа) в .env.
 python -m compileall backend
 python -m pytest -q
 python -m backend.app.main
@@ -80,10 +82,18 @@ Copy-Item config/models.example.json config/models.json
 
 Тесты используют временные БД и конфигурации, не читают локальный `.env` и блокируют реальные HTTP-вызовы моделей. GitHub Actions выполняет compileall и pytest на Python 3.11–3.13 в Linux и Windows. `MAX_MODEL_RETRIES` задаёт общее число попыток для каждой модели, включая первую; после их исчерпания используется следующая модель. Проверки не требуют API-ключа.
 
-После запуска: `GET /health`, `POST /tasks` с JSON `{"description":"Проверить документацию"}`, `GET /tasks/1`, `GET /models/status`. `POST /models/check` и создание раунда вызывают модели, если ключ настроен; примеры ID нужно заменить перед такими запросами.
+Все API требуют HTTP Basic; изменяющие запросы также требуют `X-AICommander-Request: 1`. После авторизации: `GET /health`, `POST /tasks` с JSON `{"description":"Проверить документацию"}`, `GET /tasks/1`, `GET /models/status`. `POST /models/check` и создание раунда вызывают модели, если ключ настроен; примеры ID нужно заменить перед такими запросами.
 
-Открыть: `http://127.0.0.1:8000`. В конфигурации моделей указаны **заглушки**, их нужно заменить действительными ID. Прототип **без авторизации** — не публикуй его в интернет или домашнюю сеть.
+Открыть: `http://127.0.0.1:8000`. В конфигурации моделей указаны **заглушки**, их нужно заменить действительными ID. Панель требует браузерную авторизацию и серверный PANEL_PASSWORD. Для MacBook используйте только [SSH tunnel](docs/MACBOOK_PANEL.md); публичное размещение и прямой доступ из LAN не поддерживаются.
 
-## Текущая организация работы
+## Где находится v3
 
-Разработка ведётся в [`main`](https://github.com/KalyuzhniyKO/AICommander-v3/tree/main); для новых изменений используем feature-ветки и PR в `main`. Старое состояние сохранено в [`v2-legacy`](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy). [GitHub workflow](docs/GITHUB_WORKFLOW.md) и [дорожная карта](docs/ROADMAP.md) описывают зависимости. [Аудит](docs/AUDIT_2026-10-15.md) отделяет реализованное от планируемого.
+Основная ветка AICommander-v3 — `main`; v2 сохранена в `v2-legacy`. PR #30 объединяет интерфейс с уже реализованными offline taskflow и отдельной библиотекой executor, не вызывая внешний executor из mock-процесса.
+
+## Панель владельца (#30)
+
+Защищённая панель подключена к `/taskflow/*`: процессы, этапы, типизированные артефакты, timeline, approve/reject/cancel и возобновление. Это Mock Director без вызовов моделей и исполнения кода. Legacy-раунды доступны отдельно через прежний API и показываются как история. [Запуск](docs/MACBOOK_PANEL.md), [проверки](docs/QA_PANEL.md).
+
+## Аудит репозитория
+
+[Аудит после PR #30 и #37](docs/AUDIT_2026-10-15.md) фиксирует состояние кода, CI и ограниченные подтверждения Zorin. Авторизованный inventory моделей и реальный Hermes → OmniRoute inference остаются непроверенными.

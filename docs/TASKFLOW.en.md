@@ -11,3 +11,7 @@ Runs have planned, running, failed, blocked, awaiting_owner, done and cancelled 
 Frozen UI artifacts: [response schema](contracts/taskflow-v1.schema.json), [request schemas](contracts/taskflow-v1.requests.json), [example](contracts/taskflow-v1.example.json). Export using `python -m backend.app.taskflow.export_contract`; the exporter uses in-memory SQLite. The Russian documentation specifies routes, transition rules, error handling, replay semantics, additive migration and best-effort redaction limitations.
 
 Run `python -m compileall backend`, `python -m pytest -q` and `python -m pip check`. Actual verification output is recorded in [qa-issue-27.json](qa-issue-27.json).
+
+## Owner panel integration (PR #30)
+
+The main app protects every taskflow route with HTTP Basic and CSRF/Origin/Host checks. The reusable router alone does not authenticate callers when mounted in another app. The panel uses the existing versioned/idempotent taskflow contract, reads current snapshots after conflicts/replays, and keeps legacy rounds separate. See [Russian panel runbook](MACBOOK_PANEL.md). Completion still means mock artifacts only; no real executor, models, QA or deployment is invoked.

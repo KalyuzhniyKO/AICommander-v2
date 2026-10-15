@@ -4,15 +4,16 @@ import sqlite3
 
 class Repository:
     def __init__(self,conn:sqlite3.Connection):self.conn=conn
-    def create_task(self,description):
+    def create_task(self,description,project_id=1):
         title=description.strip().splitlines()[0][:120] or "Untitled"
-        cur=self.conn.execute("INSERT INTO tasks(title,description) VALUES(?,?)",(title,description))
+        cur=self.conn.execute("INSERT INTO tasks(title,description,project_id) VALUES(?,?,?)",(title,description,project_id))
         self.conn.commit()
         return self.get_task(cur.lastrowid)
     def get_task(self,task_id):
         row=self.conn.execute("SELECT * FROM tasks WHERE id=?",(task_id,)).fetchone()
         if row is None:return None
         result=dict(row)
+        result["decisions"]=[dict(r) for r in self.conn.execute("SELECT * FROM owner_decisions WHERE task_id=? ORDER BY id", (task_id,))]
         result["rounds"]=[]
         for rnd in self.conn.execute("SELECT * FROM rounds WHERE task_id=? ORDER BY round_number",(task_id,)):
             x=dict(rnd);x["selected_roles"]=json.loads(x["selected_roles"])
@@ -51,3 +52,26 @@ class Repository:
         return [dict(r) for r in self.conn.execute("SELECT * FROM model_status ORDER BY role,provider,model_id")]
     def update_round_summary(self,round_id,summary):
         self.conn.execute("UPDATE rounds SET summary=?,updated_at=CURRENT_TIMESTAMP WHERE id=?",(summary,round_id));self.conn.commit()
+
+    def list_projects(self):
+        return [dict(r) for r in self.conn.execute("SELECT * FROM projects ORDER BY id")]
+
+    def create_project(self, name):
+        cur = self.conn.execute("INSERT INTO projects(name) VALUES(?)", (name,))
+        self.conn.commit()
+        return {"id": cur.lastrowid, "name": name}
+
+    def list_tasks(self):
+        return [dict(r) for r in self.conn.execute("SELECT t.*, r.id AS latest_run_id, r.status AS flow_status FROM tasks t LEFT JOIN taskflow_runs r ON r.id=(SELECT MAX(id) FROM taskflow_runs WHERE task_id=t.id) ORDER BY t.id DESC")]
+
+    def transition(self, task_id, states, target, action=None, comment=""):
+        placeholders = ",".join("?" for _ in states)
+        cur = self.conn.execute(f"UPDATE tasks SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ({placeholders})", (target, task_id, *states))
+        if cur.rowcount and action:
+            self.conn.execute("INSERT INTO owner_decisions(task_id,action,comment) VALUES(?,?,?)", (task_id, action, comment))
+        self.conn.commit()
+        return bool(cur.rowcount)
+
+    def cancelled(self, task_id):
+        row = self.conn.execute("SELECT status FROM tasks WHERE id=?", (task_id,)).fetchone()
+        return row is None or row[0] in {"stopping", "stopped", "rejected", "approved"}

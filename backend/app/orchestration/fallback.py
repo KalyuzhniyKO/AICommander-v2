@@ -56,6 +56,7 @@ def run_with_fallback(
     repository: Repository,
     round_id: int | None,
     openrouter: OpenRouterProvider,
+    cancelled: Callable[[], bool] = lambda: False,
     provider_filter: Callable[[str], bool] | None = None,
 ) -> FallbackOutcome:
     errors: list[dict[str, str]] = []
@@ -66,6 +67,8 @@ def run_with_fallback(
         if provider_filter and not provider_filter(provider_name):
             continue
         for _ in range(max(1, max_attempts_per_model)):
+            if cancelled():
+                return FallbackOutcome(success=False, errors=errors)
             try:
                 provider = provider_for(provider_name, openrouter)
                 result = provider.chat(model_id=model_id, messages=messages, timeout_seconds=timeout_seconds)

@@ -2,7 +2,7 @@
 
 [Russian main README](../README.md) · [Sequential master queue](https://github.com/KalyuzhniyKO/AICommander-v3/issues/24)
 
-**Historical brief (updated 15 October 2026):** offline taskflow PR #31 and offline worktree PR #33 are already merged into `main`; UI PR #30 remains a conflicted Draft. The tasks below are the original acceptance briefs, **not a list of remaining work**. They were originally designed to run independently from `v3-foundation`. Each uses its own git branch/worktree and produces a draft PR. Their existing parent issues remain open until real integration is proven. Never touch production warehouse data, Hermes/OmniRoute running services, real API credentials or deployments.
+**Historical brief (updated 15 October 2026):** offline taskflow PR #31 and offline worktree PR #33 are already merged into `main`; UI PR #30 is merged with authentication and offline taskflow integration. The tasks below are the original acceptance briefs, **not a list of remaining work**. They were originally designed to run independently from `v3-foundation`. Each uses its own git branch/worktree and produces a draft PR. Their existing parent issues remain open until real integration is proven. Never touch production warehouse data, Hermes/OmniRoute running services, real API credentials or deployments.
 
 ## offline-contracts
 

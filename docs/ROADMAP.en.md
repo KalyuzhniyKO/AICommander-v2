@@ -6,7 +6,7 @@
 
 - [PR #25](https://github.com/KalyuzhniyKO/AICommander-v3/pull/25) foundation and [PR #26](https://github.com/KalyuzhniyKO/AICommander-v3/pull/26) OSS research merged. #12 remains open for live validation.
 - [PR #31](https://github.com/KalyuzhniyKO/AICommander-v3/pull/31) offline mock taskflow and [PR #33](https://github.com/KalyuzhniyKO/AICommander-v3/pull/33) offline worktree executor merged; they do **not** complete the actual Hermes/Codex integrations.
-- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) MacBook UI is **Draft/conflicted**, not merged. Pause duplicate #28.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) authenticated MacBook UI with offline taskflow is **merged into main**, CI 7/7. Pause duplicate #28.
 - [#11](https://github.com/KalyuzhniyKO/AICommander-v3/issues/11) Zorin inventory is partial; validate live Hermes → OmniRouter first. Real integration phases remain dependency-gated, while independent offline improvements may run in parallel.
 - Suggested Codex model names below are **historical preferences, not verified availability**.
 

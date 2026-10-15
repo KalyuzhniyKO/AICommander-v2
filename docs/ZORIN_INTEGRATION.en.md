@@ -4,7 +4,39 @@
 
 Read-only audit, 2026-10-15. **Partial evidence; Issue #11 runtime acceptance criteria remain unmet.**
 
-### Additional observations supplied by the owner (not retested by Codex)
+### Codex SSH follow-up — 2026-10-15
+
+The follow-up supersedes the initial bus/socket limitations **for the current SSH
+session**. An existing SSH alias worked with BatchMode and strict saved-host-key
+checking; no password or known_hosts change was needed. This verifies the saved
+key, not a new independent fingerprint attestation. Private connection details
+are omitted.
+
+- Zorin OS 18.1 confirmed. OmniRoute **user** unit is loaded/active/running/enabled
+  with a nonzero PID; the system unit is absent. Both named Hermes units are
+  absent, which does not rule out CLI or other launch mechanisms.
+- Loopback health GETs returned 200 (`ok`, `healthy`); both model-list GETs returned
+  401 without credentials. MacBook LAN probes independently returned health 200
+  and models 401. One listener binds all interfaces; Internet exposure is unknown.
+- Installed OmniRoute is 3.8.51. Its service uses the launcher Node v24.20.0;
+  the noninteractive shell resolves Node v20.20.0, below the package requirement.
+  Hermes/OmniRoute launchers exist but are outside that shell's PATH. Missing
+  CLI commands in PATH do not prove that packages are absent.
+- Hermes install stamp and four source hashes match the first audit. CLI custom
+  Chat Completions, resume and delegation source contracts remain confirmed,
+  but no bootstrap or model execution was performed.
+- The owner explicitly chose to leave **authenticated inventory unverified**.
+  No credential store, token salt, private config, database or chat was opened.
+  Source inspection shows the official CLI token helper may create a salt file;
+  it was not executed. No inference, login, service/configuration change occurred.
+- Issue #11 stays open; authenticated inventory and a separately authorized
+  Hermes-to-OmniRoute runtime check remain outstanding. This does not authorize #13.
+
+[Sanitized observations](contracts/zorin-live-probes.json) are an allowlist projection,
+not full response fixtures or an inventory schema. [Follow-up QA](qa-issue-11-live.json).
+The statements below about no SSH and denied sockets describe the **first** audit.
+
+### Initial owner observations (historical; follow-up above retests selected probes)
 
 On 2026-10-15 the owner ran restricted read-only probes directly in the ordinary Zorin terminal and on a MacBook connected to the same home LAN. These findings were **reported by the owner** in PR discussion; private IP addresses, credentials and configurations were not shared:
 
