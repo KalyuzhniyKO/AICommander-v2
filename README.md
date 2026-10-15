@@ -2,14 +2,13 @@
 
 [**English version / Английская версия**](README.en.md)
 
-**Статус:** подготовлена минимальная основа (foundation MVP). Полноценная интеграция Hermes, OmniRouter, Codex и QA **ещё не реализована**. Рабочая версия 2 сохранена без изменений: [AICommander-v2](https://github.com/KalyuzhniyKO/AICommander-v2).
+**Статус на 15.10.2026:** это тестовая основа AICommander 3.0, **не готовая автономная AI-команда**. Подтверждённое состояние и ограничения: [аудит проекта](docs/AUDIT_2026-10-15.md).
 
-## Текущий статус — 15 октября 2026
-
-- [PR #25](https://github.com/KalyuzhniyKO/AICommander-v2/pull/25) **объединён**: исправления foundation, тесты и [успешный CI](https://github.com/KalyuzhniyKO/AICommander-v2/actions/runs/38635577007).
-- [PR #26](https://github.com/KalyuzhniyKO/AICommander-v2/pull/26) **объединён**: исследование OSS и ADR-001. [Issue #12](https://github.com/KalyuzhniyKO/AICommander-v2/issues/12) остаётся открытой до проверки совместимости через #11.
-- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v2/pull/30) **открыт как Draft**: панель MacBook предложена, но ещё не включена в `v3-foundation`.
-- **Без Zorin:** допускается независимая работа над [#29 — Git worktree](https://github.com/KalyuzhniyKO/AICommander-v2/issues/29) и подготовка [#27 — taskflow](https://github.com/KalyuzhniyKO/AICommander-v2/issues/27). Реализацию #27 согласовать со схемами из PR #30. [#28 — UI](https://github.com/KalyuzhniyKO/AICommander-v2/issues/28) пока не запускать, чтобы не дублировать PR #30. Проверка Hermes/OmniRoute требует ручной загрузки Zorin и завершения #11.
+- Репозиторий **[AICommander-v3](https://github.com/KalyuzhniyKO/AICommander-v3)** уже переименован.
+- [PR #35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35) перенёс версию 3 в **основную ветку `main`**; [все шесть CI-проверок](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38708568156) прошли.
+- Исходная v2 сохранена **в этом же репозитории** в [`v2-legacy`](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy). Ветка `v3-foundation` теперь историческая; новые PR направлять в `main`.
+- [PR #31](https://github.com/KalyuzhniyKO/AICommander-v3/pull/31) (offline taskflow) и [PR #33](https://github.com/KalyuzhniyKO/AICommander-v3/pull/33) (offline Git worktree executor) объединены. Их части **ещё не интегрированы** с Hermes/OmniRouter/Codex.
+- [PR #30](https://github.com/KalyuzhniyKO/AICommander-v3/pull/30) (защищённый интерфейс MacBook) остаётся **Draft, конфликтует с актуальным `main`, не объединён**.
 
 ## Что мы создаём
 
@@ -19,17 +18,16 @@
 
 Цель — настоящие изменения в Git-ветке и проверенные тесты, а не пять текстовых советов от разных моделей.
 
-## Что уже перенесено из v2
+## Что реализовано в `main`
 
-- локальный FastAPI и минимальный веб-интерфейс;
-- задачи, история раундов, результаты ролей в SQLite;
-- базовые подсказки ролям и первоначальное распределение по ключевым словам;
-- клиент совместимого с OpenRouter API, проверка моделей и резервные модели;
-- базовые тесты без реальных API-ключей.
+- FastAPI, SQLite, простой локальный веб-интерфейс, текстовые роли и раунды, fallback и **прямой OpenRouter** (не установленный OmniRouter).
+- **Отдельный offline taskflow:** `/taskflow/*`, MockDirector, аналитик → архитектор → разработчик, типизированные артефакты, состояния, идемпотентность и owner approve/reject. **Нет реальных вызовов Hermes, моделей, Git/QA.**
+- **OfflineExecutor:** библиотека для доверенных одноразовых репозиториев, worktree, утверждённые команды, diff и exit code. **Не подключён к API/UI и не является OS/network sandbox.**
+- Шесть успешных проверок GitHub Actions для Python 3.11–3.13 на Linux/Windows; это **не** тестирование на Zorin, macOS и с живыми моделями.
 
-**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, безопасная песочница, создание PR, авторизованная панель для MacBook и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md); это не проверка интеграции с Zorin.
+**Пока отсутствует:** работающий Hermes → OmniRouter, Codex CLI executor, QA/Reviewer, автоматические GitHub PR, защищённый MacBook UI и контроль бюджета. Все текущие endpoints, включая `owner-decision`, **не требуют аутентификации**; не открывайте сервер в LAN или интернет. `owner_approve` — только mock-статус БД, а не разрешение на реальный merge/deploy.
 
-**Не переносим из v2:** архивные мосты для macOS, Director/Judge/Final Auditor migration pack, старые планы, пустые обёртки ролей, ненужную интеграцию с отдельным OpenAI API Premium Review. ChatGPT в браузере используется **вручную** для сложных экспертных задач.
+**Не переносили из v2:** устаревшие мосты macOS, Director/Judge/Final Auditor migration pack, старые планы и отдельную интеграцию OpenAI API Premium Review. ChatGPT Web — ручной экспертный этап.
 
 ## Принципы работы
 
@@ -86,8 +84,6 @@ Copy-Item config/models.example.json config/models.json
 
 Открыть: `http://127.0.0.1:8000`. В конфигурации моделей указаны **заглушки**, их нужно заменить действительными ID. Прототип **без авторизации** — не публикуй его в интернет или домашнюю сеть.
 
-## Где находится v3
+## Текущая организация работы
 
-Пока это **отдельная ветка** [`v3-foundation`](https://github.com/KalyuzhniyKO/AICommander-v2/tree/v3-foundation) в репозитории v2: подключённый GitHub не может создать новый репозиторий. [Issue переноса #23](https://github.com/KalyuzhniyKO/AICommander-v2/issues/23). **`main` v2 не затронут.**
-
-[Этап #10](https://github.com/KalyuzhniyKO/AICommander-v2/issues/10) уже выполнен. Открытые и параллельные задачи: [дорожная карта](docs/ROADMAP.md), [Issue #24](https://github.com/KalyuzhniyKO/AICommander-v2/issues/24).
+Разработка ведётся в [`main`](https://github.com/KalyuzhniyKO/AICommander-v3/tree/main); для новых изменений используем feature-ветки и PR в `main`. Старое состояние сохранено в [`v2-legacy`](https://github.com/KalyuzhniyKO/AICommander-v3/tree/v2-legacy). [GitHub workflow](docs/GITHUB_WORKFLOW.md) и [дорожная карта](docs/ROADMAP.md) описывают зависимости. [Аудит](docs/AUDIT_2026-10-15.md) отделяет реализованное от планируемого.
