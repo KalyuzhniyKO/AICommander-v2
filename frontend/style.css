@@ -73,3 +73,16 @@ button.danger { background: #991b1b; border-color: #f87171; }
 .role-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
 .role-board .role { margin: 0; }
 @media (max-width: 840px) { .role-board { grid-template-columns: 1fr; } }
+
+
+/* Read-only presentation of persisted mock taskflow; not a live Hermes chat. */
+.director-preview { margin: 22px 0; padding: 18px; background: #121c30; border: 1px solid #526581; border-radius: 16px; min-width: 0; }
+.director-preview .hint { margin: 0 0 14px; }
+.chat-thread { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.chat-bubble { max-width: 84%; padding: 12px 16px; background: #213451; border: 1px solid #415777; border-radius: 16px; overflow-wrap: anywhere; min-width: 0; }
+.chat-bubble.owner { align-self: flex-end; background: #173c4a; border-color: #0e7490; }
+.chat-bubble.mock, .chat-bubble.artifact { align-self: flex-start; }
+.chat-bubble.artifact { border-style: dashed; }
+.chat-bubble p { margin: 6px 0 0; white-space: pre-wrap; font-size: .94rem; }
+.chat-bubble strong { font-size: .9rem; }
+@media (max-width: 520px) { .director-preview { padding: 12px; } .chat-bubble { max-width: 100%; } }
