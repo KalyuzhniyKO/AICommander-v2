@@ -1,12 +1,12 @@
 ## Изменения
 Что исправлено или добавлено?
 
-**English version:** [Pull Request template](https://github.com/KalyuzhniyKO/AICommander-v2/blob/v3-foundation/docs/templates/PULL_REQUEST_TEMPLATE.en.md)
+**English version:** [Pull Request template](https://github.com/KalyuzhniyKO/AICommander-v3/blob/main/docs/templates/PULL_REQUEST_TEMPLATE.en.md)
 
 ## Связанные задачи
 - Issue: #
 - Зависимости / другие PR:
-- Целевая ветка: `v3-foundation`
+- Целевая ветка: `main`
 
 ## Фактические проверки
 | Команда / workflow | Результат и код завершения | Ссылка на CI / журнал |
@@ -23,7 +23,7 @@
 ## Безопасность и ограничения
 - [ ] Нет секретов, пользовательских данных и production DB
 - [ ] Все запуски происходили в разрешённой тестовой среде
-- [ ] `main` версии 2 не менялся
+- [ ] Резервная `v2-legacy` не изменена без отдельного разрешения; целевая ветка — `main` версии 3
 - [ ] Нет auto-merge / deploy
 - [ ] Отмечены функции, которые ещё не проверены на Zorin
 - [ ] Реальные проверки отделены от заявлений AI-модели
