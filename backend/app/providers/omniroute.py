@@ -1,7 +1,7 @@
-"""Opt-in transport scaffold; authenticated OmniRoute runtime is not verified.
+"""Opt-in text transport, checked against OmniRoute 3.8.51 with scoped live probes.
 
-No application wiring, credential discovery, routing or model fallback lives here.
-JSON inventory/chat parsing is an OpenAI-compatible hypothesis covered by mocks.
+No credential discovery, model routing or fallback lives in this module.
+Application callers must explicitly configure the transport and exact route.
 """
 from __future__ import annotations
 
@@ -44,6 +44,7 @@ class OmniRouteConfig:
     api_key: str = field(default="", repr=False)
     timeout_seconds: float = 10.0
     max_get_attempts: int = 2
+    max_output_tokens: int = 256
 
     def __post_init__(self):
         if type(self.enabled) is not bool:
@@ -54,6 +55,8 @@ class OmniRouteConfig:
                 or not 0 < self.timeout_seconds <= 60
                 or type(self.max_get_attempts) is not int
                 or not 1 <= self.max_get_attempts <= 3):
+            raise OmniRouteError("invalid_config")
+        if type(self.max_output_tokens) is not int or not 1 <= self.max_output_tokens <= 8192:
             raise OmniRouteError("invalid_config")
         if not isinstance(self.api_key, str) or any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in self.api_key):
             raise OmniRouteError("invalid_config")
@@ -95,6 +98,7 @@ class OmniRouteConfig:
                 api_key=os.environ.get("OMNIROUTE_API_KEY", ""),
                 timeout_seconds=float(os.environ.get("OMNIROUTE_TIMEOUT_SECONDS", "10")),
                 max_get_attempts=int(os.environ.get("OMNIROUTE_MAX_GET_ATTEMPTS", "2")),
+                max_output_tokens=int(os.environ.get("OMNIROUTE_MAX_OUTPUT_TOKENS", "256")),
             )
         except (ValueError, OverflowError):
             raise OmniRouteError("invalid_config") from None
@@ -226,7 +230,8 @@ class OmniRouteProvider(ChatProvider):
             raise OmniRouteError("invalid_request")
         start = time.monotonic()
         parsed = self._request("/v1/chat/completions", authenticated=True,
-                               payload={"model": model_id, "messages": messages_to_dicts(messages), "stream": False},
+                               payload={"model": model_id, "messages": messages_to_dicts(messages), "stream": False,
+                                        "max_tokens": self.config.max_output_tokens},
                                timeout=timeout_seconds, cancel=cancel)
         try:
             content = parsed["choices"][0]["message"]["content"]

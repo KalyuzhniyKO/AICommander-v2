@@ -7,6 +7,7 @@ from typing import Callable
 
 from backend.app.providers.base import ChatMessage, ChatProvider, ProviderError
 from backend.app.providers.openrouter import OpenRouterProvider
+from backend.app.providers.omniroute import OmniRouteProvider
 from backend.app.storage.repositories import Repository
 
 
@@ -27,14 +28,23 @@ def split_model_ref(ref: str) -> tuple[str, str]:
     return provider, model
 
 
-def provider_for(provider_name: str, openrouter: OpenRouterProvider) -> ChatProvider:
+def provider_for(provider_name: str, openrouter: OpenRouterProvider, omniroute: OmniRouteProvider | None = None) -> ChatProvider:
     if provider_name == "openrouter":
         return openrouter
+    if provider_name == "omniroute" and omniroute is not None:
+        return omniroute
     raise ProviderError(f"Provider {provider_name} is not configured", "not_configured")
 
 
-def _friendly_provider_error(error: str, category: str = "api_error") -> str:
+def _friendly_provider_error(error: str, category: str = "api_error", provider_name: str = "openrouter") -> str:
     lower = error.lower()
+    if provider_name == "omniroute":
+        if category in {"disabled", "not_configured"}:
+            return "OmniRoute выключен или не настроен: проверьте OMNIROUTE_ENABLED, OMNIROUTE_BASE_URL и OMNIROUTE_API_KEY."
+        if category in {"auth_required", "forbidden"}:
+            return "OmniRoute отклонил доступ: проверьте inference-ключ и его разрешения."
+        if category in {"rate_limited", "quota_or_tokens"}:
+            return "OmniRoute: исчерпана квота или сработал rate limit; inference автоматически не повторяется."
     if category == "not_configured" or "api_key" in lower:
         return "OPENROUTER_API_KEY отсутствует или провайдер не настроен. Добавьте ключ в .env или переменные окружения."
     if category == "timeout" or "timed out" in lower or "timeout" in lower:
@@ -56,6 +66,7 @@ def run_with_fallback(
     repository: Repository,
     round_id: int | None,
     openrouter: OpenRouterProvider,
+    omniroute: OmniRouteProvider | None = None,
     cancelled: Callable[[], bool] = lambda: False,
     provider_filter: Callable[[str], bool] | None = None,
 ) -> FallbackOutcome:
@@ -66,20 +77,26 @@ def run_with_fallback(
         provider_name, model_id = split_model_ref(ref)
         if provider_filter and not provider_filter(provider_name):
             continue
-        for _ in range(max(1, max_attempts_per_model)):
+        # OmniRoute owns model/provider routing. Never replay an ambiguous inference
+        # or fall through to a direct provider after it fails.
+        attempts = 1 if provider_name == "omniroute" else max(1, max_attempts_per_model)
+        for _ in range(attempts):
             if cancelled():
                 return FallbackOutcome(success=False, errors=errors)
             try:
-                provider = provider_for(provider_name, openrouter)
+                provider = provider_for(provider_name, openrouter, omniroute)
                 result = provider.chat(model_id=model_id, messages=messages, timeout_seconds=timeout_seconds)
                 repository.update_model_status(provider_name, model_id, role, "available", response_time_ms=result.response_time_ms)
                 return FallbackOutcome(True, result.content, provider_name, model_id, result.response_time_ms, errors)
             except ProviderError as exc:
-                error = _friendly_provider_error(str(exc), exc.category)
+                error = _friendly_provider_error(str(exc), exc.category, provider_name)
             except Exception as exc:
-                error = f"Неожиданная ошибка провайдера: {exc}"
+                error = ("OmniRoute: ошибка транспорта; inference автоматически не повторяется."
+                         if provider_name == "omniroute" else f"Неожиданная ошибка провайдера: {exc}")
             errors.append({"provider": provider_name, "model_id": model_id, "error": error})
             repository.add_model_error(round_id, role, provider_name, model_id, error)
             repository.update_model_status(provider_name, model_id, role, "failed", last_error=error)
+            if provider_name == "omniroute":
+                return FallbackOutcome(success=False, errors=errors)
             continue
     return FallbackOutcome(success=False, errors=errors)

@@ -30,3 +30,13 @@
 | MIG | [#23](https://github.com/KalyuzhniyKO/AICommander-v3/issues/23) | Repository rename — completed | — | — |
 
 Independent tasks may run in parallel, but real integration stages must respect dependency checks and human merge/deploy approval. The repository rename (#23) is complete; there is no remaining standalone-repo migration.
+
+## Authorized live follow-up (#13)
+
+[PR #41](https://github.com/KalyuzhniyKO/AICommander-v3/pull/41) supersedes earlier
+inventory deferral: bounded authorized inventory/text inference, Hermes streaming
+and one delegated child route are verified. The app's manual legacy round used
+OmniRoute with temporary SQLite. [Evidence](qa-issue-13-live.json). The conservative
+no-new-framework ADR is accepted. After this PR is verified/merged, #11/#12/#13
+can close; #14 still owns real Director/external effects in taskflow. Reboot
+recovery, arbitrary tools and all provider/fallback routes are not claimed.

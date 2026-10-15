@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-15",
+  "kind": "allowlist_projection_not_full_payload",
+  "version": "OmniRoute 3.8.51",
+  "endpoint": "/v1/models",
+  "auth": "temporary_single_model_inference_bearer",
+  "http_status": 200,
+  "observed_top_keys": [
+    "object",
+    "data"
+  ],
+  "observed_model_item_keys": [
+    "id",
+    "object",
+    "created",
+    "owned_by",
+    "permission",
+    "root",
+    "parent",
+    "context_length",
+    "max_input_tokens",
+    "max_output_tokens",
+    "input_modalities",
+    "output_modalities",
+    "capabilities"
+  ],
+  "advertised_id_count": 3,
+  "tested_model_id": "gemini/gemini-2.5-flash-lite",
+  "other_combo_ids_omitted": 2,
+  "management": {
+    "provider_connections": 7,
+    "catalog_rows": 67,
+    "catalog_groups": [
+      "antigravity",
+      "gemini",
+      "cx"
+    ],
+    "configured_combos": 6
+  },
+  "does_not_prove": [
+    "all advertised IDs are callable",
+    "all providers are healthy",
+    "auto/fallback execution",
+    "free inference"
+  ]
+}

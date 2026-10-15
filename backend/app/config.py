@@ -2,8 +2,9 @@
 from __future__ import annotations
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from backend.app.providers.omniroute import OmniRouteConfig
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 CONFIG_DIR = ROOT_DIR / "config"
@@ -25,6 +26,7 @@ class Settings:
     max_model_retries: int = 1
     database_url: str = "sqlite:///./aicommander.db"
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    omniroute: OmniRouteConfig = field(default_factory=OmniRouteConfig)
     @property
     def database_path(self) -> Path:
         prefix = "sqlite:///"
@@ -49,7 +51,8 @@ def get_settings() -> Settings:
         default_timeout_seconds=max(1,int(os.environ.get("DEFAULT_TIMEOUT_SECONDS","60"))),
         max_model_retries=max(1,int(os.environ.get("MAX_MODEL_RETRIES","1"))),
         database_url=os.environ.get("DATABASE_URL","sqlite:///./aicommander.db"),
-        openrouter_base_url=os.environ.get("OPENROUTER_BASE_URL","https://openrouter.ai/api/v1")
+        openrouter_base_url=os.environ.get("OPENROUTER_BASE_URL","https://openrouter.ai/api/v1"),
+        omniroute=OmniRouteConfig.from_env(),
     )
 
 def models_config_missing_payload():
@@ -82,10 +85,12 @@ def load_model_config(path: Path | None = None, *, allow_example: bool=True, val
             if not isinstance(ref,str) or "/" not in ref:
                 raise ModelConfigError("provider_prefix_missing", f"Нужен префикс provider/model в роли {role}")
             provider,mid=ref.split("/",1)
-            if provider!="openrouter":
+            if provider not in {"openrouter", "omniroute"}:
                 raise ModelConfigError("provider_unknown", f"Неподдерживаемый provider: {provider}")
             if not mid.strip():
                 raise ModelConfigError("model_id_empty",f"Пустой ID модели роли {role}")
             verified.append(ref)
+        if any(ref.startswith("omniroute/") for ref in verified) and len(verified) != 1:
+            raise ModelConfigError("omniroute_single_route", "Для OmniRoute укажите один маршрут роли; fallback выполняет сам OmniRoute")
         normalized[role]=verified
     return normalized

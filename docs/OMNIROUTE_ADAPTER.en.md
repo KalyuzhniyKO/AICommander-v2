@@ -1,40 +1,55 @@
-# OmniRoute offline transport preparation
+# OmniRoute transport and live validation
 
 [Full Russian documentation](OMNIROUTE_ADAPTER.md) · [Issue #13](https://github.com/KalyuzhniyKO/AICommander-v3/issues/13)
 
-This is a disabled-by-default, isolated transport scaffold with synthetic tests,
-not completed live integration. The owner's choice to leave authenticated inventory
-unverified is preserved. No FastAPI/panel/taskflow/Hermes or legacy provider wiring
-was changed; import performs no network request or credential discovery.
+After offline preparation the owner authorized live checks, push and merge. On
+2026-10-15, real OmniRoute validated health, authenticated `data[].id` inventory
+and text `choices[0].message.content`. A temporary key scoped to
+`gemini/gemini-2.5-flash-lite` produced `OK`; all temporary keys were revoked.
+Keys expired after 10 minutes and had 0.02–0.05 USD daily caps. This does not
+claim zero cost, arbitrary models, tools, or automatic routing were validated.
+Management CLI tokens are distinct from inference Bearer keys: management GETs
+succeeded while inference models returned 401 for the CLI token.
 
-Source-confirmed paths are `/api/health`, `/v1/models`, `/v1/chat/completions`.
-Observed live results are health 200/ok and unauthenticated models 401.
-Authenticated `data[].id` inventory and `choices[0].message.content` parsing are
-OpenAI-compatible hypotheses, not captured server contracts. All test IDs are synthetic.
+The provider stays opt-in and performs no startup request. Explicit legacy model
+checks, rounds and role reruns now accept `omniroute/<exact gateway model ID>`.
+Only one OmniRoute route per role is allowed: no extra model fallback/retry loop.
+POST inference is never automatically retried; configured GET attempts are 1–3.
+Taskflow remains Mock Director; real Hermes role orchestration belongs to #14.
+OpenRouter remains available as a separate explicitly selected legacy transport.
 
-Explicit env settings: `OMNIROUTE_ENABLED=false`, empty `OMNIROUTE_BASE_URL` and
-`OMNIROUTE_API_KEY`, `OMNIROUTE_TIMEOUT_SECONDS=10` (>0, ≤60),
-`OMNIROUTE_MAX_GET_ATTEMPTS=2` (1–3 total). The key is an inference credential,
-not the Dashboard or SSH password. No .env/context/salt/credential-store access.
-Root and `/v1` URLs normalize without duplicate paths; HTTP is loopback-only,
-HTTPS supports an explicitly configured host. Credentials in URLs, query/fragment,
-redirects and ambient proxies are rejected/disabled. Health sends no key.
+Env: `OMNIROUTE_ENABLED=false`, empty `OMNIROUTE_BASE_URL`/`OMNIROUTE_API_KEY`,
+`OMNIROUTE_TIMEOUT_SECONDS=10`, `OMNIROUTE_MAX_GET_ATTEMPTS=2`,
+`OMNIROUTE_MAX_OUTPUT_TOKENS=256` (1–8192). The adapter reads env only; the app
+retains its existing server .env loader. No discovery of CLI/OAuth/secret stores.
+Health sends no Bearer. HTTPS or HTTP loopback, no URL credentials/query/fragment,
+redirects or ambient proxies. Response size capped at 1 MiB. Errors disclose
+static categories/numeric metadata only; no raw body or chained transport error.
+The exact configured credential is masked if echoed; arbitrary secrets are not DLP-scanned.
+Cancellation checks around I/O and interrupts retry waits, not active inference.
+Timeout is per socket operation, not a strict aggregate deadline. Retry-After wait
+is capped at 2 seconds; POST 429/timeouts remain failures for explicit user action.
 
-GET retries transport errors, timeout and 429/500/502/503/504 within the budget.
-Retry-After accepts seconds or HTTP-date and caps waiting at 2 seconds.
-POST is never automatically retried; there is no model/provider fallback loop.
-OmniRoute remains responsible for model routing. Only non-streaming text chat is
-supported. A socket timeout is not a strict total deadline; Event cancellation
-checks before/after I/O and interrupts retry waits, not active server inference.
-Responses are capped at 1 MiB; invalid schemas and empty chat fail safely.
+Opt-in CLI, using a separately supplied secure env:
 
-Errors expose static categories/numeric metadata only, no response bodies, headers,
-URLs, prompts or chained transport text. Responses/errors close; raw JSON is not
-returned and the exact configured credential is masked if echoed in chat.
-This does not detect arbitrary secrets in user content.
+```bash
+OMNIROUTE_RUN_LIVE_SMOKE=true python -m backend.app.providers.omniroute_smoke
+```
 
-Run `python -m pytest tests/test_omniroute.py -q` offline. Tests fake the entire
-transport; no Zorin connection, authenticated inventory or inference occurred.
-[QA evidence](qa-issue-13-offline.json). Live health/models smoke and inference
-require separately authorized execution after #11/#12 acceptance; no automatic
-integration tests or production wiring are provided. #13 remains open.
+Health/models only; add `OMNIROUTE_SMOKE_INFERENCE=true` and
+`OMNIROUTE_SMOKE_MODEL=<an actual permitted inventory ID>` for inference.
+CLI uses 64 output tokens, 45s timeout, one GET attempt and prints summaries only.
+Exit 2 without opt-in, 1 on error, 0 on success. An initial 8-token smoke returned
+empty content; the adapter rejected it. At 64 tokens the response was `OK`.
+`POST /models/check` performs inference per configured role, not just inventory GET.
+
+Installed Hermes also returned `OK` through this gateway, in non-streaming and
+streaming mode, using an isolated temporary HERMES_HOME, zero tools and a Python
+network guard allowing only local OmniRoute. One streaming callback was observed.
+A direct built-in delegate_task call also completed one child with the same
+loopback route, zero tools and one iteration. This does not verify automatic LLM
+tool selection or arbitrary tool routes, OS isolation, or change the user's persistent Hermes profile. Full app smoke uses temporary SQLite and Python 3.12.
+
+[Live evidence](qa-issue-13-live.json), [inventory projection](contracts/omniroute-live-inventory.json),
+[offline QA](qa-issue-13-offline.json). Password reset, real taskflow Director,
+Codex/OS sandbox and reboot recovery are separate work. No production DB used.

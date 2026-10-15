@@ -14,6 +14,11 @@ def isolated_app(tmp_path,monkeypatch):
     monkeypatch.setenv("PANEL_USER", "owner")
     monkeypatch.setenv("OPENROUTER_API_KEY","")
     monkeypatch.setenv("OPENROUTER_BASE_URL","https://models.invalid/api/v1")
+    # Never inherit an operator's live OmniRoute opt-in or credentials.
+    for key in ("OMNIROUTE_ENABLED", "OMNIROUTE_BASE_URL", "OMNIROUTE_API_KEY",
+                "OMNIROUTE_TIMEOUT_SECONDS", "OMNIROUTE_MAX_GET_ATTEMPTS", "OMNIROUTE_MAX_OUTPUT_TOKENS",
+                "OMNIROUTE_RUN_LIVE_SMOKE", "OMNIROUTE_SMOKE_INFERENCE", "OMNIROUTE_SMOKE_MODEL"):
+        monkeypatch.delenv(key, raising=False)
     monkeypatch.setenv("DEFAULT_TIMEOUT_SECONDS","1")
     monkeypatch.setenv("MAX_MODEL_RETRIES","1")
     monkeypatch.setenv("DATABASE_URL",f"sqlite:///{tmp_path / 'test.db'}")

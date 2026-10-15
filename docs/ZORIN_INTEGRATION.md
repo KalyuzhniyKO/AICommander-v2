@@ -2,10 +2,55 @@
 
 [English summary](ZORIN_INTEGRATION.en.md) · [Issue #11](https://github.com/KalyuzhniyKO/AICommander-v3/issues/11)
 
-Дата: 15.10.2026. **Аудит частичный: runtime-критерии Issue #11 не выполнены.**
-Установленные исходники дают основу для проектирования #13, но запуск интеграции
-остаётся заблокирован до проверки авторизованного inventory и Hermes → OmniRoute.
-Служба OmniRoute и HTTP-доступ проверены повторным SSH-аудитом ниже.
+Дата: 15.10.2026. **Инвентаризация подключения #11 и минимальные live-маршруты проверены.**
+Это не проверка всей AI-команды, OS sandbox, production или восстановления после reboot.
+
+## Авторизованные live-проверки после PR #37
+
+Владелец позднее явно разрешил завершить live-проверки, push и merge готовой
+работы. Это заменяет первоначальный выбор оставить inventory непроверенным
+**для описанных ниже ограниченных проб**. Старые разделы сохранены как история.
+
+| Проверено сейчас | Результат и предел |
+|---|---|
+| Management auth | Штатный локальный CLI token принят для `/api/providers`, `/api/models`, `/api/combos`. `/v1/models` с ним вернул 401: management и inference auth различаются. |
+| Provider inventory | 7 подключений; активные types antigravity/codex/gemini. Статус подключения не доказывает работоспособность всех его моделей. Пользовательские UUID, имена и credentials не публикуются. |
+| Management catalog | 67 записей, группы antigravity/gemini/cx; `cx` — alias Codex в каталоге. Это каталог, не 67 успешных inference. |
+| Combos | 6 записей: metadata показывает fill-first, cost-optimized и priority. Фактическое срабатывание fallback/auto не проверялось; реализация маршрутизации остаётся в OmniRoute. |
+| Inference inventory | Временный ограниченный Bearer key, `/v1/models` → 200, `object/data`, `data[].id`; 3 advertised ID, включая выбранный реальный `gemini/gemini-2.5-flash-lite`. Наличие ID не доказывает разрешение вызвать все advertised combos. |
+| Адаптер AICommander | Реальный health, models и chat; непустой ответ `OK`, raw JSON не возвращается. Отдельный opt-in smoke CLI → exit 0. |
+| Hermes → OmniRoute | Установленный AIAgent с explicit custom Chat Completions endpoint и тем же ограниченным ключом вернул `OK`; отдельный временный HERMES_HOME, ноль tools. |
+| Streaming Hermes | Успешный ответ `OK`, наблюдён streaming callback. SSE не добавлялся в текстовый адаптер AICommander. |
+| Встроенное делегирование | Прямой вызов штатного `delegate_task`: один ребёнок, status completed. Parent и child использовали custom, тот же model ID и loopback OmniRoute, ноль tools, max_iterations=1. Это проверка механизма, не утверждение, что LLM сама выбрала делегирование. |
+| Сетевой маршрут теста Hermes | Python audit guard разрешал только loopback OmniRoute; внешний фоновый connect был заблокирован. Это предел тестового процесса, не OS sandbox. |
+| Приложение → OmniRoute | Отдельные Python 3.12 venv и SQLite на Zorin: health/status/task/round HTTP 200, два текстовых role output completed, provider omniroute. Это legacy round, не Hermes Director в taskflow. |
+| Очистка | Временные ключи отозваны штатным DELETE; после проверок активных тестовых ключей нет. Тестовые профили, venv и SQLite удалены. |
+
+Ключи создавались штатным management API с одним разрешённым model ID,
+10-минутным сроком и лимитом 0.02–0.05 USD в сутки; значения оставались на Zorin
+в памяти процессов, не попадали в argv, stdout, Git или fixtures. Существующие
+пользовательские inference-ключи не менялись и не раскрывались. LLM-запросы
+имели ограниченный output; это не обещание нулевой стоимости.
+
+Первый smoke с max_tokens=8 вернул пустой content и был правильно отклонён;
+при max_tokens=64 получен `OK`. При изоляции Hermes понадобилось явно подключить
+site-packages **существующего** PM-selected environment: новый HERMES_HOME сам
+по себе не наследует dependency state. Пользовательский профиль/чаты не читались,
+исходники Hermes и его установленные зависимости не менялись. Для проверки
+приложения зависимости ставились только во временный отдельный venv.
+
+**Decision record ZORIN-001:** использовать проверенный inference transport
+OmniRoute и встроенное делегирование Hermes; второй router/director не добавлять.
+Адаптер #13 вызывается по явной конфигурации; настоящий Director и протокол внешних
+эффектов остаются этапом #14. Тесты не подтверждают reboot recovery, все combos,
+все provider credentials, безопасное исполнение tools или интернет-изоляцию хоста.
+Пароль Dashboard и постоянная конфигурация службы не менялись.
+
+Доказательства: [live QA #13](qa-issue-13-live.json),
+[allowlist-проекция inference inventory](contracts/omniroute-live-inventory.json),
+[адаптер и запуск smoke](OMNIROUTE_ADAPTER.md).
+
+## История проверок до разрешения live inference
 
 ## Повторная проверка Codex по SSH — 15.10.2026
 

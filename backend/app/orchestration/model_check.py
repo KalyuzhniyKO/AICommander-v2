@@ -6,9 +6,10 @@ from pathlib import Path
 from typing import Any
 
 from backend.app.config import DEFAULT_MODELS_PATH, Settings, ModelConfigError, load_model_config, models_config_missing_payload
-from backend.app.orchestration.fallback import split_model_ref
+from backend.app.orchestration.fallback import split_model_ref, provider_for, _friendly_provider_error
 from backend.app.providers.base import ChatMessage, ProviderError
 from backend.app.providers.openrouter import OpenRouterProvider
+from backend.app.providers.omniroute import OmniRouteProvider
 from backend.app.storage.repositories import Repository
 
 CHECK_PROMPT = "Ответь одним словом: OK"
@@ -30,7 +31,7 @@ def _friendly_error(error: str, category: str = "api_error") -> str:
 
 
 def check_models(settings: Settings, repository: Repository, config_path: Path | None = None) -> dict[str, Any]:
-    """Check each openrouter model from config/models.json and persist status rows."""
+    """Explicit inference checks for configured routes; never run at startup."""
     model_path = config_path or DEFAULT_MODELS_PATH
     if not model_path.exists():
         return models_config_missing_payload()
@@ -41,13 +42,15 @@ def check_models(settings: Settings, repository: Repository, config_path: Path |
         payload = exc.to_dict()
         return {"ok": False, **payload, "results": []}
     configured_openrouter = []
+    configured_models = []
     for role, refs in model_config.items():
         for ref in refs:
             provider, model_id = split_model_ref(ref)
+            configured_models.append((role, provider, model_id))
             if provider == "openrouter":
                 configured_openrouter.append((role, provider, model_id))
 
-    if not settings.openrouter_api_key:
+    if configured_openrouter and len(configured_models) == len(configured_openrouter) and not settings.openrouter_api_key:
         results = []
         for role, provider, model_id in configured_openrouter:
             repository.update_model_status(provider, model_id, role, "failed", last_error=OPENROUTER_KEY_MISSING_MESSAGE)
@@ -66,11 +69,13 @@ def check_models(settings: Settings, repository: Repository, config_path: Path |
             "results": results,
         }
 
-    provider = OpenRouterProvider(settings.openrouter_api_key, settings.openrouter_base_url)
+    openrouter = OpenRouterProvider(settings.openrouter_api_key, settings.openrouter_base_url)
+    omniroute = OmniRouteProvider(settings.omniroute)
     messages = [ChatMessage("user", CHECK_PROMPT)]
     results: list[dict[str, Any]] = []
-    for role, provider_name, model_id in configured_openrouter:
+    for role, provider_name, model_id in configured_models:
         try:
+            provider = provider_for(provider_name, openrouter, omniroute)
             result = provider.chat(model_id=model_id, messages=messages, timeout_seconds=settings.default_timeout_seconds)
             repository.update_model_status(provider_name, model_id, role, "available", response_time_ms=result.response_time_ms)
             results.append({
@@ -82,7 +87,8 @@ def check_models(settings: Settings, repository: Repository, config_path: Path |
                 "response_time_ms": result.response_time_ms,
             })
         except ProviderError as exc:
-            friendly = _friendly_error(str(exc), exc.category)
+            friendly = (_friendly_provider_error(str(exc), exc.category, provider_name)
+                        if provider_name == "omniroute" else _friendly_error(str(exc), exc.category))
             repository.update_model_status(provider_name, model_id, role, "failed", last_error=friendly)
             results.append({
                 "role": role,
@@ -93,7 +99,8 @@ def check_models(settings: Settings, repository: Repository, config_path: Path |
                 "response_time_ms": None,
             })
         except Exception as exc:
-            friendly = _friendly_error(str(exc))
+            friendly = ("OmniRoute: ошибка транспорта; inference автоматически не повторяется."
+                        if provider_name == "omniroute" else _friendly_error(str(exc)))
             repository.update_model_status(provider_name, model_id, role, "failed", last_error=friendly)
             results.append({
                 "role": role,

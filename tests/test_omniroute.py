@@ -19,7 +19,7 @@ KEY = "synthetic-only-test-credential"
 @pytest.fixture(autouse=True)
 def isolated_omniroute_env(monkeypatch):
     for name in ["OMNIROUTE_ENABLED", "OMNIROUTE_BASE_URL", "OMNIROUTE_API_KEY",
-                 "OMNIROUTE_TIMEOUT_SECONDS", "OMNIROUTE_MAX_GET_ATTEMPTS"]:
+                 "OMNIROUTE_TIMEOUT_SECONDS", "OMNIROUTE_MAX_GET_ATTEMPTS", "OMNIROUTE_MAX_OUTPUT_TOKENS"]:
         monkeypatch.delenv(name, raising=False)
 
 
@@ -100,6 +100,7 @@ def test_unsafe_or_ambiguous_endpoint_rejected_without_echo(url):
     {"timeout_seconds": float("nan")}, {"timeout_seconds": float("inf")}, {"timeout_seconds": 0},
     {"timeout_seconds": True}, {"max_get_attempts": 0}, {"max_get_attempts": 4},
     {"max_get_attempts": True}, {"api_key": "key\r\nheader"}, {"enabled": "true"},
+    {"max_output_tokens": 0}, {"max_output_tokens": 8193}, {"max_output_tokens": True},
 ])
 def test_invalid_config_rejected(settings):
     with pytest.raises(OmniRouteError, match="invalid_config"):
@@ -157,7 +158,7 @@ def test_chat_request_exact_id_no_fallback_no_raw_and_echoed_key_redacted():
     req, timeout = opener.requests[0]
     assert req.full_url == "https://gateway.invalid/v1/chat/completions"
     assert req.method == "POST" and timeout == 3
-    assert json.loads(req.data) == {"model": "synthetic/provider-model", "messages": [{"role": "user", "content": "synthetic prompt"}], "stream": False}
+    assert json.loads(req.data) == {"model": "synthetic/provider-model", "messages": [{"role": "user", "content": "synthetic prompt"}], "stream": False, "max_tokens": 256}
     assert result.model_id == "synthetic/provider-model"
     assert result.provider == "omniroute" and result.raw is None
     assert result.content == "answer [REDACTED]"

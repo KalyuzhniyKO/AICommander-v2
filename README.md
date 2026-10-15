@@ -8,7 +8,7 @@
 
 - `main` репозитория AICommander-v3 содержит foundation, offline taskflow (PR #31) и отдельную библиотеку worktree executor (PR #33).
 - В объединённом PR #30 панель подключена к taskflow: версии, роли, артефакты, согласование/отказ, отмена и продолжение. Все маршруты защищены авторизацией и CSRF. [Проверки и границы](docs/QA_PANEL.md).
-- Реальная интеграция Zorin/Hermes/OmniRouter/Codex остаётся зависимой от read-only inventory #11. Mock-план не означает исполненный код или пройденный QA. Отдельный дублирующий UI #28 не запускается.
+- Адаптер OmniRoute подключается явно к ручным legacy-раундам и проверкам моделей; [live smoke](docs/OMNIROUTE_ADAPTER.md) подтвердил текстовый маршрут, streaming и делегирование установленного Hermes. Taskflow остаётся Mock Director до #14; mock-план не означает исполненный код или пройденный QA.
 
 ## Что мы создаём
 
@@ -26,7 +26,7 @@
 - клиент совместимого с OpenRouter API, проверка моделей и резервные модели;
 - базовые тесты без реальных API-ключей.
 
-**Пока отсутствует:** подключение существующего Hermes/OmniRouter, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, настоящая песочница, создание PR внутри приложения, сквозная интеграция панели с executor и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md), панели — в [отчёте #19](docs/QA_PANEL.md); это не проверка интеграции с Zorin.
+**Пока отсутствует:** Hermes-директор и реальные роли в taskflow, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, настоящая песочница, создание PR внутри приложения, сквозная интеграция панели с executor и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md), панели — в [отчёте #19](docs/QA_PANEL.md); это не проверка интеграции с Zorin.
 
 **Не переносим из v2:** архивные мосты для macOS, Director/Judge/Final Auditor migration pack, старые планы, пустые обёртки ролей, ненужную интеграцию с отдельным OpenAI API Premium Review. ChatGPT в браузере используется **вручную** для сложных экспертных задач.
 
@@ -51,7 +51,7 @@
 | Инструкции Codex | [AGENTS.md](AGENTS.md) | [Codex instructions](AGENTS.en.md) |
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
 | Шаблоны GitHub и порядок работы | [WORKFLOW](docs/GITHUB_WORKFLOW.md) | [Workflow](docs/GITHUB_WORKFLOW.en.md) |
-| Offline-подготовка адаптера OmniRoute (не интегрирован) | [RU](docs/OMNIROUTE_ADAPTER.md) | [EN](docs/OMNIROUTE_ADAPTER.en.md) |
+| Адаптер OmniRoute: opt-in и live smoke | [RU](docs/OMNIROUTE_ADAPTER.md) | [EN](docs/OMNIROUTE_ADAPTER.en.md) |
 
 ## Локальный запуск базовой версии
 
@@ -97,4 +97,4 @@ Copy-Item config/models.example.json config/models.json
 
 ## Аудит репозитория
 
-[Аудит после PR #30 и #37](docs/AUDIT_2026-10-15.md) фиксирует состояние кода, CI и ограниченные подтверждения Zorin. Авторизованный inventory моделей и реальный Hermes → OmniRoute inference остаются непроверенными.
+[Аудит после PR #30 и #37](docs/AUDIT_2026-10-15.md) фиксирует состояние кода, CI и ограниченные подтверждения Zorin. Последующее [live QA #13](docs/qa-issue-13-live.json) подтвердило inventory и ограниченные Hermes → OmniRoute маршруты; это не сквозная команда разработки.

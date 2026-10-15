@@ -17,13 +17,12 @@
 
 ## Follow-up after Zorin audit — 2026-10-15
 
-[ADR-001 English summary](ADR-001-ORCHESTRATION.en.md) connects the retained
-2026-10-14 pinned upstream evidence to current local facts. OmniRoute health and
-SSH access are verified; Hermes custom backend/delegation are source contracts,
-not demonstrated runtime integration. Authenticated inventory remains unverified
-by the owner's choice. Existing mock taskflow, owner panel and trusted-fixture
-executor do not justify adding another orchestration framework or an OS sandbox claim.
-No framework was added, no upstream source copied, and #13 remains gated by #11/#12.
+[ADR-001 English summary](ADR-001-ORCHESTRATION.en.md) retains the pinned
+2026-10-14 upstream evidence and records the accepted no-new-framework decision.
+Later authorized #13 live probes verified authenticated inventory, text inference,
+Hermes streaming and one delegated child using the same local OmniRoute route.
+[Live QA](qa-issue-13-live.json). This does not claim full taskflow Director,
+OS sandbox, arbitrary tools or all provider routes are verified. No upstream code copied.
 
 ## Required actions before integrating copied code
 1. Choose exact source file + commit SHA and record URL, upstream owner and purpose in this document.
