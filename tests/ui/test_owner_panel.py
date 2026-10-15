@@ -216,3 +216,38 @@ def test_failed_stage_resume_and_html_is_escaped(browser_page,monkeypatch):
     page.locator('[data-task]').click()
     expect(page.locator('#artifacts details')).to_have_count(1)
     assert current(page)==run
+
+
+def test_language_switch_preserves_task_artifacts_and_does_not_write(browser_page):
+    """English UI is opt-in; switching never mutates stored tasks or invokes APIs."""
+    page, expect = browser_page
+    assert page.locator('html').get_attribute('lang') == 'ru'
+    description = 'Пока нет задач. <тестовые данные>'
+    create_task(page, expect, description)
+    new_run(page, expect)
+    start(page, expect)
+    step(page, expect, 1)
+    before = current(page)
+    artifact_content = page.locator('#artifacts pre').first.text_content()
+    writes = []
+    page.on('request', lambda request: writes.append(request.url) if request.method not in ('GET', 'HEAD') else None)
+
+    page.locator('#languageSelect').select_option('en')
+    expect(page.locator('html')).to_have_attribute('lang', 'en')
+    expect(page.locator('header h1')).to_have_text('Your AI team')
+    expect(page.locator('#taskTitle')).to_have_text(description)
+    expect(page.locator('#description')).to_have_text(description)
+    expect(page.locator('#taskMeta')).to_contain_text('Ready for next step')
+    expect(page.locator('#newRun')).to_have_text('New run')
+    expect(page.locator('#artifacts details summary').first).to_contain_text('Analyst')
+    expect(page.locator('#taskDetail > details > summary')).to_have_text('Legacy round history (separate from taskflow)')
+    assert page.locator('#artifacts pre').first.text_content() == artifact_content
+    assert current(page) == before
+
+    page.locator('#languageSelect').select_option('ru')
+    expect(page.locator('html')).to_have_attribute('lang', 'ru')
+    expect(page.locator('header h1')).to_have_text('Твоя AI-команда')
+    expect(page.locator('#taskMeta')).to_contain_text('Готов к следующему шагу')
+    expect(page.locator('#taskDetail > details > summary')).to_have_text('История legacy-раундов (отдельно от taskflow)')
+    assert current(page) == before
+    assert not writes, 'Switching languages must not send mutations or model requests'
