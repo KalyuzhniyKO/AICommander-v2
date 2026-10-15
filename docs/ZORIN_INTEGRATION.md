@@ -6,6 +6,34 @@
 Установленные исходники дают основу для проектирования #13, но запуск интеграции
 остаётся заблокирован до проверки служб, авторизации и доступного inventory.
 
+## Дополнительные runtime-проверки владельца (вне sandbox Codex)
+
+После ограниченного аудита владелец самостоятельно выполнил read-only проверки
+**15.10.2026** в обычном терминале Zorin и с MacBook в той же домашней LAN.
+Ниже — **сообщённые владельцем результаты**, не результаты исполнения Codex.
+Приватный IP, ключи и содержимое конфигурации не публикуются.
+
+| Проверка владельца | Результат / предел подтверждения |
+|---|---|
+| Zorin: `systemctl --user show omniroute.service` с ограниченными полями | `LoadState=loaded`, `ActiveState=active`, `SubState=running`, `UnitFileState=enabled`; `MainPID` ненулевой. Это подтверждает состояние службы на момент выполнения, **не** перезапуск после reboot. |
+| Zorin: `GET /api/health` и `GET /api/monitoring/health` | Оба **HTTP 200** на локальном OmniRoute. Содержимое ответов не анализировалось. |
+| Zorin: `GET /v1/models`, `GET /api/v1/models` без credentials | Оба **HTTP 401**. Требование авторизации не означает отсутствия доступных моделей. |
+| Zorin: `ss` для TCP 20128 | `ALL_INTERFACES`: сервис слушает не только loopback. |
+| MacBook → Zorin по домашней LAN, TCP 20128 | TCP connect **succeeded**; `GET /api/health` → **200**, `GET /v1/models` без credentials → **401**. |
+
+**Вывод:** работоспособность user-службы OmniRoute и доступность её HTTP endpoint
+с MacBook внутри LAN подтверждены **со слов владельца**. Доступность из интернета,
+firewall/NAT, TLS, доступность Hermes, provider/model inventory с авторизацией,
+фактический Hermes → OmniRoute inference, fallback и восстановление после reboot
+**не проверены**. `ALL_INTERFACES` вместе с доступностью по LAN — повод для
+security review, но не доказательство интернет-экспозиции.
+
+**Мера предосторожности:** до настройки защищённого канала не вводить пароль
+Dashboard или API-ключ в незашифрованный HTTP по LAN. Рекомендуем рассмотреть
+loopback bind + SSH-туннель с MacBook либо ограничение сетевого доступа firewall,
+**только после проверки реально поддерживаемого способа настройки и отдельного
+разрешения владельца на изменение конфигурации**.
+
 ## Границы и достоверность
 
 Владелец подтвердил локальную загрузку Zorin на dual-boot ПК Windows/Zorin.
@@ -106,9 +134,8 @@ ExecStart использует отдельный Node 24.20.0; полный arg
 | Health CLI/API | `omniroute health [--json] [--verbose]`, `GET /api/monitoring/health`; предварительная проверка `GET /api/health` | `bin/cli/commands/health.mjs`, `bin/cli/api.mjs:isServerUp` |
 | Авторизация OmniRoute CLI | Bearer token + локальный machine-derived CLI token; active contexts могут хранить отдельный scoped access token | `bin/cli/api.mjs:buildHeaders`; credentials не читались |
 
-`http://localhost:20128` — документированный default, **не обнаруженный живой URL**.
-`/api/health` и `/api/monitoring/health` найдены в клиентском коде, но ответы сервера
-не получены. В `isServerUp` любой HTTP <500 считается признаком доступности,
+`http://localhost:20128` — документированный default; позднее владелец подтвердил живые HTTP-ответы OmniRoute на локальном порту 20128 и с MacBook по LAN (см. дополнительный раздел выше).
+Ограниченное окружение Codex само ответов сервера не получило. В `isServerUp` любой HTTP <500 считается признаком доступности,
 поэтому даже успешное выполнение этой функции не доказывает healthy состояние.
 Не добавлять придуманные `/health` или `/healthz` в адаптер.
 
@@ -173,12 +200,12 @@ Hermes Desktop использовался с Mac через SSH. Dual boot об�
 
 ## Не удалось проверить
 
-- Фактические ActiveState/PID служб и живые health endpoints — запрет bus/socket.
+- Ограниченный sandbox Codex не смог самостоятельно получить ActiveState/PID и live health из-за запрета bus/socket; эти результаты отдельно сообщил владелец (см. выше).
 - Текущие provider/model inventory, auth и auto/fallback — секретные хранилища
   исключены, безопасный авторизованный HTTP-канал недоступен.
 - Эффективные SDK Hermes, работоспособность CLI/web/delegation — bootstrap не запускался.
 - Успешный Hermes → OmniRoute запрос — нет отдельного разрешения на inference.
-- Текущие сетевые границы, Dashboard auth, SSH host key — не проверялись.
+- Доступность OmniRoute по домашней LAN и bind на все интерфейсы подтверждены владельцем; доступ извне LAN, firewall/NAT, TLS, Dashboard auth и SSH host key не проверялись.
 - Автоматический startup после boot и resume задачи — reboot/перенастройка запрещены.
 
 ## Воспроизводимость и QA
@@ -202,4 +229,4 @@ Hermes Desktop использовался с Mac через SSH. Dual boot об�
 `python3 -m pytest -q` завершился exit 1: `No module named pytest`.
 Пакеты не устанавливались. Синтаксис backend проверяется через builtin `compile`
 без создания pyc и без импорта приложения. Это не заменяет pytest и integration QA.
-PR должен оставаться Draft; Issue #11 не закрывать по одному документу.
+Это частичный отчёт: даже если документационный PR объединён, Issue #11 нельзя закрывать без авторизованного inventory и проверки фактической интеграции Hermes → OmniRoute.
