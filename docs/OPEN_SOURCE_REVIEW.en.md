@@ -15,6 +15,16 @@
 
 **Avoid:** microsoft/autogen for new work; its README marks the project in maintenance mode and recommends Microsoft Agent Framework: https://github.com/microsoft/autogen .
 
+## Follow-up after Zorin audit — 2026-10-15
+
+[ADR-001 English summary](ADR-001-ORCHESTRATION.en.md) connects the retained
+2026-10-14 pinned upstream evidence to current local facts. OmniRoute health and
+SSH access are verified; Hermes custom backend/delegation are source contracts,
+not demonstrated runtime integration. Authenticated inventory remains unverified
+by the owner's choice. Existing mock taskflow, owner panel and trusted-fixture
+executor do not justify adding another orchestration framework or an OS sandbox claim.
+No framework was added, no upstream source copied, and #13 remains gated by #11/#12.
+
 ## Required actions before integrating copied code
 1. Choose exact source file + commit SHA and record URL, upstream owner and purpose in this document.
 2. Check file-level licence and dependencies; some repositories have separately licensed enterprise subdirectories. Do not copy those without permission.
