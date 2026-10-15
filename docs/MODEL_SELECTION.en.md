@@ -1,5 +1,7 @@
 # Recommended Codex model and reasoning effort by task
 
+**15 October 2026 note:** model names and reasoning levels are earlier Codex planning suggestions, **not verified currently available options**. Check the actual model picker before using them.
+
 [Русская версия](MODEL_SELECTION.md)
 
 | Task class | Model (if available in Codex) | Effort | Rationale |
