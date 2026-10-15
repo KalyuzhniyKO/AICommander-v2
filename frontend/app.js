@@ -181,7 +181,7 @@ el('refreshModels').onclick = () => action(refreshModels);
 async function init() {
   try { projects = await api('/projects'); renderProjects(); await refreshTasks(); await refreshModels(); status('Подключено'); }
   catch (error) { status(error.message); }
-  controls();
+  controls(); renderDirector();
 }
 el('languageSelect').onchange = () => panelLocale.setLanguage(el('languageSelect').value);
 document.addEventListener('panel-language-change', () => {
