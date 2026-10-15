@@ -1,0 +1,67 @@
+{
+  "issue": 12,
+  "date": "2026-10-15",
+  "python": "3.13.12",
+  "base_commit": "6c2d817b9cf781d26fac7aaeac97bf0c55e708af",
+  "scope": "documentation-only revised proposal; no runtime integration",
+  "checks": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "exit_code": 0,
+      "output": "....................................s................................... [ 47%]\n........................................................................ [ 95%]\n.ssssss                                                                  [100%]\n=============================== warnings summary ===============================\n../AICommander-v3-zorin-inventory/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1\n  <TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n144 passed, 7 skipped, 1 warning in 31.09s\n"
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "output": "No broken requirements found.\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "check": "documentation_links_source_mapping_pinned_revisions_and_sensitive_patterns",
+      "exit_code": 0,
+      "local_links": 24,
+      "evidence_files": 5,
+      "pinned_projects": 6,
+      "upstream_snapshot_sha256": "966feac8b612cd75642b0880a63a2da83ebd8600d60edfd0c8d9519cd1aca287"
+    },
+    {
+      "check": "backend_syntax_builtin_compile_no_imports",
+      "exit_code": 0
+    }
+  ],
+  "limits": [
+    "#11 incomplete; authenticated inventory left unverified by owner choice",
+    "#12 not closed; no transition to #13",
+    "Pinned upstream findings retained from 2026-10-14; not refreshed",
+    "No remote commands, credentials, password reset or service mutations",
+    "No new framework installed or upstream source copied"
+  ],
+  "review": "manual source-to-claim and diff review; no independent reviewer",
+  "pytest_summary": {
+    "passed": 144,
+    "skipped": 7,
+    "skip_details": {
+      "windows_only": 1,
+      "ui_opt_in_not_enabled": 6
+    },
+    "warnings": 1
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "issue": 12,
+  "date": "2026-10-15",
+  "status": "revised_proposal_pending_issue_11",
+  "base_commit": "6c2d817b9cf781d26fac7aaeac97bf0c55e708af",
+  "upstream_evidence": {
+    "path": "adr-001-upstream.json",
+    "checked_on": "2026-10-14",
+    "rechecked": false,
+    "note": "Historical pinned revisions and licence findings retained, not refreshed."
+  },
+  "local_evidence": [
+    {
+      "path": "docs/ZORIN_INTEGRATION.md",
+      "supports": [
+        "verified SSH and OmniRoute health",
+        "installed versions",
+        "owner choice to skip authenticated inventory"
+      ],
+      "does_not_prove": [
+        "Hermes inference",
+        "child agent routing",
+        "runtime model availability"
+      ]
+    },
+    {
+      "path": "backend/app/taskflow/service.py",
+      "supports": [
+        "BEGIN IMMEDIATE around pure mock production",
+        "persisted versions and idempotent command responses"
+      ],
+      "does_not_prove": [
+        "exactly-once external effects",
+        "Hermes recovery"
+      ]
+    },
+    {
+      "path": "backend/app/taskflow/director.py",
+      "supports": [
+        "pure MockDirector; no real provider"
+      ]
+    },
+    {
+      "path": "docs/EXECUTION.md",
+      "supports": [
+        "trusted fixture executor",
+        "not an OS sandbox"
+      ]
+    },
+    {
+      "path": "docs/MACBOOK_PANEL.md",
+      "supports": [
+        "owner panel and access boundaries"
+      ]
+    }
+  ],
+  "decision": {
+    "runtime_frameworks_to_add": [],
+    "director_target": "Hermes",
+    "model_router_target": "existing OmniRoute",
+    "lifecycle_evidence": "AICommander taskflow",
+    "external_effect_protocol": "proposed_not_implemented"
+  },
+  "acceptance": {
+    "issue_11_complete": false,
+    "issue_12_complete": false,
+    "issue_13_authorized": false,
+    "authenticated_inventory": "not_checked_owner_choice",
+    "password_reset": "outside_scope"
+  }
+}
