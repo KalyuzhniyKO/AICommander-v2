@@ -16,10 +16,11 @@ def redact(value):
         return [redact(item) for item in value]
     if not isinstance(value, str):
         return value
-    for name in ("OPENROUTER_API_KEY", "PANEL_PASSWORD"):
-        secret = os.environ.get(name, "")
-        if secret:
-            value = value.replace(secret, "[REDACTED]")
+    secrets = {os.environ.get(name, "") for name in ("OPENROUTER_API_KEY", "OMNIROUTE_API_KEY", "PANEL_PASSWORD")}
+    # A shorter configured credential must not partially replace a longer one
+    # before the complete value can be masked.
+    for secret in sorted(secrets - {""}, key=len, reverse=True):
+        value = value.replace(secret, "[REDACTED]")
     value = re.sub(r"(?i)(Bearer\s+)[\w.\-/+=]+", r"\1[REDACTED]", value)
     value = re.sub(r"\bsk-[\w-]+", "[REDACTED]", value)
     return value
