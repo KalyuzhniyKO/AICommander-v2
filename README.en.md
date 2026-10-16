@@ -45,6 +45,7 @@ Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role pro
 | GitHub Issues | [English descriptions](docs/ISSUES_EN.md) | [Russian-first issues](https://github.com/KalyuzhniyKO/AICommander-v3/issues/24) |
 | GitHub templates and workflow | [Workflow](docs/GITHUB_WORKFLOW.en.md) | [Процесс](docs/GITHUB_WORKFLOW.md) |
 | OmniRoute opt-in transport and live smoke | [EN](docs/OMNIROUTE_ADAPTER.en.md) | [RU](docs/OMNIROUTE_ADAPTER.md) |
+| Taskflow operation protocol (offline #14) | [EN](docs/OPERATIONS.en.md) | [RU](docs/OPERATIONS.md) |
 
 ## Local test bootstrap
 Python **3.11–3.13**; Linux/macOS:
