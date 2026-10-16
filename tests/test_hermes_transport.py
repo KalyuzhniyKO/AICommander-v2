@@ -75,6 +75,10 @@ def test_bridge_checks_actual_http_payload_before_dispatch(tmp_path,violation):
     (source/'install-stamp.json').write_text(json.dumps({'commit':'f'*40}))
     (source/'run_agent.py').write_text('''
 import httpx
+from pathlib import Path
+def reply(request):
+ with Path(__file__).with_name("http-dispatches").open("a") as trace:trace.write(request.method+"\\n")
+ return httpx.Response(200,json={"ok":True})
 class AIAgent:
  count=0
  def __init__(self,**kwargs):
@@ -82,7 +86,7 @@ class AIAgent:
   assert kwargs.get('save_trajectories') is False and kwargs.get('load_soul_identity') is False
   self.kwargs=kwargs;self.__dict__.update(kwargs);self.tools=[];self._client_kwargs={}
   AIAgent.count+=1;self.session_id='fixture-'+str(AIAgent.count)
-  self.client=httpx.Client(transport=httpx.MockTransport(lambda r:httpx.Response(200,json={'ok':True})))
+  self.client=httpx.Client(transport=httpx.MockTransport(reply))
   # Optional SDK metadata lookup must be denied but remain catchable during init.
   try:self.client.get(self.base_url+'/unsupported-metadata')
   except Exception:pass
@@ -117,6 +121,9 @@ def delegate_task(goal,context,parent_agent,background):
         expected=UncertainOperation if violation=='repeat' else RuntimeError
         with pytest.raises(expected) as exc:hermes.run_bridge(config,payload,lambda:False)
         assert payload['api_key'] not in str(exc.value)
+    trace=source/'http-dispatches'
+    sent=trace.read_text().splitlines() if trace.exists() else []
+    assert sent==(['POST'] if violation in (None,'repeat') else [])
 
 
 @pytest.mark.parametrize('error',[OSError,RuntimeError])
