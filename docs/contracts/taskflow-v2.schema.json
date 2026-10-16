@@ -1,0 +1,758 @@
+{
+  "$defs": {
+    "Design": {
+      "additionalProperties": false,
+      "properties": {
+        "requirements": {
+          "$ref": "#/$defs/Requirements"
+        },
+        "components": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Components",
+          "type": "array"
+        }
+      },
+      "required": [
+        "requirements",
+        "components"
+      ],
+      "title": "Design",
+      "type": "object"
+    },
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "title": "Event Id",
+          "type": "integer"
+        },
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "from_status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RunState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to_status": {
+          "$ref": "#/$defs/RunState"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "created_at": {
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "action",
+        "from_status",
+        "to_status",
+        "version",
+        "reason",
+        "created_at"
+      ],
+      "title": "Event",
+      "type": "object"
+    },
+    "HermesDesignArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "integer"
+        },
+        "task_id": {
+          "title": "Task Id",
+          "type": "integer"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        },
+        "status": {
+          "const": "completed",
+          "default": "completed",
+          "title": "Status",
+          "type": "string"
+        },
+        "input_artifact_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Input Artifact Ids",
+          "type": "array"
+        },
+        "created_at": {
+          "title": "Created At",
+          "type": "string"
+        },
+        "redacted": {
+          "const": true,
+          "default": true,
+          "title": "Redacted",
+          "type": "boolean"
+        },
+        "simulated": {
+          "const": false,
+          "default": false,
+          "title": "Simulated",
+          "type": "boolean"
+        },
+        "role": {
+          "const": "architect",
+          "title": "Role",
+          "type": "string"
+        },
+        "type": {
+          "const": "design",
+          "title": "Type",
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/$defs/Design"
+        },
+        "provenance": {
+          "$ref": "#/$defs/HermesProvenance"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "task_id",
+        "run_id",
+        "input_artifact_ids",
+        "created_at",
+        "role",
+        "type",
+        "content",
+        "provenance"
+      ],
+      "title": "HermesDesignArtifact",
+      "type": "object"
+    },
+    "HermesPlanArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "integer"
+        },
+        "task_id": {
+          "title": "Task Id",
+          "type": "integer"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        },
+        "status": {
+          "const": "completed",
+          "default": "completed",
+          "title": "Status",
+          "type": "string"
+        },
+        "input_artifact_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Input Artifact Ids",
+          "type": "array"
+        },
+        "created_at": {
+          "title": "Created At",
+          "type": "string"
+        },
+        "redacted": {
+          "const": true,
+          "default": true,
+          "title": "Redacted",
+          "type": "boolean"
+        },
+        "simulated": {
+          "const": false,
+          "default": false,
+          "title": "Simulated",
+          "type": "boolean"
+        },
+        "role": {
+          "const": "developer",
+          "title": "Role",
+          "type": "string"
+        },
+        "type": {
+          "const": "plan",
+          "title": "Type",
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/$defs/RealPlan"
+        },
+        "provenance": {
+          "$ref": "#/$defs/HermesProvenance"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "task_id",
+        "run_id",
+        "input_artifact_ids",
+        "created_at",
+        "role",
+        "type",
+        "content",
+        "provenance"
+      ],
+      "title": "HermesPlanArtifact",
+      "type": "object"
+    },
+    "HermesProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "const": "hermes",
+          "default": "hermes",
+          "title": "Origin",
+          "type": "string"
+        },
+        "operation_id": {
+          "title": "Operation Id",
+          "type": "string"
+        },
+        "model_id": {
+          "title": "Model Id",
+          "type": "string"
+        },
+        "provider": {
+          "const": "custom",
+          "default": "custom",
+          "title": "Provider",
+          "type": "string"
+        },
+        "route": {
+          "const": "omniroute",
+          "default": "omniroute",
+          "title": "Route",
+          "type": "string"
+        },
+        "sdk_commit": {
+          "title": "Sdk Commit",
+          "type": "string"
+        },
+        "parent_session_id": {
+          "title": "Parent Session Id",
+          "type": "string"
+        },
+        "child_session_id": {
+          "title": "Child Session Id",
+          "type": "string"
+        },
+        "tools_count": {
+          "const": 0,
+          "default": 0,
+          "title": "Tools Count",
+          "type": "integer"
+        },
+        "inference_requests": {
+          "const": 1,
+          "default": 1,
+          "title": "Inference Requests",
+          "type": "integer"
+        },
+        "input_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Input Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation_id",
+        "model_id",
+        "sdk_commit",
+        "parent_session_id",
+        "child_session_id",
+        "input_sha256"
+      ],
+      "title": "HermesProvenance",
+      "type": "object"
+    },
+    "HermesRequirementsArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "integer"
+        },
+        "task_id": {
+          "title": "Task Id",
+          "type": "integer"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        },
+        "status": {
+          "const": "completed",
+          "default": "completed",
+          "title": "Status",
+          "type": "string"
+        },
+        "input_artifact_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Input Artifact Ids",
+          "type": "array"
+        },
+        "created_at": {
+          "title": "Created At",
+          "type": "string"
+        },
+        "redacted": {
+          "const": true,
+          "default": true,
+          "title": "Redacted",
+          "type": "boolean"
+        },
+        "simulated": {
+          "const": false,
+          "default": false,
+          "title": "Simulated",
+          "type": "boolean"
+        },
+        "role": {
+          "const": "analyst",
+          "title": "Role",
+          "type": "string"
+        },
+        "type": {
+          "const": "requirements",
+          "title": "Type",
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/$defs/Requirements"
+        },
+        "provenance": {
+          "$ref": "#/$defs/HermesProvenance"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "task_id",
+        "run_id",
+        "input_artifact_ids",
+        "created_at",
+        "role",
+        "type",
+        "content",
+        "provenance"
+      ],
+      "title": "HermesRequirementsArtifact",
+      "type": "object"
+    },
+    "HermesReviewArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "integer"
+        },
+        "task_id": {
+          "title": "Task Id",
+          "type": "integer"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "integer"
+        },
+        "status": {
+          "const": "completed",
+          "default": "completed",
+          "title": "Status",
+          "type": "string"
+        },
+        "input_artifact_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Input Artifact Ids",
+          "type": "array"
+        },
+        "created_at": {
+          "title": "Created At",
+          "type": "string"
+        },
+        "redacted": {
+          "const": true,
+          "default": true,
+          "title": "Redacted",
+          "type": "boolean"
+        },
+        "simulated": {
+          "const": false,
+          "default": false,
+          "title": "Simulated",
+          "type": "boolean"
+        },
+        "role": {
+          "const": "reviewer",
+          "title": "Role",
+          "type": "string"
+        },
+        "type": {
+          "const": "review",
+          "title": "Type",
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/$defs/PlanReview"
+        },
+        "provenance": {
+          "$ref": "#/$defs/HermesProvenance"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "task_id",
+        "run_id",
+        "input_artifact_ids",
+        "created_at",
+        "role",
+        "type",
+        "content",
+        "provenance"
+      ],
+      "title": "HermesReviewArtifact",
+      "type": "object"
+    },
+    "HermesStage": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "enum": [
+            "analyst",
+            "architect",
+            "developer",
+            "reviewer"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "position": {
+          "title": "Position",
+          "type": "integer"
+        },
+        "status": {
+          "$ref": "#/$defs/StageState"
+        }
+      },
+      "required": [
+        "role",
+        "position",
+        "status"
+      ],
+      "title": "HermesStage",
+      "type": "object"
+    },
+    "PlanReview": {
+      "additionalProperties": false,
+      "properties": {
+        "plan": {
+          "$ref": "#/$defs/RealPlan"
+        },
+        "verdict": {
+          "enum": [
+            "approve",
+            "revise"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        },
+        "findings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "scope": {
+          "const": "planning_only",
+          "default": "planning_only",
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan",
+        "verdict",
+        "findings"
+      ],
+      "title": "PlanReview",
+      "type": "object"
+    },
+    "RealPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "requirements": {
+          "$ref": "#/$defs/Requirements"
+        },
+        "design": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Design"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "steps": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Steps",
+          "type": "array"
+        },
+        "execution": {
+          "const": "not_executed",
+          "default": "not_executed",
+          "title": "Execution",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirements",
+        "steps"
+      ],
+      "title": "RealPlan",
+      "type": "object"
+    },
+    "Requirements": {
+      "additionalProperties": false,
+      "properties": {
+        "objective": {
+          "title": "Objective",
+          "type": "string"
+        },
+        "acceptance_criteria": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Acceptance Criteria",
+          "type": "array"
+        }
+      },
+      "required": [
+        "objective",
+        "acceptance_criteria"
+      ],
+      "title": "Requirements",
+      "type": "object"
+    },
+    "RunState": {
+      "enum": [
+        "planned",
+        "running",
+        "failed",
+        "blocked",
+        "awaiting_owner",
+        "done",
+        "cancelled"
+      ],
+      "title": "RunState",
+      "type": "string"
+    },
+    "StageState": {
+      "enum": [
+        "pending",
+        "ready",
+        "completed",
+        "failed",
+        "blocked",
+        "cancelled"
+      ],
+      "title": "StageState",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "2.0",
+      "default": "2.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "integer"
+    },
+    "task_id": {
+      "title": "Task Id",
+      "type": "integer"
+    },
+    "status": {
+      "$ref": "#/$defs/RunState"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    },
+    "max_steps": {
+      "title": "Max Steps",
+      "type": "integer"
+    },
+    "steps_done": {
+      "title": "Steps Done",
+      "type": "integer"
+    },
+    "block_code": {
+      "anyOf": [
+        {
+          "enum": [
+            "manual",
+            "step_limit",
+            "role_failure",
+            "owner_rejected"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Block Code"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "owner_decision": {
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "title": "Owner Decision",
+      "type": "string"
+    },
+    "director": {
+      "const": "hermes",
+      "default": "hermes",
+      "title": "Director",
+      "type": "string"
+    },
+    "simulated": {
+      "const": false,
+      "default": false,
+      "title": "Simulated",
+      "type": "boolean"
+    },
+    "completion_scope": {
+      "const": "real_planning_artifacts_only",
+      "default": "real_planning_artifacts_only",
+      "title": "Completion Scope",
+      "type": "string"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    },
+    "updated_at": {
+      "title": "Updated At",
+      "type": "string"
+    },
+    "stages": {
+      "items": {
+        "$ref": "#/$defs/HermesStage"
+      },
+      "title": "Stages",
+      "type": "array"
+    },
+    "artifacts": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "design": "#/$defs/HermesDesignArtifact",
+            "plan": "#/$defs/HermesPlanArtifact",
+            "requirements": "#/$defs/HermesRequirementsArtifact",
+            "review": "#/$defs/HermesReviewArtifact"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/HermesRequirementsArtifact"
+          },
+          {
+            "$ref": "#/$defs/HermesDesignArtifact"
+          },
+          {
+            "$ref": "#/$defs/HermesPlanArtifact"
+          },
+          {
+            "$ref": "#/$defs/HermesReviewArtifact"
+          }
+        ]
+      },
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "timeline": {
+      "items": {
+        "$ref": "#/$defs/Event"
+      },
+      "title": "Timeline",
+      "type": "array"
+    },
+    "code_executed": {
+      "const": false,
+      "default": false,
+      "title": "Code Executed",
+      "type": "boolean"
+    },
+    "qa_verified": {
+      "const": false,
+      "default": false,
+      "title": "Qa Verified",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "run_id",
+    "task_id",
+    "status",
+    "version",
+    "max_steps",
+    "steps_done",
+    "block_code",
+    "reason",
+    "owner_decision",
+    "created_at",
+    "updated_at",
+    "stages",
+    "artifacts",
+    "timeline"
+  ],
+  "title": "HermesRunSnapshot",
+  "type": "object"
+}

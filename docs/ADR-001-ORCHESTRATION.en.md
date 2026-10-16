@@ -1,5 +1,11 @@
 # ADR-001 follow-up: keep one Director and one router
 
+**#14 update, 16 October 2026:** [Hermes planning v2](HERMES_TASKFLOW.en.md)
+uses the installed runtime and the same journal/lifecycle. Mock-only statements
+below describe preserved v1 and its offline implementation. Real-result import
+through resolve_unknown is rejected; only explicit failed-attempt resolution
+is supported after confirming worker shutdown.
+
 [Full Russian ADR](ADR-001-ORCHESTRATION.md) · [Issue #12](https://github.com/KalyuzhniyKO/AICommander-v3/issues/12)
 
 **Runtime composition decision accepted after authorized live probes, 2026-10-15.**

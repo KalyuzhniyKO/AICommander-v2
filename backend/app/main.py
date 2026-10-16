@@ -1,4 +1,4 @@
-"""AICommander v3 local foundation. No Hermes/Codex integration yet."""
+"""AICommander v3 foundation with opt-in Hermes planning transport."""
 from __future__ import annotations
 from contextlib import closing, asynccontextmanager
 from pathlib import Path
@@ -16,6 +16,7 @@ from backend.app.orchestration.model_check import check_models
 from backend.app.storage.db import connect, init_db
 from backend.app.storage.repositories import Repository
 from backend.app.taskflow.api import create_router
+from backend.app.taskflow.hermes_api import create_hermes_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -204,6 +205,7 @@ def recover_interrupted():
         conn.commit()
 
 app.include_router(create_router(repository))
+app.include_router(create_hermes_router(repository,lambda:settings))
 app.mount("/",StaticFiles(directory=str(Path(__file__).resolve().parents[2] / "frontend"),html=True),name="frontend")
 
 if __name__=="__main__":

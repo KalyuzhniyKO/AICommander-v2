@@ -1,5 +1,10 @@
 [Русская версия](IMPLEMENTATION.md)
 
+**16 October 2026 update:** #11–#13 were live-verified and closed after PR #41.
+#14 adds [Hermes planning v2](HERMES_TASKFLOW.en.md), typed handoffs and safe
+operations, with optional Architect. Code/QA execution and integrated UI remain
+#15/#16/#19. Statements below about missing Hermes describe the earlier foundation.
+
 # Audit of the v3 foundation (2026-10-14)
 
 ### Preserved from AICommander-v2

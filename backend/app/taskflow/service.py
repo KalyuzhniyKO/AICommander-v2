@@ -1,10 +1,10 @@
-"""Atomic persisted state transitions for the offline mock workflow."""
+"""Atomic persisted state transitions shared by mock and Hermes planning."""
 from contextlib import contextmanager
 from hashlib import sha256
 import json
 
-from .director import MockDirector, ROLES, TYPES
-from .models import CreateRun, Command, OwnerDecision, RunSnapshot, Requirements, Design, Plan
+from .director import MockDirector, ROLES
+from .models import CreateRun, Command, OwnerDecision, RunSnapshot, HermesRunSnapshot, content_model
 from .redaction import redact
 
 
@@ -29,9 +29,18 @@ def redacted_content(value):
 
 
 class Taskflow:
-    def __init__(self, conn, director=None):
+    def __init__(self, conn, director=None, *, mode='mock'):
+        if mode not in {'mock', 'hermes'}:
+            raise ValueError('Unsupported Director mode')
         self.conn = conn
+        self.mode = mode
         self.director = director if director is not None else MockDirector()
+
+    def parse_snapshot(self, value):
+        return (HermesRunSnapshot if self.mode == 'hermes' else RunSnapshot).model_validate_json(value)
+
+    def validate_content(self, role, value):
+        return content_model(self.mode, role).model_validate(redacted_content(value))
 
     @contextmanager
     def transaction(self, *, write=False):
@@ -49,6 +58,8 @@ class Taskflow:
         row = self.conn.execute("SELECT * FROM taskflow_runs WHERE id=?", (run_id,)).fetchone()
         if row is None:
             raise FlowError("run_not_found", "Процесс не найден", 404)
+        if row['director_mode'] != self.mode:
+            raise FlowError('director_mode_mismatch', 'Используйте контракт, соответствующий режиму процесса')
         return dict(row)
 
     def _snapshot(self, run_id):
@@ -57,13 +68,17 @@ class Taskflow:
             "SELECT role,position,status FROM taskflow_stages WHERE run_id=? ORDER BY position", (run_id,))]
         artifacts = []
         for a in self.conn.execute("SELECT * FROM taskflow_artifacts WHERE run_id=? ORDER BY id", (run_id,)):
-            artifacts.append(dict(artifact_id=a['id'], task_id=a['task_id'], run_id=run_id,
+            artifact = dict(artifact_id=a['id'], task_id=a['task_id'], run_id=run_id,
                 role=a['role'], type=a['type'], content=json.loads(a['content']),
-                input_artifact_ids=json.loads(a['input_artifact_ids']), created_at=a['created_at']))
+                input_artifact_ids=json.loads(a['input_artifact_ids']), created_at=a['created_at'])
+            if self.mode == 'hermes':
+                artifact.update(simulated=False, provenance=json.loads(a['provenance_json']))
+            artifacts.append(artifact)
         timeline = [dict(e) for e in self.conn.execute(
             "SELECT id AS event_id,action,from_status,to_status,version,reason,created_at FROM taskflow_events WHERE run_id=? ORDER BY version", (run_id,))]
         fields = ('task_id','status','version','max_steps','steps_done','block_code','reason','owner_decision','created_at','updated_at')
-        return RunSnapshot(run_id=run_id, **{k: row[k] for k in fields}, stages=stages, artifacts=artifacts, timeline=timeline)
+        model = HermesRunSnapshot if self.mode == 'hermes' else RunSnapshot
+        return model(run_id=run_id, **{k: row[k] for k in fields}, stages=stages, artifacts=artifacts, timeline=timeline)
 
     def get(self, run_id):
         with self.transaction():
@@ -72,7 +87,7 @@ class Taskflow:
     def list_for_task(self, task_id):
         with self.transaction():
             self._task(task_id)
-            ids = [r[0] for r in self.conn.execute("SELECT id FROM taskflow_runs WHERE task_id=? ORDER BY id DESC LIMIT 100", (task_id,))]
+            ids = [r[0] for r in self.conn.execute("SELECT id FROM taskflow_runs WHERE task_id=? AND director_mode=? ORDER BY id DESC LIMIT 100", (task_id,self.mode))]
             return [self._snapshot(i) for i in ids]
 
     def list_operations(self, run_id):
@@ -94,9 +109,11 @@ class Taskflow:
                 if old['creation_request_hash'] != fingerprint:
                     raise FlowError("idempotency_conflict", "Ключ уже использован с другим запросом")
                 return self._snapshot(old['id'])
-            cur = self.conn.execute("INSERT INTO taskflow_runs(task_id,status,max_steps,creation_key_hash,creation_request_hash) VALUES(?,'planned',?,?,?)", (task_id,request.max_steps,key,fingerprint))
+            binding=getattr(self.director,'binding','') if self.mode=='hermes' else ''
+            cur = self.conn.execute("INSERT INTO taskflow_runs(task_id,status,max_steps,creation_key_hash,creation_request_hash,director_mode,director_binding) VALUES(?,'planned',?,?,?,?,?)", (task_id,request.max_steps,key,fingerprint,self.mode,binding))
             run_id = cur.lastrowid
-            self.conn.executemany("INSERT INTO taskflow_stages(run_id,role,position,status) VALUES(?,?,?,'pending')", [(run_id,r,i) for i,r in enumerate(ROLES)])
+            roles = ROLES if self.mode == 'mock' else (('analyst','architect','developer','reviewer') if request.include_architect else ('analyst','developer','reviewer'))
+            self.conn.executemany("INSERT INTO taskflow_stages(run_id,role,position,status) VALUES(?,?,?,'pending')", [(run_id,r,i) for i,r in enumerate(roles)])
             self._event(run_id, 'create', None, 'planned', 1, '')
             return self._snapshot(run_id)
 
@@ -120,7 +137,7 @@ class Taskflow:
         if old is not None:
             if old['request_hash'] != fingerprint:
                 raise FlowError("idempotency_conflict", "Ключ уже использован с другим запросом")
-            return RunSnapshot.model_validate_json(old['response_json'])
+            return self.parse_snapshot(old['response_json'])
         operation = self.conn.execute("SELECT request_hash FROM taskflow_operations WHERE run_id=? AND key_hash=?", (run_id,key)).fetchone()
         if operation and operation['request_hash'] != fingerprint:
             raise FlowError("idempotency_conflict", "Ключ уже использован с другим запросом")
@@ -160,7 +177,7 @@ class Taskflow:
         if action == 'start':
             self._require(row, {'planned'})
             row.update(status='running', reason='', block_code=None)
-            self._stage_status(run_id, ROLES[0], 'ready')
+            self._stage_status(run_id, self._next_role(run_id), 'ready')
         elif action == 'step':
             self._require(row, {'running'})
             self._step(row)
@@ -200,15 +217,18 @@ class Taskflow:
         try:
             produced = self.director.produce(role, self._task(row['task_id']), inputs)
             content = produced.model_dump() if hasattr(produced, 'model_dump') else produced
-            content = (Requirements, Design, Plan)[ROLES.index(role)].model_validate(redacted_content(content))
+            content = self.validate_content(role, content)
         except Exception:
             # Do not persist arbitrary exception text, credentials or tracebacks.
-            row.update(status='failed', block_code='role_failure', reason='Ошибка Mock Director; реальные действия не выполнялись')
+            message = ('Ошибка Hermes; текстовый артефакт не принят, код и QA не выполнялись'
+                       if self.mode == 'hermes' else 'Ошибка Mock Director; реальные действия не выполнялись')
+            row.update(status='failed', block_code='role_failure', reason=message)
             self._stage_status(run_id, role, 'failed')
             return
-        index = ROLES.index(role)
-        self.conn.execute("INSERT INTO taskflow_artifacts(run_id,task_id,role,type,content,input_artifact_ids) VALUES(?,?,?,?,?,?)",
-            (run_id,row['task_id'],role,TYPES[index],content.model_dump_json(),json.dumps([a.artifact_id for a in inputs])))
+        kind = {'analyst':'requirements','architect':'design','developer':'plan','reviewer':'review'}[role]
+        provenance = getattr(self.director, 'provenance', {}) if self.mode == 'hermes' else {}
+        self.conn.execute("INSERT INTO taskflow_artifacts(run_id,task_id,role,type,content,input_artifact_ids,provenance_json) VALUES(?,?,?,?,?,?,?)",
+            (run_id,row['task_id'],role,kind,content.model_dump_json(),json.dumps([a.artifact_id for a in inputs]),json.dumps(provenance)))
         self._stage_status(run_id, role, 'completed')
         role = self._next_role(run_id)
         row.update(reason='', block_code=None)

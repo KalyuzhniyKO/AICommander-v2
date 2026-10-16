@@ -1,5 +1,11 @@
 # Taskflow durable operations (offline #14 preparation)
 
+**#14 update, 16 October 2026:** [Hermes planning v2](HERMES_TASKFLOW.en.md)
+uses the installed runtime and the same journal/lifecycle. Mock-only statements
+below describe preserved v1 and its offline implementation. Real-result import
+through resolve_unknown is rejected; only explicit failed-attempt resolution
+is supported after confirming worker shutdown.
+
 [Full Russian protocol](OPERATIONS.md)
 
 The default remains MockDirector, simulated=true, mock_artifacts_only. No Hermes,

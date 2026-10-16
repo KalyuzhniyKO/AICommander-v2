@@ -21,7 +21,9 @@ The goal is real, test-backed software changes, not several independent textual 
 ## Retained from v2
 Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role prompts and keyword role routing, an OpenRouter-compatible transport with fallback and model availability checks, and credential-free test scaffolding.
 
-**Remaining integrations:** Hermes Director in taskflow, executing QA/Reviewer, Codex CLI, OS sandbox, GitHub PR generation and budget policy. The authenticated mock-taskflow panel and independent offline worktree library are implemented. [Verified scope and tests](docs/QA_PANEL.md).
+Hermes taskflow v2 provides [live-tested planning artifacts](docs/HERMES_TASKFLOW.en.md), using the installed runtime. The current panel/v1 retain mock runs. Final #14 live acceptance awaits provider quota recovery.
+
+**Remaining integrations:** executing QA/Reviewer, Codex CLI, OS sandbox, GitHub PR generation and budget policy. The authenticated mock-taskflow panel and independent offline worktree library are implemented. [Verified scope and tests](docs/QA_PANEL.md).
 
 **Deliberately excluded:** legacy macOS integration bridges, old Director/Judge/Final Auditor migration pack, obsolete roadmaps and role wrappers, and the optional OpenAI API Premium Review. ChatGPT web is an optional **manual** expert handoff; ChatGPT subscription access does not imply API entitlements.
 

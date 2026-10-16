@@ -1,0 +1,105 @@
+{
+  "HermesCreateRun": {
+    "additionalProperties": false,
+    "properties": {
+      "idempotency_key": {
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+        "title": "Idempotency Key",
+        "type": "string"
+      },
+      "max_steps": {
+        "default": 4,
+        "maximum": 100,
+        "minimum": 1,
+        "title": "Max Steps",
+        "type": "integer"
+      },
+      "include_architect": {
+        "default": false,
+        "title": "Include Architect",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "idempotency_key"
+    ],
+    "title": "HermesCreateRun",
+    "type": "object"
+  },
+  "Command": {
+    "additionalProperties": false,
+    "properties": {
+      "idempotency_key": {
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+        "title": "Idempotency Key",
+        "type": "string"
+      },
+      "expected_version": {
+        "minimum": 1,
+        "title": "Expected Version",
+        "type": "integer"
+      },
+      "action": {
+        "enum": [
+          "start",
+          "step",
+          "block",
+          "resume",
+          "fail",
+          "cancel"
+        ],
+        "title": "Action",
+        "type": "string"
+      },
+      "reason": {
+        "default": "",
+        "maxLength": 2000,
+        "title": "Reason",
+        "type": "string"
+      }
+    },
+    "required": [
+      "idempotency_key",
+      "expected_version",
+      "action"
+    ],
+    "title": "Command",
+    "type": "object"
+  },
+  "OwnerDecision": {
+    "additionalProperties": false,
+    "properties": {
+      "idempotency_key": {
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+        "title": "Idempotency Key",
+        "type": "string"
+      },
+      "expected_version": {
+        "minimum": 1,
+        "title": "Expected Version",
+        "type": "integer"
+      },
+      "decision": {
+        "enum": [
+          "approve",
+          "reject"
+        ],
+        "title": "Decision",
+        "type": "string"
+      },
+      "reason": {
+        "default": "",
+        "maxLength": 2000,
+        "title": "Reason",
+        "type": "string"
+      }
+    },
+    "required": [
+      "idempotency_key",
+      "expected_version",
+      "decision"
+    ],
+    "title": "OwnerDecision",
+    "type": "object"
+  }
+}

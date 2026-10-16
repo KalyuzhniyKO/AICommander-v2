@@ -8,7 +8,7 @@
 
 - `main` репозитория AICommander-v3 содержит foundation, offline taskflow (PR #31) и отдельную библиотеку worktree executor (PR #33).
 - В объединённом PR #30 панель подключена к taskflow: версии, роли, артефакты, согласование/отказ, отмена и продолжение. Все маршруты защищены авторизацией и CSRF. [Проверки и границы](docs/QA_PANEL.md).
-- Адаптер OmniRoute подключается явно к ручным legacy-раундам и проверкам моделей; [live smoke](docs/OMNIROUTE_ADAPTER.md) подтвердил текстовый маршрут, streaming и делегирование установленного Hermes. Taskflow остаётся Mock Director до #14; mock-план не означает исполненный код или пройденный QA.
+- Адаптер OmniRoute подключается явно к ручным legacy-раундам и проверкам моделей; [live smoke](docs/OMNIROUTE_ADAPTER.md) подтвердил текстовый маршрут, streaming и делегирование установленного Hermes. Taskflow v2 использует установленный Hermes для реальных артефактов планирования; [контракт и live QA](docs/HERMES_TASKFLOW.md). Панель/v1 пока используют Mock Director. Код и QA ещё не выполняются. Итоговая live-приёмка #14 ожидает восстановления квот провайдеров.
 
 ## Что мы создаём
 
@@ -26,7 +26,7 @@
 - клиент совместимого с OpenRouter API, проверка моделей и резервные модели;
 - базовые тесты без реальных API-ключей.
 
-**Пока отсутствует:** Hermes-директор и реальные роли в taskflow, отдельные аналитик и QA, исполнение Codex CLI, работа с реальными файлами, настоящая песочница, создание PR внутри приложения, сквозная интеграция панели с executor и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md), панели — в [отчёте #19](docs/QA_PANEL.md); это не проверка интеграции с Zorin.
+**Пока отсутствует:** сквозной исполнитель кода и QA, исполнение Codex CLI, работа с реальными файлами, настоящая песочница, создание PR внутри приложения, сквозная интеграция панели с executor и учёт бюджета. Проверки foundation подтверждены в [отчёте этапа 00](docs/IMPLEMENTATION.md), панели — в [отчёте #19](docs/QA_PANEL.md); это не проверка интеграции с Zorin.
 
 **Не переносим из v2:** архивные мосты для macOS, Director/Judge/Final Auditor migration pack, старые планы, пустые обёртки ролей, ненужную интеграцию с отдельным OpenAI API Premium Review. ChatGPT в браузере используется **вручную** для сложных экспертных задач.
 
@@ -47,11 +47,12 @@
 | Очерёдность работы Codex | [ROADMAP](docs/ROADMAP.md) | [Roadmap](docs/ROADMAP.en.md) |
 | Выбор модели и уровня | [MODEL_SELECTION](docs/MODEL_SELECTION.md) | [Model selection](docs/MODEL_SELECTION.en.md) |
 | Использование Open Source | [OPEN_SOURCE_REVIEW](docs/OPEN_SOURCE_REVIEW.md) | [Open-source review](docs/OPEN_SOURCE_REVIEW.en.md) |
-| Решение по оркестрации (предложение, ожидает #11) | [ADR-001](docs/ADR-001-ORCHESTRATION.md) | [ADR-001 (RU)](docs/ADR-001-ORCHESTRATION.md) |
+| Решение по оркестрации (принято после live QA) | [ADR-001](docs/ADR-001-ORCHESTRATION.md) | [ADR-001 (RU)](docs/ADR-001-ORCHESTRATION.md) |
 | Инструкции Codex | [AGENTS.md](AGENTS.md) | [Codex instructions](AGENTS.en.md) |
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
 | Шаблоны GitHub и порядок работы | [WORKFLOW](docs/GITHUB_WORKFLOW.md) | [Workflow](docs/GITHUB_WORKFLOW.en.md) |
 | Адаптер OmniRoute: opt-in и live smoke | [RU](docs/OMNIROUTE_ADAPTER.md) | [EN](docs/OMNIROUTE_ADAPTER.en.md) |
+| Hermes Director: реальное планирование | [RU](docs/HERMES_TASKFLOW.md) | [EN](docs/HERMES_TASKFLOW.en.md) |
 | Журнал операций taskflow (offline-часть #14) | [RU](docs/OPERATIONS.md) | [EN](docs/OPERATIONS.en.md) |
 
 ## Локальный запуск базовой версии

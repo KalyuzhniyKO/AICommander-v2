@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from backend.app.providers.omniroute import OmniRouteConfig
+from backend.app.taskflow.hermes_config import HermesConfig
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 CONFIG_DIR = ROOT_DIR / "config"
@@ -27,6 +28,7 @@ class Settings:
     database_url: str = "sqlite:///./aicommander.db"
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     omniroute: OmniRouteConfig = field(default_factory=OmniRouteConfig)
+    hermes: HermesConfig = field(default_factory=HermesConfig)
     @property
     def database_path(self) -> Path:
         prefix = "sqlite:///"
@@ -53,6 +55,7 @@ def get_settings() -> Settings:
         database_url=os.environ.get("DATABASE_URL","sqlite:///./aicommander.db"),
         openrouter_base_url=os.environ.get("OPENROUTER_BASE_URL","https://openrouter.ai/api/v1"),
         omniroute=OmniRouteConfig.from_env(),
+        hermes=HermesConfig.from_env(),
     )
 
 def models_config_missing_payload():

@@ -1,19 +1,20 @@
-"""Durable two-phase mock steps. No Hermes/network/shell transport is wired here."""
+"""Durable steps: reserve, call the configured Director outside the lock, commit."""
 import json
 from uuid import uuid4
 
-from .director import ROLES
-from .models import Requirements, Design, Plan, RunSnapshot
+from .models import HermesProvenance
+from .ports import OperationContext, ProducedArtifact, UncertainOperation
 from .redaction import redact
-from .service import FlowError, Taskflow, digest, redacted_content
+from .service import FlowError, Taskflow, digest
 
 MAX_OPERATION_BYTES = 1024 * 1024
 
 
 class _SavedDirector:
     """Pure replay of a durable result, safe to use inside the final transaction."""
-    def __init__(self, result, failed):
+    def __init__(self, result, failed, provenance=None):
         self.result, self.failed = result, failed
+        self.provenance = provenance or {}
 
     def produce(self, *args):
         if self.failed:
@@ -47,7 +48,7 @@ class StepOperations:
             if saved:
                 if saved['request_hash'] != fingerprint:
                     raise FlowError('idempotency_conflict', 'Ключ уже использован с другим запросом')
-                return RunSnapshot.model_validate_json(saved['response_json'])
+                return self.flow.parse_snapshot(saved['response_json'])
             old = self.conn.execute('SELECT * FROM taskflow_operations WHERE run_id=? AND key_hash=?', (run_id,key)).fetchone()
             if old:
                 if old['request_hash'] != fingerprint:
@@ -60,6 +61,8 @@ class StepOperations:
             else:
                 if row['version'] != request.expected_version:
                     raise FlowError('stale_version', 'Версия изменилась; перечитайте состояние процесса')
+                if self.flow.mode=='hermes' and row['director_binding']!=getattr(self.flow.director,'binding',''):
+                    raise FlowError('director_config_changed', 'Маршрут или версия Hermes изменены; создайте новый процесс')
                 self.flow._require(row, {'running'})
                 if row['steps_done'] >= row['max_steps']:
                     raise FlowError('step_limit', 'Лимит шагов исчерпан')
@@ -83,14 +86,40 @@ class StepOperations:
                     raise FlowError('operation_unknown', 'Рабочая попытка больше не владеет операцией')
             result, failed = None, True
             if not operation['cancel_requested']:
-                inputs = RunSnapshot.model_validate_json(operation['input_json']).artifacts
+                inputs = self.flow.parse_snapshot(operation['input_json']).artifacts
                 try:
-                    produced = self.flow.director.produce(operation['role'], operation['goal'], inputs)
+                    method = getattr(self.flow.director, 'produce_with_context', None)
+                    if callable(method):
+                        def cancelled():
+                            current = self._operation(operation_id)
+                            return bool(current['cancel_requested'] or current['state'] != 'running')
+                        produced = method(operation['role'], operation['goal'], inputs, OperationContext(operation_id,cancelled))
+                    else:
+                        produced = self.flow.director.produce(operation['role'], operation['goal'], inputs)
+                    provenance = {}
+                    if self.flow.mode == 'hermes':
+                        if not isinstance(produced, ProducedArtifact):
+                            raise ValueError('Missing Hermes provenance')
+                        provenance = HermesProvenance.model_validate(produced.provenance).model_dump()
+                        if provenance['operation_id'] != operation_id:
+                            raise ValueError('Operation provenance mismatch')
+                        produced = produced.content
                     raw = produced.model_dump() if hasattr(produced, 'model_dump') else produced
-                    result = (Requirements, Design, Plan)[ROLES.index(operation['role'])].model_validate(redacted_content(raw)).model_dump()
+                    result = self.flow.validate_content(operation['role'], raw).model_dump()
                     if len(json.dumps(result).encode()) > MAX_OPERATION_BYTES:
                         raise ValueError('large result')
                     failed = False
+                except UncertainOperation:
+                    with self.flow.transaction(write=True):
+                        current=self._operation(operation_id)
+                        cancelled=bool(current['cancel_requested'])
+                        if cancelled:
+                            self.conn.execute("UPDATE taskflow_operations SET state='result_ready',result_json='null',failed=1 WHERE id=? AND state='running'", (operation_id,))
+                        else:
+                            self.conn.execute("UPDATE taskflow_operations SET state='unknown',worker_hash='' WHERE id=? AND state='running'", (operation_id,))
+                    if cancelled:
+                        return self.finish(operation_id)
+                    raise FlowError('operation_unknown', 'Исход вызова Hermes неизвестен; автоматического повтора нет') from None
                 except Exception:
                     # Arbitrary exception text is never stored. A process crash is not caught.
                     result = None
@@ -98,8 +127,8 @@ class StepOperations:
                 operation = self._operation(operation_id)
                 if operation['state'] != 'running' or operation['worker_hash'] != digest(worker):
                     raise FlowError('operation_unknown', 'Рабочая попытка больше не владеет операцией')
-                self.conn.execute("""UPDATE taskflow_operations SET state='result_ready',result_json=?,failed=?,
-                    updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?""", (json.dumps(result),int(failed),operation_id))
+                self.conn.execute("""UPDATE taskflow_operations SET state='result_ready',result_json=?,failed=?,provenance_json=?,
+                    updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?""", (json.dumps(result),int(failed),json.dumps(provenance if not failed else {}),operation_id))
         return self.finish(operation_id)
 
     def finish(self, operation_id):
@@ -108,7 +137,7 @@ class StepOperations:
             operation = self._operation(operation_id)
             saved = self.conn.execute('SELECT response_json FROM taskflow_commands WHERE run_id=? AND key_hash=?', (operation['run_id'],operation['key_hash'])).fetchone()
             if saved:
-                return RunSnapshot.model_validate_json(saved['response_json'])
+                return self.flow.parse_snapshot(saved['response_json'])
             if operation['state'] != 'result_ready':
                 raise FlowError('operation_unknown', 'Нет сохранённого результата для фиксации')
             row = self.flow._run(operation['run_id'])
@@ -118,7 +147,7 @@ class StepOperations:
                 self.conn.execute('INSERT INTO taskflow_commands(run_id,key_hash,request_hash,response_json) VALUES(?,?,?,?)', (row['id'],operation['key_hash'],operation['request_hash'],snapshot.model_dump_json()))
                 return snapshot
             # Only a pure, saved result is evaluated under the write transaction.
-            cached = Taskflow(self.conn, _SavedDirector(json.loads(operation['result_json']), bool(operation['failed'])))
+            cached = Taskflow(self.conn, _SavedDirector(json.loads(operation['result_json']), bool(operation['failed']),json.loads(operation['provenance_json'])),mode=self.flow.mode)
             snapshot = cached._commit_action(row, 'step', operation['reason'], operation['key_hash'], operation['request_hash'])
             state = 'failed' if snapshot.status == 'failed' else 'succeeded'
             self.conn.execute("UPDATE taskflow_operations SET state=?,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?", (state,operation_id))
@@ -140,9 +169,11 @@ class StepOperations:
                 raise FlowError('invalid_operation_state', 'Исход уже разрешён или ещё не признан неизвестным')
             cleaned = None
             if result is not None:
+                if self.flow.mode == 'hermes':
+                    raise FlowError('provenance_required', 'Импорт реального результата требует отдельной проверенной provenance', 422)
                 raw = result.model_dump() if hasattr(result, 'model_dump') else result
                 try:
-                    cleaned = (Requirements, Design, Plan)[ROLES.index(operation['role'])].model_validate(redacted_content(raw)).model_dump()
+                    cleaned = self.flow.validate_content(operation['role'], raw).model_dump()
                     if len(json.dumps(cleaned).encode()) > MAX_OPERATION_BYTES:
                         raise ValueError
                 except Exception:

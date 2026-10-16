@@ -191,5 +191,5 @@ def test_version_two_migration_rolls_back_and_preserves_existing_v1(tmp_path, mo
         assert conn.execute("SELECT 1 FROM sqlite_master WHERE name='taskflow_operations'").fetchone() is None
         monkeypatch.setattr(migrations,'OPERATION_STATEMENTS',original)
         init_db(conn);init_db(conn)
-        assert [r[0] for r in conn.execute('SELECT version FROM taskflow_migrations ORDER BY version')] == [1,2]
+        assert [r[0] for r in conn.execute('SELECT version FROM taskflow_migrations ORDER BY version')] == [1,2,3]
         assert conn.execute('PRAGMA foreign_key_check').fetchall() == []
