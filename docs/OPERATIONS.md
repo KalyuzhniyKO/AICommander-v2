@@ -1,5 +1,11 @@
 # Taskflow: операции без вычислений под write lock
 
+**Дополнение #14, 16.10.2026:** [Hermes taskflow v2](HERMES_TASKFLOW.md)
+использует установленный runtime и этот же журнал/жизненный цикл. Описание
+Mock Director ниже относится к сохранённому контракту v1 и offline-этапу.
+Для real-операций импорт результата через resolve_unknown запрещён; доступна
+только явная фиксация неудачной попытки после остановки worker.
+
 [English](OPERATIONS.en.md) · часть [#14](https://github.com/KalyuzhniyKO/AICommander-v3/issues/14)
 
 **Offline-основа #14, не интеграция Hermes Director.** Все штатные step по-прежнему

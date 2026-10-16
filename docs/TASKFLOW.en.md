@@ -1,5 +1,11 @@
 # Offline taskflow v1
 
+**#14 update, 16 October 2026:** [Hermes planning v2](HERMES_TASKFLOW.en.md)
+uses the installed runtime and the same journal/lifecycle. Mock-only statements
+below describe preserved v1 and its offline implementation. Real-result import
+through resolve_unknown is rejected; only explicit failed-attempt resolution
+is supported after confirming worker shutdown.
+
 [Russian primary documentation](TASKFLOW.md) · [Issue #27](https://github.com/KalyuzhniyKO/AICommander-v3/issues/27)
 
 The `/taskflow` namespace implements a persisted, deterministic Mock Director workflow only. Analyst requirements are passed as typed content into Architect design and then Developer plan. No real model, Hermes, OmniRouter, Codex, shell execution or QA occurs. Parent issue #14 remains open.

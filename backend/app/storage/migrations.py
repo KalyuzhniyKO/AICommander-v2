@@ -58,6 +58,30 @@ OPERATION_STATEMENTS = (
 )
 
 
+def migrate_hermes_tables(conn):
+    """Extend stage/artifact checks with FK enforcement kept on throughout."""
+    conn.execute("ALTER TABLE taskflow_runs ADD COLUMN director_mode TEXT NOT NULL DEFAULT 'mock' CHECK(director_mode IN ('mock','hermes'))")
+    conn.execute("ALTER TABLE taskflow_runs ADD COLUMN director_binding TEXT NOT NULL DEFAULT ''")
+    conn.execute("ALTER TABLE taskflow_operations ADD COLUMN provenance_json TEXT NOT NULL DEFAULT '{}'")
+    stages = STATEMENTS[1].replace('CREATE TABLE taskflow_stages(', 'CREATE TABLE taskflow_stages_next(')
+    stages = stages.replace("'analyst','architect','developer'", "'analyst','architect','developer','reviewer'").replace('BETWEEN 0 AND 2', 'BETWEEN 0 AND 3')
+    conn.execute(stages)
+    artifacts = STATEMENTS[2].replace('CREATE TABLE taskflow_artifacts(', 'CREATE TABLE taskflow_artifacts_next(')
+    artifacts = artifacts.replace('REFERENCES taskflow_stages(', 'REFERENCES taskflow_stages_next(')
+    artifacts = artifacts.replace('content TEXT NOT NULL,', "provenance_json TEXT NOT NULL DEFAULT '{}', content TEXT NOT NULL,")
+    artifacts = artifacts.replace("(role='developer' AND type='plan')", "(role='developer' AND type='plan') OR (role='reviewer' AND type='review')")
+    conn.execute(artifacts)
+    conn.execute('INSERT INTO taskflow_stages_next SELECT * FROM taskflow_stages')
+    conn.execute('''INSERT INTO taskflow_artifacts_next(id,run_id,task_id,role,type,content,input_artifact_ids,created_at)
+        SELECT id,run_id,task_id,role,type,content,input_artifact_ids,created_at FROM taskflow_artifacts''')
+    conn.execute('DROP TABLE taskflow_artifacts')
+    conn.execute('DROP TABLE taskflow_stages')
+    conn.execute('ALTER TABLE taskflow_stages_next RENAME TO taskflow_stages')
+    conn.execute('ALTER TABLE taskflow_artifacts_next RENAME TO taskflow_artifacts')
+    if conn.execute('PRAGMA foreign_key_check').fetchall():
+        raise RuntimeError('Hermes migration violates foreign keys')
+
+
 def migrate_taskflow(conn):
     conn.execute("BEGIN IMMEDIATE")
     try:
@@ -70,6 +94,9 @@ def migrate_taskflow(conn):
             for statement in OPERATION_STATEMENTS:
                 conn.execute(statement)
             conn.execute("INSERT INTO taskflow_migrations(version) VALUES(2)")
+        if conn.execute("SELECT 1 FROM taskflow_migrations WHERE version=3").fetchone() is None:
+            migrate_hermes_tables(conn)
+            conn.execute("INSERT INTO taskflow_migrations(version) VALUES(3)")
         conn.commit()
     except BaseException:
         conn.rollback()

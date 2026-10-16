@@ -138,9 +138,92 @@ class RunSnapshot(Model):
 class OperationSnapshot(Model):
     id: str
     run_id: int
-    role: Literal["analyst", "architect", "developer"]
+    role: Literal["analyst", "architect", "developer", "reviewer"]
     expected_version: int
     state: Literal["running", "result_ready", "unknown", "succeeded", "failed", "discarded"]
     cancel_requested: bool
     created_at: str
     updated_at: str
+
+
+class HermesCreateRun(CreateRun):
+    max_steps: int = Field(default=4, ge=1, le=100, strict=True)
+    include_architect: bool = Field(default=False, strict=True)
+
+
+class RealPlan(Model):
+    requirements: Requirements
+    design: Design | None = None
+    steps: list[str] = Field(min_length=1)
+    execution: Literal["not_executed"] = "not_executed"
+
+
+class PlanReview(Model):
+    plan: RealPlan
+    verdict: Literal["approve", "revise"]
+    findings: list[str]
+    scope: Literal["planning_only"] = "planning_only"
+
+
+class HermesProvenance(Model):
+    origin: Literal["hermes"] = "hermes"
+    operation_id: str
+    model_id: str
+    provider: Literal["custom"] = "custom"
+    route: Literal["omniroute"] = "omniroute"
+    sdk_commit: str
+    parent_session_id: str
+    child_session_id: str
+    tools_count: Literal[0] = 0
+    inference_requests: Literal[1] = 1
+    input_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+
+
+class HermesRequirementsArtifact(RequirementsArtifact):
+    simulated: Literal[False] = False
+    provenance: HermesProvenance
+
+
+class HermesDesignArtifact(DesignArtifact):
+    simulated: Literal[False] = False
+    provenance: HermesProvenance
+
+
+class HermesPlanArtifact(ArtifactBase):
+    role: Literal["developer"]
+    type: Literal["plan"]
+    content: RealPlan
+    simulated: Literal[False] = False
+    provenance: HermesProvenance
+
+
+class HermesReviewArtifact(ArtifactBase):
+    role: Literal["reviewer"]
+    type: Literal["review"]
+    content: PlanReview
+    simulated: Literal[False] = False
+    provenance: HermesProvenance
+
+
+HermesArtifact = Annotated[HermesRequirementsArtifact | HermesDesignArtifact | HermesPlanArtifact | HermesReviewArtifact, Field(discriminator="type")]
+
+
+class HermesStage(Stage):
+    role: Literal["analyst", "architect", "developer", "reviewer"]
+
+
+class HermesRunSnapshot(RunSnapshot):
+    schema_version: Literal["2.0"] = "2.0"
+    director: Literal["hermes"] = "hermes"
+    simulated: Literal[False] = False
+    completion_scope: Literal["real_planning_artifacts_only"] = "real_planning_artifacts_only"
+    code_executed: Literal[False] = False
+    qa_verified: Literal[False] = False
+    stages: list[HermesStage]
+    artifacts: list[HermesArtifact]
+
+
+def content_model(mode, role):
+    if mode == 'hermes':
+        return {'analyst': Requirements, 'architect': Design, 'developer': RealPlan, 'reviewer': PlanReview}[role]
+    return {'analyst': Requirements, 'architect': Design, 'developer': Plan}[role]

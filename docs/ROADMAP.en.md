@@ -1,5 +1,10 @@
 # AICommander 3.0 — dependency-aware roadmap
 
+**16 October 2026 update:** #11–#13 were live-verified and closed after PR #41.
+#14 adds [Hermes planning v2](HERMES_TASKFLOW.en.md), typed handoffs and safe
+operations, with optional Architect. Code/QA execution and integrated UI remain
+#15/#16/#19. Statements below about missing Hermes describe the earlier foundation.
+
 [Русская версия](ROADMAP.md) · [Verified audit (RU)](AUDIT_2026-10-15.md)
 
 **15 October 2026:** [PR #35](https://github.com/KalyuzhniyKO/AICommander-v3/pull/35) merged v3 into default **`main`** with [6/6 CI jobs](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38708568156). Repo was renamed AICommander-v3, prior v2 preserved at `v2-legacy`. New PRs target `main`.

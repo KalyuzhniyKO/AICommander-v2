@@ -1,0 +1,387 @@
+{
+  "issue": 14,
+  "date": "2026-10-16",
+  "status": "partial_live_acceptance_provider_quota",
+  "issue_remains_open": true,
+  "scope": "opt-in Hermes planning v2; no code/QA execution or persistent deployment",
+  "local": {
+    "python": "3.13.12",
+    "checks": [
+      {
+        "command": [
+          "python",
+          "-m",
+          "pytest",
+          "-q"
+        ],
+        "env": {
+          "RUN_UI_TESTS": "1"
+        },
+        "exit_code": 0,
+        "output": "....................................s................................... [ 25%]\n........................................................................ [ 51%]\n........................................................................ [ 77%]\n...............................................................          [100%]\n=============================== warnings summary ===============================\n<TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1\n  <TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n278 passed, 1 skipped, 1 warning in 42.13s\n"
+      },
+      {
+        "command": [
+          "python",
+          "-m",
+          "compileall",
+          "-q",
+          "backend"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "python",
+          "-m",
+          "pip",
+          "check"
+        ],
+        "exit_code": 0,
+        "output": "No broken requirements found."
+      }
+    ],
+    "coverage": [
+      "typed handoff with/without architect and planning review",
+      "owner approval, max_steps and mode binding",
+      "durable saved result after SQL failure, replay and concurrent cancellation",
+      "v2 API auth/CSRF and preserved mock UI/v1 schema",
+      "v2-to-v3 SQLite migration with old IDs, pending result, FK enforcement and rollback",
+      "bounded POSIX stdin/process transport, cancellation and uncertain outcomes",
+      "real bridge bootstrap against fake SDK and HTTP MockTransport: context/model/schema/second POST guards",
+      "postlaunch cancellation-probe OSError/RuntimeError remain uncertain",
+      "both agents explicitly disable memory/context files/background review/trajectories/identity"
+    ],
+    "review": "Manual transaction/transport/config/migration diff review; no independent reviewer agent."
+  },
+  "live": {
+    "authorized_by_owner": true,
+    "app_python_major_minor": "3.12",
+    "sdk_commit": "a3b56cac95488242856b6fb1f121842a38c3e391",
+    "credentials": {
+      "temporary": true,
+      "model_scoped": true,
+      "no_log_requested": true,
+      "configured_cap_per_key_usd": 0.15,
+      "expiry_minutes": 20,
+      "all_probe_keys_revoked_in_finally": true,
+      "remaining_matching_keys_after_cleanup": 0,
+      "credentials_exported": false,
+      "zero_cost_claimed": false
+    },
+    "simple_success": {
+      "model_id": "gemini/gemini-2.5-flash-lite",
+      "source_sha256": {
+        "backend/app/taskflow/hermes.py": "6122e46e91c1acfbf761f3df13dc0b3fda3026321705cb5bb842af155b704fd6",
+        "backend/app/taskflow/hermes_bridge.py": "167430ba181fb5fe2553d5f800fde4731a5fed0378900ad268b923e3daddc35c",
+        "backend/app/taskflow/operations.py": "c5b1ff03933960235dd89be0ddfae93d41f46cadc82c09dbf2f8c4b671f1adc7",
+        "backend/app/taskflow/service.py": "cb4090d7c46a80ae9f0e1c39864f1a7da9ea5782584029a267a0bbab4564c9bc",
+        "backend/app/storage/migrations.py": "9ca878b900572dac7a833faafd41da37698e117d6ab048dc039e7ff35be01bf5"
+      },
+      "observations": [
+        {
+          "check": "capabilities",
+          "result": {
+            "configured": true,
+            "director": "hermes",
+            "scope": "real_planning_artifacts_only",
+            "code_executed": false,
+            "qa_verified": false
+          }
+        },
+        {
+          "check": "bridge_output_shape",
+          "role": "analyst",
+          "chars": 151,
+          "root_type": "dict",
+          "keys": [
+            "objective",
+            "acceptance_criteria"
+          ],
+          "value_types": {}
+        },
+        {
+          "check": "real_step_http",
+          "index": 0,
+          "status": 200,
+          "code": null
+        },
+        {
+          "check": "real_step_result",
+          "status": "running",
+          "version": 3,
+          "roles": [
+            "analyst"
+          ],
+          "simulated": false
+        },
+        {
+          "check": "bridge_output_shape",
+          "role": "developer",
+          "chars": 150,
+          "root_type": "dict",
+          "keys": [
+            "steps"
+          ],
+          "value_types": {
+            "steps": "list"
+          }
+        },
+        {
+          "check": "real_step_http",
+          "index": 1,
+          "status": 200,
+          "code": null
+        },
+        {
+          "check": "real_step_result",
+          "status": "running",
+          "version": 4,
+          "roles": [
+            "analyst",
+            "developer"
+          ],
+          "simulated": false
+        },
+        {
+          "check": "bridge_output_shape",
+          "role": "reviewer",
+          "chars": 152,
+          "root_type": "dict",
+          "keys": [
+            "verdict",
+            "findings"
+          ],
+          "value_types": {
+            "verdict": "str",
+            "findings": "list"
+          }
+        },
+        {
+          "check": "real_step_http",
+          "index": 2,
+          "status": 200,
+          "code": null
+        },
+        {
+          "check": "real_step_result",
+          "status": "awaiting_owner",
+          "version": 5,
+          "roles": [
+            "analyst",
+            "developer",
+            "reviewer"
+          ],
+          "simulated": false
+        },
+        {
+          "check": "simple_real_pipeline",
+          "roles": [
+            "analyst",
+            "developer",
+            "reviewer"
+          ],
+          "typed_handoff_equal": true,
+          "replay_equal": true,
+          "owner_state": "done",
+          "scope": "real_planning_artifacts_only",
+          "code_executed": false,
+          "qa_verified": false,
+          "artifact_count": 3
+        },
+        {
+          "check": "application_process",
+          "exit_code": 0,
+          "stderr_present": true
+        },
+        {
+          "check": "temporary_key_revoked",
+          "http_status": 200
+        }
+      ]
+    },
+    "complex_earlier_probe": {
+      "model_id": "gemini/gemini-2.5-flash-lite",
+      "source_sha256": {
+        "backend/app/taskflow/hermes.py": "6122e46e91c1acfbf761f3df13dc0b3fda3026321705cb5bb842af155b704fd6",
+        "backend/app/taskflow/hermes_bridge.py": "167430ba181fb5fe2553d5f800fde4731a5fed0378900ad268b923e3daddc35c",
+        "backend/app/taskflow/operations.py": "c5b1ff03933960235dd89be0ddfae93d41f46cadc82c09dbf2f8c4b671f1adc7",
+        "backend/app/taskflow/service.py": "cb4090d7c46a80ae9f0e1c39864f1a7da9ea5782584029a267a0bbab4564c9bc",
+        "backend/app/storage/migrations.py": "9ca878b900572dac7a833faafd41da37698e117d6ab048dc039e7ff35be01bf5"
+      },
+      "observations": [
+        {
+          "check": "complex_step",
+          "role": "analyst",
+          "status": "running"
+        },
+        {
+          "check": "complex_step",
+          "role": "architect",
+          "status": "running"
+        },
+        {
+          "check": "complex_step",
+          "role": "developer",
+          "status": "running"
+        },
+        {
+          "check": "complex_step",
+          "role": "reviewer",
+          "status": "awaiting_owner"
+        },
+        {
+          "check": "application_exception",
+          "type": "AttributeError"
+        },
+        {
+          "check": "application_process",
+          "exit_code": 1,
+          "stderr_present": true
+        },
+        {
+          "check": "temporary_key_revoked",
+          "http_status": 200
+        }
+      ],
+      "interpretation": "All four role steps reached awaiting_owner. Harness then failed with AttributeError before reopen/owner approval; this is not a completed lifecycle acceptance."
+    },
+    "final_available_route_probe": {
+      "model_id": "antigravity/gemini-3.1-flash-lite",
+      "source_sha256": {
+        "backend/app/taskflow/hermes.py": "50d757378ef72c4f632aaca3ced03d2f694f382a4c8616733e57785745f3a7d7",
+        "backend/app/taskflow/hermes_bridge.py": "7aeb76ad5cb48fe08a26ff4850f300e03900442c7e4d37c4cf5ee7950f076931",
+        "backend/app/taskflow/operations.py": "dbb636a521d018e629139f9ad3291e19c1bfc3188662fc2fcae5fa60a095e6b0",
+        "backend/app/taskflow/service.py": "433a5324e54693e1737aedada8d66b84e654aa2f20fe7e09930f62c0fbea67bc",
+        "backend/app/storage/migrations.py": "9ca878b900572dac7a833faafd41da37698e117d6ab048dc039e7ff35be01bf5"
+      },
+      "observations": [
+        {
+          "check": "live_process_cancellation",
+          "state": "cancelled",
+          "operation_state": "discarded",
+          "artifact_count": 0,
+          "replay_no_inference": true
+        },
+        {
+          "check": "live_process_timeout",
+          "operation_state": "unknown",
+          "replay_no_inference": true,
+          "http_status": 409
+        },
+        {
+          "check": "complex_step",
+          "role": "analyst",
+          "status": "running"
+        },
+        {
+          "check": "bridge_failure",
+          "phase": "result",
+          "error_type": "RuntimeError",
+          "dispatched": true,
+          "http_status": 429,
+          "request_check": "allowed",
+          "result_status": "failed",
+          "agent_count": 2,
+          "failure_reason": "rate_limit",
+          "error_flags": [
+            "quota",
+            "429"
+          ],
+          "error_terms": [
+            "api",
+            "model",
+            "after"
+          ]
+        },
+        {
+          "check": "application_exception",
+          "type": "HTTPStatusError",
+          "status": 409,
+          "code": "operation_unknown"
+        },
+        {
+          "check": "application_process",
+          "exit_code": 1,
+          "stderr_present": true
+        },
+        {
+          "check": "temporary_key_revoked",
+          "http_status": 200
+        }
+      ],
+      "interpretation": "Cancellation and timeout/replay passed. Analyst passed; Developer was not accepted after HTTP429 quota. Overall probe exited 1; full final live acceptance is blocked."
+    },
+    "direct_router_probes": {
+      "gemini": [
+        {
+          "check": "direct_router_exception",
+          "type": "ReadTimeout"
+        },
+        {
+          "check": "application_process",
+          "exit_code": 0,
+          "stderr_present": false
+        },
+        {
+          "check": "temporary_key_revoked",
+          "http_status": 200
+        }
+      ],
+      "antigravity": [
+        {
+          "check": "direct_router_probe",
+          "http_status": 200,
+          "choice_count": 1,
+          "content_chars": 2,
+          "error_present": false,
+          "budget_error": false
+        },
+        {
+          "check": "application_process",
+          "exit_code": 0,
+          "stderr_present": false
+        },
+        {
+          "check": "temporary_key_revoked",
+          "http_status": 200
+        }
+      ]
+    },
+    "read_only_health": {
+      "service_active": true,
+      "global_health_status": "ok",
+      "management_connections": 7,
+      "gemini_last_error_rate_limit": true,
+      "all_models_verified": false
+    },
+    "latest_changes_not_retested_by_live_inference": [
+      "postlaunch cancellation-probe exceptions classified unknown",
+      "privacy and runtime-budget options enforced for both parent and child"
+    ],
+    "production_db_user_chats_persistent_hermes_config_dashboard_password_changed": false
+  },
+  "history": [
+    "Initial unstructured role output sometimes included another role fields and was rejected. Added per-role JSON Schema in request overrides/context and removed irrelevant reviewer instruction from other roles.",
+    "Probe harness used nonexistent Settings.from_env; fixed to get_settings/database_path. A full rerun was then blocked by model quotas.",
+    "Guard policy failures abort instead of entering SDK retry loops. Denied optional metadata routes/network probes remain catchable during SDK initialization; no denied request is sent.",
+    "Provider quotas were not reset or bypassed; no model requests followed the final quota failure."
+  ],
+  "remaining": [
+    "Repeat both complete pipelines on current source after provider quota recovery",
+    "Live reopen/replay, owner approval and max_steps in the final bounded harness",
+    "Issue14 remains open; code/QA execution, full UI and PR creation in the app remain subsequent phases",
+    "No OS sandbox, exactly-once billing or every provider/combination health claim"
+  ],
+  "current_source_sha256": {
+    "backend/app/storage/migrations.py": "9ca878b900572dac7a833faafd41da37698e117d6ab048dc039e7ff35be01bf5",
+    "backend/app/taskflow/hermes.py": "b7c886e6a60b91cf30a28cb77729dec1f9f68d24ec95eed74efc938a3f62ea9f",
+    "backend/app/taskflow/hermes_api.py": "fc643ee1d77821e3dd497d7fa288a2b8338d3c477094b353db5ef46e66af5dd8",
+    "backend/app/taskflow/hermes_bridge.py": "8faa3e66cac0e8cf31504164e46975a3345bba2fd75739e93435649b34ff0482",
+    "backend/app/taskflow/hermes_config.py": "2a44fe3eec50e9c7c0f419ba0e12b072158ac74efc16653185043781ce0b7c33",
+    "backend/app/taskflow/models.py": "910f7708982a4a5f59f264258c1cc1ef96b767779a3b59e407673f2455796630",
+    "backend/app/taskflow/operations.py": "dbb636a521d018e629139f9ad3291e19c1bfc3188662fc2fcae5fa60a095e6b0",
+    "backend/app/taskflow/ports.py": "65dad1682ceec4661263e933be0ef16f0d90baf3f1a5916c9b09c9bf254a667b",
+    "backend/app/taskflow/service.py": "433a5324e54693e1737aedada8d66b84e654aa2f20fe7e09930f62c0fbea67bc"
+  }
+}
