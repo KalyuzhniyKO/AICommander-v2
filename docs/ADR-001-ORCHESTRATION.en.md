@@ -35,7 +35,8 @@ file/test evidence; UI displays snapshots and sends owner commands. The current
 mock `done` state means approved mock artifacts, not successful execution or QA.
 
 Do not replace `MockDirector.produce()` directly with a network or executor call:
-the function currently runs inside a SQLite write transaction. External work needs
+the original function ran inside a SQLite write transaction. [Offline operations](OPERATIONS.en.md)
+now reserve and persist results around lock-free computation for MockDirector. Actual Hermes work still needs
 an operation reservation, execution outside the write transaction, version-checked
 completion and crash reconciliation. Correlation IDs and replay protection for
 external effects are not implemented. SQLite rollback cannot undo a model charge

@@ -52,6 +52,7 @@
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
 | Шаблоны GitHub и порядок работы | [WORKFLOW](docs/GITHUB_WORKFLOW.md) | [Workflow](docs/GITHUB_WORKFLOW.en.md) |
 | Адаптер OmniRoute: opt-in и live smoke | [RU](docs/OMNIROUTE_ADAPTER.md) | [EN](docs/OMNIROUTE_ADAPTER.en.md) |
+| Журнал операций taskflow (offline-часть #14) | [RU](docs/OPERATIONS.md) | [EN](docs/OPERATIONS.en.md) |
 
 ## Локальный запуск базовой версии
 

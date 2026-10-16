@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.app.storage.repositories import Repository
-from .models import CreateRun, Command, OwnerDecision, RunSnapshot
+from .models import CreateRun, Command, OwnerDecision, RunSnapshot, OperationSnapshot
 from .service import FlowError, Taskflow
 
 
@@ -26,6 +26,10 @@ def create_router(repository_dependency):
     @router.get('/runs/{run_id}', response_model=RunSnapshot)
     def get(run_id: int, repo: Repository = Depends(repository_dependency)):
         return invoke(repo, 'get', run_id)
+
+    @router.get('/runs/{run_id}/operations', response_model=list[OperationSnapshot])
+    def operations(run_id: int, repo: Repository = Depends(repository_dependency)):
+        return invoke(repo, 'list_operations', run_id)
 
     @router.post('/runs/{run_id}/commands', response_model=RunSnapshot)
     def command(run_id: int, payload: Command, repo: Repository = Depends(repository_dependency)):

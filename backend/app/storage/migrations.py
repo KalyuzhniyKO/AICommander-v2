@@ -42,6 +42,21 @@ STATEMENTS = (
         PRIMARY KEY(run_id,key_hash))""",
 )
 
+OPERATION_STATEMENTS = (
+    """CREATE TABLE taskflow_operations(
+        id TEXT PRIMARY KEY, run_id INTEGER NOT NULL REFERENCES taskflow_runs(id),
+        key_hash TEXT NOT NULL, request_hash TEXT NOT NULL, expected_version INTEGER NOT NULL,
+        role TEXT NOT NULL, goal TEXT NOT NULL, input_json TEXT NOT NULL, reason TEXT NOT NULL,
+        state TEXT NOT NULL CHECK(state IN ('running','result_ready','unknown','succeeded','failed','discarded')),
+        worker_hash TEXT NOT NULL, result_json TEXT, failed INTEGER NOT NULL DEFAULT 0,
+        cancel_requested INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        UNIQUE(run_id,key_hash))""",
+    """CREATE UNIQUE INDEX taskflow_one_active_operation ON taskflow_operations(run_id)
+        WHERE state IN ('running','result_ready','unknown')""",
+)
+
 
 def migrate_taskflow(conn):
     conn.execute("BEGIN IMMEDIATE")
@@ -51,6 +66,10 @@ def migrate_taskflow(conn):
             for statement in STATEMENTS:
                 conn.execute(statement)
             conn.execute("INSERT INTO taskflow_migrations(version) VALUES(1)")
+        if conn.execute("SELECT 1 FROM taskflow_migrations WHERE version=2").fetchone() is None:
+            for statement in OPERATION_STATEMENTS:
+                conn.execute(statement)
+            conn.execute("INSERT INTO taskflow_migrations(version) VALUES(2)")
         conn.commit()
     except BaseException:
         conn.rollback()

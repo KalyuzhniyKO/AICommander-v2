@@ -35,8 +35,8 @@ class Taskflow:
 
     @contextmanager
     def transaction(self, *, write=False):
-        # Each API request owns a connection. The write lock covers version checks,
-        # the pure mock calculation, artifacts, event and idempotency response.
+        # Each request owns a connection. Director execution is outside this lock;
+        # only reservation or pure saved-result commit runs in a write transaction.
         self.conn.execute("BEGIN IMMEDIATE" if write else "BEGIN")
         try:
             yield
@@ -75,6 +75,10 @@ class Taskflow:
             ids = [r[0] for r in self.conn.execute("SELECT id FROM taskflow_runs WHERE task_id=? ORDER BY id DESC LIMIT 100", (task_id,))]
             return [self._snapshot(i) for i in ids]
 
+    def list_operations(self, run_id):
+        from .operations import StepOperations
+        return StepOperations(self).list_for_run(run_id)
+
     def _task(self, task_id):
         task = self.conn.execute("SELECT description FROM tasks WHERE id=?", (task_id,)).fetchone()
         if task is None:
@@ -100,28 +104,45 @@ class Taskflow:
         self.conn.execute("INSERT INTO taskflow_events(run_id,action,from_status,to_status,version,reason) VALUES(?,?,?,?,?,?)", (run_id,action,previous,status,version,reason))
 
     def apply(self, run_id, request: Command | OwnerDecision):
+        if isinstance(request, Command) and request.action == 'step':
+            from .operations import StepOperations
+            return StepOperations(self).step(run_id, request)
+        with self.transaction(write=True):
+            return self._apply_locked(run_id, request)
+
+    def _apply_locked(self, run_id, request):
         owner = isinstance(request, OwnerDecision)
         action = 'owner_' + request.decision if owner else request.action
         fingerprint = digest({'endpoint': 'owner' if owner else 'commands', **request.model_dump()})
         key = digest(request.idempotency_key)
-        with self.transaction(write=True):
-            row = self._run(run_id)
-            old = self.conn.execute("SELECT request_hash,response_json FROM taskflow_commands WHERE run_id=? AND key_hash=?", (run_id,key)).fetchone()
-            if old is not None:
-                if old['request_hash'] != fingerprint:
-                    raise FlowError("idempotency_conflict", "Ключ уже использован с другим запросом")
-                return RunSnapshot.model_validate_json(old['response_json'])
-            if row['version'] != request.expected_version:
-                raise FlowError("stale_version", "Версия изменилась; перечитайте состояние процесса")
-            before = row['status']
-            self._transition(row, action, redact(request.reason))
-            row['version'] += 1
-            self.conn.execute("""UPDATE taskflow_runs SET status=?,version=?,steps_done=?,block_code=?,reason=?,owner_decision=?,
+        row = self._run(run_id)
+        old = self.conn.execute("SELECT request_hash,response_json FROM taskflow_commands WHERE run_id=? AND key_hash=?", (run_id,key)).fetchone()
+        if old is not None:
+            if old['request_hash'] != fingerprint:
+                raise FlowError("idempotency_conflict", "Ключ уже использован с другим запросом")
+            return RunSnapshot.model_validate_json(old['response_json'])
+        operation = self.conn.execute("SELECT request_hash FROM taskflow_operations WHERE run_id=? AND key_hash=?", (run_id,key)).fetchone()
+        if operation and operation['request_hash'] != fingerprint:
+            raise FlowError("idempotency_conflict", "Ключ уже использован с другим запросом")
+        if row['version'] != request.expected_version:
+            raise FlowError("stale_version", "Версия изменилась; перечитайте состояние процесса")
+        if action != 'cancel' and self.conn.execute("SELECT 1 FROM taskflow_operations WHERE run_id=? AND state IN ('running','result_ready','unknown')", (run_id,)).fetchone():
+            raise FlowError("operation_pending", "Сначала завершите или разрешите сохранённую операцию")
+        return self._commit_action(row, action, redact(request.reason), key, fingerprint)
+
+    def _commit_action(self, row, action, reason, key, fingerprint):
+        run_id = row['id']
+        before = row['status']
+        self._transition(row, action, reason)
+        row['version'] += 1
+        self.conn.execute("""UPDATE taskflow_runs SET status=?,version=?,steps_done=?,block_code=?,reason=?,owner_decision=?,
                 updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?""", tuple(row[k] for k in ('status','version','steps_done','block_code','reason','owner_decision')) + (run_id,))
-            self._event(run_id, action, before, row['status'], row['version'], row['reason'])
-            snapshot = self._snapshot(run_id)
-            self.conn.execute("INSERT INTO taskflow_commands(run_id,key_hash,request_hash,response_json) VALUES(?,?,?,?)", (run_id,key,fingerprint,snapshot.model_dump_json()))
-            return snapshot
+        if action == 'cancel':
+            self.conn.execute("UPDATE taskflow_operations SET cancel_requested=1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE run_id=? AND state IN ('running','result_ready','unknown')", (run_id,))
+        self._event(run_id, action, before, row['status'], row['version'], row['reason'])
+        snapshot = self._snapshot(run_id)
+        self.conn.execute("INSERT INTO taskflow_commands(run_id,key_hash,request_hash,response_json) VALUES(?,?,?,?)", (run_id,key,fingerprint,snapshot.model_dump_json()))
+        return snapshot
 
     def _stage_status(self, run_id, role, status):
         self.conn.execute("UPDATE taskflow_stages SET status=? WHERE run_id=? AND role=?", (status,run_id,role))
