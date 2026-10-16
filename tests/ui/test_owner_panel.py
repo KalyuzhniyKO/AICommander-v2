@@ -281,3 +281,35 @@ def test_mock_director_chat_shows_only_stored_evidence(browser_page):
     assert current(page) == record
     page.set_viewport_size({'width':390,'height':844})
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+
+
+def test_visual_acceptance_ru_en_desktop_mobile(browser_page):
+    """Reproducible local preview; responsive emulation, not a real-device claim."""
+    from pathlib import Path
+    page, expect = browser_page
+    create_task(page, expect, 'Демонстрация: требования и план проверки приёмки товара')
+    new_run(page, expect)
+    start(page, expect)
+    for count in range(1, 4):
+        step(page, expect, count)
+    before = current(page)
+    assert before['simulated'] is True and before['completion_scope'] == 'mock_artifacts_only'
+    writes = []
+    page.on('request', lambda request: writes.append(request.url) if request.method not in ('GET', 'HEAD') else None)
+    for locale in ('ru', 'en'):
+        page.locator('#languageSelect').select_option(locale)
+        expect(page.locator('html')).to_have_attribute('lang', locale)
+        for size, width, height in [('desktop', 1440, 1050), ('mobile', 390, 844)]:
+            page.set_viewport_size({'width': width, 'height': height})
+            expect(page.locator('#approveTask')).to_be_enabled()
+            expect(page.locator('#stepTask')).to_be_disabled()
+            expect(page.locator('.notice')).to_contain_text('Mock Director')
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+            assert page.locator('.actions button').evaluate_all('buttons => buttons.every(b => { const r=b.getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= innerWidth; })')
+            if os.environ.get('PANEL_VISUAL_DIR'):
+                directory = Path(os.environ['PANEL_VISUAL_DIR'])
+                directory.mkdir(parents=True, exist_ok=True)
+                page.evaluate('scrollTo(0,0)')
+                page.screenshot(path=str(directory / f'panel-{locale}-{size}.png'), full_page=True)
+    assert current(page) == before
+    assert not writes, 'Locale/viewport previews must not mutate the saved run'

@@ -35,3 +35,10 @@
 ## CI кода интеграции
 
 [GitHub Actions 38715547848](https://github.com/KalyuzhniyKO/AICommander-v3/actions/runs/38715547848), commit `8d68ce4`: **7/7 success** (Python 3.11–3.13 / Linux и Windows, Chromium). Последующее уточнение статуса PR и документации не меняет исходники или тесты. Ссылки на повторный CI итогового head — в описании PR.
+
+## Локальная визуальная приёмка #28
+
+После RU/EN и mock-chat добавлены [четыре реальные Chromium-снимка](UI_PREVIEW.md)
+и воспроизводимый тест desktop/mobile без Zorin или моделей. Это локальные
+viewport-проверки, не подтверждение на физических устройствах владельца.
+[Отдельный QA-отчёт](qa-issue-28-visual.json).
