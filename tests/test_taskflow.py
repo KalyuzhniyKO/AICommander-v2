@@ -267,9 +267,11 @@ def test_concurrent_same_version_commits_once(repository, tmp_path, same_key):
         with ThreadPoolExecutor(max_workers=2) as pool:
             results = list(pool.map(invoke, range(2)))
     if same_key:
-        assert results[0] == results[1]
+        committed = service.get(run.run_id)
+        assert all(r == committed or r == 'operation_pending' for r in results)
+        assert service.apply(run.run_id, Command(idempotency_key='race', expected_version=run.version, action='step')) == committed
     else:
-        assert sum(r == 'stale_version' for r in results) == 1
+        assert sum(r in ('stale_version', 'operation_pending') for r in results if isinstance(r, str)) == 1
     assert director.calls == 1
     assert len(service.get(run.run_id).artifacts) == 1
 

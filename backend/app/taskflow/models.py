@@ -133,3 +133,14 @@ class RunSnapshot(Model):
     stages: list[Stage]
     artifacts: list[Artifact]
     timeline: list[Event]
+
+
+class OperationSnapshot(Model):
+    id: str
+    run_id: int
+    role: Literal["analyst", "architect", "developer"]
+    expected_version: int
+    state: Literal["running", "result_ready", "unknown", "succeeded", "failed", "discarded"]
+    cancel_requested: bool
+    created_at: str
+    updated_at: str

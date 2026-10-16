@@ -99,7 +99,7 @@ def test_concurrent_initialization_is_repeatable(tmp_path):
             init_db(conn)
             return [conn.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0] for table in ('projects','panel_migrations','taskflow_migrations')]
     with ThreadPoolExecutor(max_workers=2) as pool:
-        assert list(pool.map(lambda _: initialize(),range(2)))==[[1,1,1],[1,1,1]]
+        assert list(pool.map(lambda _: initialize(),range(2)))==[[1,1,2],[1,1,2]]  # taskflow migrations 1 + 2
 
 
 def test_taskflow_response_redacts_configured_password(client,monkeypatch):

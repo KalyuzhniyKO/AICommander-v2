@@ -15,3 +15,13 @@ Run `python -m compileall backend`, `python -m pytest -q` and `python -m pip che
 ## Owner panel integration (PR #30)
 
 The main app protects every taskflow route with HTTP Basic and CSRF/Origin/Host checks. The reusable router alone does not authenticate callers when mounted in another app. The panel uses the existing versioned/idempotent taskflow contract, reads current snapshots after conflicts/replays, and keeps legacy rounds separate. See [Russian panel runbook](MACBOOK_PANEL.md). Completion still means mock artifacts only; no real executor, models, QA or deployment is invoked.
+
+## Offline operation protocol before #14
+
+Step calculation now runs outside SQLite write transactions. A durable operation
+reservation prevents duplicate dispatch; result_ready preserves computed output
+across a final-commit failure. Unknown outcomes are not retried automatically.
+Cancellation/version fencing discards late results. Migration 2 is additive;
+RunSnapshot v1 still marks all artifacts mock/simulated. Protected
+`GET /taskflow/runs/{run_id}/operations` exposes metadata only.
+[Protocol and recovery (EN)](OPERATIONS.en.md). No real transport is connected.
