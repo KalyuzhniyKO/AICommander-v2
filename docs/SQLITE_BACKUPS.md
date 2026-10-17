@@ -58,7 +58,7 @@ panel migration 1 и budget schema 1; пустые/частичные/будущ
 ## Файлы и границы
 
 Источник и назначение должны находиться внутри явного workspace. `..`, выход
-за root, symlink-компоненты (включая source WAL/SHM/journal), hardlink-источники и root равный home/filesystem root
+за канонический root (включая Windows junction redirects), symlink-компоненты (включая source WAL/SHM/journal), hardlink-источники и root равный home/filesystem root
 отклоняются. Эти проверки не являются песочницей против злоумышленника с правами
 владельца workspace; защищайте сам каталог и права доступа.
 

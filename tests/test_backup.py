@@ -349,3 +349,20 @@ def test_sqlite_source_sidecars_cannot_redirect_reads_outside_workspace(tmp_path
     with pytest.raises(backup.BackupError,match='symlink_not_allowed'):backup.create_backup(source,'blocked.zip',root=workspace)
     assert outside.read_bytes()==b'SYNTHETIC PRIVATE OUTSIDE DATA'
     assert not (workspace/'blocked.zip').exists()
+
+
+@pytest.mark.skipif(os.name!='nt',reason='Windows junction containment is exercised on Windows CI')
+def test_windows_junction_cannot_redirect_output_outside_workspace(tmp_path):
+    workspace=tmp_path/'workspace';source=app_db(workspace)
+    outside=tmp_path/'outside';outside.mkdir();link=workspace/'junction'
+    # cmd built-in is needed for a junction without symlink privileges. Use only
+    # controlled fixture paths and avoid shell metacharacters/expansion entirely.
+    if any(character in str(link)+str(outside) for character in '&|<>^%!\r\n'):
+        pytest.skip('Fixture path cannot be passed safely to cmd')
+    created=subprocess.run(['cmd.exe','/d','/c','mklink','/J',str(link),str(outside)],capture_output=True,text=True,timeout=10)
+    assert created.returncode==0,'Windows junction fixture could not be created'
+    try:
+        with pytest.raises(backup.BackupError,match='path_outside_workspace'):
+            backup.create_backup(source,link/'escaped.zip',root=workspace)
+        assert not (outside/'escaped.zip').exists()
+    finally:link.rmdir()

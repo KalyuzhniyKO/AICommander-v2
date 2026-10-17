@@ -36,7 +36,7 @@ app/tool versions. Hash/CRC establish
 integrity, not authenticity; use trusted backups only. A snapshot is a point in
 time, not replication of future writes.
 
-Paths stay inside an explicit workspace; parent traversal, symlink components,
+Resolved paths stay inside an explicit workspace, including Windows junction redirects; parent traversal, symlink components,
 source WAL/SHM/journal symlinks, hardlink sources, home/root scope and existing outputs are rejected. This is not
 an OS sandbox against the workspace owner. Private staging on the destination
 filesystem, file fsync and exclusive hardlink publication prevent overwrites.

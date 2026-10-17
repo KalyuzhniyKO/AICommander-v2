@@ -62,6 +62,9 @@ def _path(root,value,*,output=False):
     for part in parts:
         current=current/part
         if current.is_symlink():raise BackupError('symlink_not_allowed')
+    # Resolve native redirects too (e.g. Windows junctions are not is_symlink).
+    try:candidate.resolve(strict=False).relative_to(root)
+    except ValueError:raise BackupError('path_outside_workspace') from None
     if output:
         if candidate.exists():raise BackupError('destination_exists')
         if not candidate.parent.is_dir():raise BackupError('destination_parent_missing')
