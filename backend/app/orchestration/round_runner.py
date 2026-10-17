@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from backend.app.agents.base import get_agent
+from backend.app.redaction import redact
 from backend.app.config import Settings
 from backend.app.orchestration.fallback import run_with_fallback
 from backend.app.orchestration.role_router import select_roles, detect_task_type
@@ -21,7 +22,7 @@ def build_round_context(task: dict, user_comment: str = "") -> str:
             parts.append(f"{output['role']} ({output.get('provider')}/{output.get('model_id')}):\n{output.get('output', '')}")
     if user_comment:
         parts.append(f"Комментарий пользователя для текущего раунда:\n{user_comment}")
-    return "\n\n---\n\n".join(parts)
+    return redact("\n\n---\n\n".join(parts))
 
 
 def fallback_local_output(role: str, task_text: str) -> str:

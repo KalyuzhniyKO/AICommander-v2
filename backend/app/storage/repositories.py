@@ -2,9 +2,12 @@
 import json
 import sqlite3
 
+from backend.app.redaction import redact
+
 class Repository:
     def __init__(self,conn:sqlite3.Connection):self.conn=conn
     def create_task(self,description,project_id=1):
+        description=redact(description)
         title=description.strip().splitlines()[0][:120] or "Untitled"
         cur=self.conn.execute("INSERT INTO tasks(title,description,project_id) VALUES(?,?,?)",(title,description,project_id))
         self.conn.commit()
@@ -31,16 +34,20 @@ class Repository:
         x["role_outputs"]=[dict(r) for r in self.conn.execute("SELECT * FROM role_outputs WHERE round_id=? ORDER BY id",(round_id,))]
         return x
     def create_round(self,task_id,selected_roles,user_comment):
+        user_comment=redact(user_comment)
         n=self.conn.execute("SELECT COALESCE(MAX(round_number),0) FROM rounds WHERE task_id=?",(task_id,)).fetchone()[0]+1
         cur=self.conn.execute("INSERT INTO rounds(task_id,round_number,user_comment,selected_roles) VALUES(?,?,?,?)",(task_id,n,user_comment,json.dumps(selected_roles,ensure_ascii=False)))
         self.conn.commit();return self.get_round(cur.lastrowid)
     def save_role_output(self,round_id,role,output,provider,model_id,status,response_time_ms):
+        output=redact(output)
         self.conn.execute("""INSERT INTO role_outputs(round_id,role,output,provider,model_id,status,response_time_ms) VALUES(?,?,?,?,?,?,?)
           ON CONFLICT(round_id,role) DO UPDATE SET output=excluded.output,provider=excluded.provider,model_id=excluded.model_id,status=excluded.status,response_time_ms=excluded.response_time_ms,updated_at=CURRENT_TIMESTAMP""",(round_id,role,output,provider,model_id,status,response_time_ms))
         self.conn.commit()
     def add_model_error(self,round_id,role,provider,model_id,error):
+        error=redact(error)
         self.conn.execute("INSERT INTO model_errors(round_id,role,provider,model_id,error) VALUES(?,?,?,?,?)",(round_id,role,provider,model_id,error));self.conn.commit()
     def update_model_status(self,provider,model_id,role,status,last_error="",response_time_ms=None):
+        last_error=redact(last_error)
         if status=="available":
             self.conn.execute("""INSERT INTO model_status(provider,model_id,role,status,last_error,last_success_at,response_time_ms) VALUES(?,?,?,?,'',CURRENT_TIMESTAMP,?)
             ON CONFLICT(provider,model_id,role) DO UPDATE SET status=excluded.status,last_error='',last_success_at=CURRENT_TIMESTAMP,response_time_ms=excluded.response_time_ms""",(provider,model_id,role,status,response_time_ms))
@@ -51,12 +58,14 @@ class Repository:
     def list_model_status(self):
         return [dict(r) for r in self.conn.execute("SELECT * FROM model_status ORDER BY role,provider,model_id")]
     def update_round_summary(self,round_id,summary):
+        summary=redact(summary)
         self.conn.execute("UPDATE rounds SET summary=?,updated_at=CURRENT_TIMESTAMP WHERE id=?",(summary,round_id));self.conn.commit()
 
     def list_projects(self):
         return [dict(r) for r in self.conn.execute("SELECT * FROM projects ORDER BY id")]
 
     def create_project(self, name):
+        name=redact(name)
         cur = self.conn.execute("INSERT INTO projects(name) VALUES(?)", (name,))
         self.conn.commit()
         return {"id": cur.lastrowid, "name": name}
@@ -65,6 +74,7 @@ class Repository:
         return [dict(r) for r in self.conn.execute("SELECT t.*, r.id AS latest_run_id, r.status AS flow_status FROM tasks t LEFT JOIN taskflow_runs r ON r.id=(SELECT MAX(id) FROM taskflow_runs WHERE task_id=t.id AND director_mode='mock') ORDER BY t.id DESC")]
 
     def transition(self, task_id, states, target, action=None, comment=""):
+        comment=redact(comment)
         placeholders = ",".join("?" for _ in states)
         cur = self.conn.execute(f"UPDATE tasks SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ({placeholders})", (target, task_id, *states))
         if cur.rowcount and action:

@@ -133,3 +133,9 @@ Copy-Item config/models.example.json config/models.json
 реальный Git diff. Ошибки и изменение кода блокируют QA; независимое review и
 решение владельца остаются обязательными. В taskflow не подключён, OS sandbox
 не заменяет; полная #16 остаётся открытой.
+
+
+[Проверка прикладной защиты #20](docs/SECURITY_BOUNDARY.md) закрывает утечки в JSON keys,
+новых текстах SQLite и legacy context, усиливает Host/duplicate headers и
+защитные заголовки отказов. Исторические данные не переписываются; OS/network
+isolation и полная #20 остаются открытыми.

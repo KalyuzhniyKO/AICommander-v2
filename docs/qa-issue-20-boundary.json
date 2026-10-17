@@ -1,0 +1,43 @@
+{
+  "issue": 20,
+  "date": "2026-10-18",
+  "scope": "HTTP_boundary_and_new_free_text_masking",
+  "fixtures": "synthetic_credentials_temporary_SQLite_only",
+  "before_fix": {
+    "initial_HTTP_boundary_tests": {"failed": 20, "passed": 6},
+    "subsequently_added_persistence_context_regressions": {"failed": 3}
+  },
+  "after_fix": {
+    "new_boundary_tests": {"passed": 30},
+    "focused_security_panel_taskflow_operations_foundation": {"passed": 107},
+    "full_suite_with_Chromium": {"passed": 402, "skipped": 2},
+    "compileall": "passed",
+    "pip_check": "passed",
+    "git_diff_check": "passed"
+  },
+  "fixed": [
+    "JSON_string_property_names_and_tuple_values",
+    "redacted_property_name_collisions_preserve_values",
+    "Bearer_token_punctuation_suffix_leak",
+    "new_Repository_free_text_masked_before_SQL",
+    "legacy_context_masked_after_assembly",
+    "taskflow_goals_reasons_artifact_text_use_shared_masker",
+    "strict_loopback_Host_authority_and_valid_port",
+    "ambiguous_duplicate_security_headers_rejected",
+    "security_headers_on_early_denials"
+  ],
+  "historical_rows_rewritten": false,
+  "routing_identifiers_rewritten": false,
+  "schema_migration_added": false,
+  "dependencies_added": false,
+  "live_services_used": false,
+  "OS_or_network_sandbox_implemented": false,
+  "arbitrary_secret_detection_claimed": false,
+  "full_issue_completed": false,
+  "remaining": [
+    "OS_process_filesystem_network_isolation",
+    "deployment_reboot_live_acceptance",
+    "dependency_and_license_audit",
+    "historical_rows_WAL_backups_and_system_logs_outside_this_fix"
+  ]
+}

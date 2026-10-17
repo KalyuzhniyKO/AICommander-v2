@@ -122,3 +122,8 @@ installation/operational acceptance is not completed by this component.
 disposable worktree and records exit codes, redacted logs and actual Git diff.
 Failures or source changes block QA. Independent review and owner approval remain
 required. No taskflow wiring or OS sandbox is claimed; full #16 remains open.
+
+
+[Application security checks for #20](docs/SECURITY_BOUNDARY.en.md) cover JSON keys, new SQLite
+text, legacy context, strict Host/duplicate headers and denial response headers.
+Historical data is not rewritten; full #20 and OS/network isolation remain open.
