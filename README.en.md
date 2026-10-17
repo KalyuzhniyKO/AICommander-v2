@@ -55,6 +55,7 @@ Python **3.11–3.13**; Linux/macOS:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade "pip>=26.2.1"
 python -m pip install -r requirements-dev.txt
 cp .env.example .env
 cp config/models.example.json config/models.json
@@ -67,6 +68,7 @@ Windows PowerShell:
 
 ```powershell
 py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade "pip>=26.2.1"
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 Copy-Item .env.example .env
 Copy-Item config/models.example.json config/models.json
@@ -122,3 +124,13 @@ installation/operational acceptance is not completed by this component.
 disposable worktree and records exit codes, redacted logs and actual Git diff.
 Failures or source changes block QA. Independent review and owner approval remain
 required. No taskflow wiring or OS sandbox is claimed; full #16 remains open.
+
+
+[Application security checks for #20](docs/SECURITY_BOUNDARY.en.md) cover JSON keys, new SQLite
+text, legacy context, strict Host/duplicate headers and denial response headers.
+Historical data is not rewritten; full #20 and OS/network isolation remain open.
+
+
+[Dependency audit](docs/DEPENDENCY_AUDIT.en.md): installer updated locally;
+a dedicated CI job checks installed Python packages and retains evidence.
+This does not audit Zorin, every platform, or bundled browser components.

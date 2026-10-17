@@ -65,6 +65,7 @@ Python **3.11–3.13**. Команды для Linux/macOS:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade "pip>=26.2.1"
 python -m pip install -r requirements-dev.txt
 cp .env.example .env
 cp config/models.example.json config/models.json
@@ -78,6 +79,7 @@ Windows PowerShell:
 
 ```powershell
 py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade "pip>=26.2.1"
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 Copy-Item .env.example .env
 Copy-Item config/models.example.json config/models.json
@@ -133,3 +135,14 @@ Copy-Item config/models.example.json config/models.json
 реальный Git diff. Ошибки и изменение кода блокируют QA; независимое review и
 решение владельца остаются обязательными. В taskflow не подключён, OS sandbox
 не заменяет; полная #16 остаётся открытой.
+
+
+[Проверка прикладной защиты #20](docs/SECURITY_BOUNDARY.md) закрывает утечки в JSON keys,
+новых текстах SQLite и legacy context, усиливает Host/duplicate headers и
+защитные заголовки отказов. Исторические данные не переписываются; OS/network
+isolation и полная #20 остаются открытыми.
+
+
+[Аудит зависимостей](docs/DEPENDENCY_AUDIT.md): локальный установщик обновлён,
+CI отдельно проверяет установленные Python-пакеты и сохраняет отчёт. Это не
+аудит Zorin, всех платформ или полной поставки браузера.

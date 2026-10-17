@@ -20,3 +20,7 @@ config/models.json
 .aicommander-snapshot-*/
 .aicommander-verify-*/
 .aicommander-restore-*/
+
+# Separate local/CI security scanner environment and transient report.
+.audit-tool/
+dependency-audit.json
