@@ -134,3 +134,8 @@ Historical data is not rewritten; full #20 and OS/network isolation remain open.
 [Dependency audit](docs/DEPENDENCY_AUDIT.en.md): installer updated locally;
 a dedicated CI job checks installed Python packages and retains evidence.
 This does not audit Zorin, every platform, or bundled browser components.
+
+
+[Read-only GitHub PR/CI (#17)](docs/GITHUB_STATUS.en.md) reads exact-head
+metadata and detects incomplete/stale checks. It never grants merge permission;
+draft PR publishing and taskflow wiring remain pending.
