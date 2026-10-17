@@ -1,0 +1,161 @@
+{
+  "issue": 19,
+  "date": "2026-10-17",
+  "scope": "UI preparation only: stored Hermes v2 history and cancellation; fixture artifacts, no live inference",
+  "full_issue_closed": false,
+  "base_commit": "6a8d2c6d3f062876eba6e16e9fd01efcc65ee8cf",
+  "python": "3.13.12",
+  "checks": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "env": {
+        "RUN_UI_TESTS": "1"
+      },
+      "exit_code": 0,
+      "output": "....................................s................................... [ 25%]\n........................................................................ [ 50%]\n........................................................................ [ 75%]\n.......................................................................  [100%]\n=============================== warnings summary ===============================\n<TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1\n  <TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n286 passed, 1 skipped, 1 warning in 49.54s\n"
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/ui"
+      ],
+      "env": {
+        "RUN_UI_TESTS": "1"
+      },
+      "exit_code": 0,
+      "output": ".................                                                        [100%]\n=============================== warnings summary ===============================\n<TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1\n  <TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n17 passed, 1 warning in 16.39s\n"
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/ui/test_hermes_panel.py"
+      ],
+      "env": {
+        "RUN_UI_TESTS": "1",
+        "HERMES_PANEL_VISUAL_DIR": "docs/ui-preview/hermes-fixtures"
+      },
+      "exit_code": 0,
+      "output": "........                                                                 [100%]\n=============================== warnings summary ===============================\n<TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1\n  <TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n8 passed, 1 warning in 8.06s\n"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "frontend/app.js"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "frontend/i18n.js"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "compileall",
+        "-q",
+        "backend"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "output": "No broken requirements found."
+    },
+    {
+      "check": "syntax_json_links_private_host_paths",
+      "files": 20,
+      "local_links": 103,
+      "backend_changes": false,
+      "exit_code": 0
+    }
+  ],
+  "browser_scenarios": [
+    "Mock/v2 histories of the same task remain distinct; both retain their artifacts",
+    "four v2 roles, planning review, provenance and XSS-safe artifact content",
+    "RU/EN, viewport 1440x1050 and 390x844, no horizontal overflow with expanded artifact",
+    "all model launch/step/resume/approval controls hidden and disabled in Hermes mode",
+    "view/refresh/locale/viewport changes send no POST",
+    "running/result_ready/unknown metadata; explicit unknown guidance and no model retry",
+    "cancel uses existing v2 commands and sets cancel_requested",
+    "lost cancellation response replays exact key/body; no duplicate version increment; mode switch locked",
+    "operation GET failure is not empty history and remains localized",
+    "saved role failure does not offer retry",
+    "empty/unavailable v2 list never falls back to mock",
+    "all nine existing Mock browser scenarios pass"
+  ],
+  "screenshots": [
+    {
+      "path": "docs/ui-preview/hermes-fixtures/hermes-en-desktop.png",
+      "sha256": "19ada1e53d1c93ec6146ca36065bf0dd9db3a7428c4ccef772851c715d200711",
+      "synthetic_data": true,
+      "visually_reviewed": true
+    },
+    {
+      "path": "docs/ui-preview/hermes-fixtures/hermes-en-mobile.png",
+      "sha256": "970bbac5a21a97301d51692c783c4e1ea7207d5d69915166be679dfb10f647af",
+      "synthetic_data": true,
+      "visually_reviewed": true
+    },
+    {
+      "path": "docs/ui-preview/hermes-fixtures/hermes-ru-desktop.png",
+      "sha256": "a57bbaaefb6160a0a582c23b0ed7b3e62aab1de6870292022f88f5a48561a8b4",
+      "synthetic_data": true,
+      "visually_reviewed": true
+    },
+    {
+      "path": "docs/ui-preview/hermes-fixtures/hermes-ru-mobile.png",
+      "sha256": "c93c26d4cb04de63fb736981ebf2c10b55825a165375de06e9a6baac1059cb21",
+      "synthetic_data": true,
+      "visually_reviewed": true
+    },
+    {
+      "path": "docs/ui-preview/hermes-fixtures/hermes-unknown-en-desktop.png",
+      "sha256": "2adcd81e67d60fde860692418a884190a3bd70ae610c76b4dbd0f031fb39eb96",
+      "synthetic_data": true,
+      "visually_reviewed": true
+    }
+  ],
+  "fixture_notice": "Director in tests returns synthetic schema-valid v2 content/provenance. No live Hermes evidence is claimed by these screenshots.",
+  "review": "Manual frontend/API-routing/replay/localization/XSS diff review plus visual review of generated screenshots; no separate reviewer agent.",
+  "no_ssh_zorin_model_or_production_access": true,
+  "backend_routes_schemas_permissions_changed": false,
+  "new_dependencies": false,
+  "remaining": [
+    "Full #19 Hermes/Codex/QA/GitHub integration and real-device acceptance",
+    "Current v2 panel does not create/start/step/resume/approve; only read/cancel",
+    "No actual task Git diff, QA execution, model costs or provider/quota health report",
+    "Persistent deployment was not performed; #14/#15/#16/#18/#28 stay open"
+  ],
+  "source_sha256": {
+    "frontend/app.js": "8ceb3b3b0d6c21ae8985658277801fd51b3397ba31dcae2041b553fc60a9ef97",
+    "frontend/i18n.js": "e54040eae8ef7560afa14461871d0294390cebdd59e2d0ef3facbe3dbc7a8939",
+    "frontend/index.html": "ce51a3f918ebef648fc61098c56ebbce354d2c58ceac53b2629ee8c8edeca07c",
+    "frontend/style.css": "77e0c9e5c07b005e69d8a40a6f07af446016e636b786a9c27835ca924a4a5b01",
+    "tests/ui/conftest.py": "138f2f209099be8d3dfad56ade6b3acbb71fef6e1267f5cb09c0df9bb8d70d20",
+    "tests/ui/test_hermes_panel.py": "a51436bc66d43b092890bf252ce704f8adb0bc00391bc0b0b4c5ba29575e649b",
+    "tests/ui/test_owner_panel.py": "09dc6ed328a9ac275f032b213e8ce99bde16a641d7636b1dcb9fe6bf8435b055"
+  }
+}

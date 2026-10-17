@@ -16,8 +16,10 @@
 `completion_scope=real_planning_artifacts_only`, `code_executed=false`,
 `qa_verified=false`. Поле review.scope равно `planning_only`.
 
-Контракт v1 и текущая веб-панель сохраняют Mock Director и `simulated=true`.
-Панель пока показывает только mock-процессы; интеграция real-процессов с UI — #19.
+Контракт v1 сохраняет Mock Director и `simulated=true`. По умолчанию панель
+показывает mock-процессы; [подготовка #19](HERMES_PANEL.md) добавляет отдельный
+просмотр сохранённых v2-процессов и отмену без запуска моделей/согласования.
+Полная сквозная интеграция с UI остаётся #19.
 Общие `/health` connectivity-флаги остаются консервативными и не выполняют проб.
 Настроенность real transport смотрят в защищённом v2 capabilities; это не live health.
 

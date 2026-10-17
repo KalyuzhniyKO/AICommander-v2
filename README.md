@@ -8,7 +8,7 @@
 
 - `main` репозитория AICommander-v3 содержит foundation, offline taskflow (PR #31) и отдельную библиотеку worktree executor (PR #33).
 - В объединённом PR #30 панель подключена к taskflow: версии, роли, артефакты, согласование/отказ, отмена и продолжение. Все маршруты защищены авторизацией и CSRF. [Проверки и границы](docs/QA_PANEL.md).
-- Адаптер OmniRoute подключается явно к ручным legacy-раундам и проверкам моделей; [live smoke](docs/OMNIROUTE_ADAPTER.md) подтвердил текстовый маршрут, streaming и делегирование установленного Hermes. Taskflow v2 использует установленный Hermes для реальных артефактов планирования; [контракт и live QA](docs/HERMES_TASKFLOW.md). Панель/v1 пока используют Mock Director. Код и QA ещё не выполняются. Итоговая live-приёмка #14 ожидает восстановления квот провайдеров.
+- Адаптер OmniRoute подключается явно к ручным legacy-раундам и проверкам моделей; [live smoke](docs/OMNIROUTE_ADAPTER.md) подтвердил текстовый маршрут, streaming и делегирование установленного Hermes. Taskflow v2 использует установленный Hermes для реальных артефактов планирования; [контракт и live QA](docs/HERMES_TASKFLOW.md). V1 сохраняет Mock Director; [подготовка панели](docs/HERMES_PANEL.md) добавляет отдельный просмотр/отмену сохранённых Hermes v2-процессов. Код и QA ещё не выполняются. Итоговая live-приёмка #14 ожидает восстановления квот провайдеров.
 
 ## Что мы создаём
 
@@ -52,6 +52,7 @@
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
 | Шаблоны GitHub и порядок работы | [WORKFLOW](docs/GITHUB_WORKFLOW.md) | [Workflow](docs/GITHUB_WORKFLOW.en.md) |
 | Адаптер OmniRoute: opt-in и live smoke | [RU](docs/OMNIROUTE_ADAPTER.md) | [EN](docs/OMNIROUTE_ADAPTER.en.md) |
+| Панель: история Hermes (подготовка #19) | [RU](docs/HERMES_PANEL.md) | [EN](docs/HERMES_PANEL.en.md) |
 | Hermes Director: реальное планирование | [RU](docs/HERMES_TASKFLOW.md) | [EN](docs/HERMES_TASKFLOW.en.md) |
 | Журнал операций taskflow (offline-часть #14) | [RU](docs/OPERATIONS.md) | [EN](docs/OPERATIONS.en.md) |
 
@@ -95,7 +96,7 @@ Copy-Item config/models.example.json config/models.json
 
 ## Панель владельца (#30)
 
-Защищённая панель подключена к `/taskflow/*`: процессы, этапы, типизированные артефакты, timeline, approve/reject/cancel и возобновление. Это Mock Director без вызовов моделей и исполнения кода. Legacy-раунды доступны отдельно через прежний API и показываются как история. [Запуск](docs/MACBOOK_PANEL.md), [проверки](docs/QA_PANEL.md).
+Защищённая панель подключена к `/taskflow/*`: процессы, этапы, типизированные артефакты, timeline, approve/reject/cancel и возобновление. V1 — Mock Director без вызовов моделей и исполнения кода. В режиме истории Hermes доступны чтение сохранённых v2-артефактов и отмена, без запуска моделей и согласования. Legacy-раунды доступны отдельно через прежний API и показываются как история. [Запуск](docs/MACBOOK_PANEL.md), [проверки](docs/QA_PANEL.md).
 
 ## Аудит репозитория
 

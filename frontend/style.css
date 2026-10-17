@@ -70,7 +70,7 @@ button.danger { background: #991b1b; border-color: #f87171; }
 .run-settings { margin-top: 18px; }
 .run-settings label { display: block; }
 #runSelect { width: 100%; }
-.role-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+.role-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0; }
 .role-board .role { margin: 0; }
 @media (max-width: 840px) { .role-board { grid-template-columns: 1fr; } }
 
@@ -86,3 +86,10 @@ button.danger { background: #991b1b; border-color: #f87171; }
 .chat-bubble p { margin: 6px 0 0; white-space: pre-wrap; font-size: .94rem; }
 .chat-bubble strong { font-size: .9rem; }
 @media (max-width: 520px) { .director-preview { padding: 12px; } .chat-bubble { max-width: 100%; } }
+
+#flowMode { width: 100%; }
+.operation { border-left: 3px solid #22d3ee; padding: 10px 14px; margin: 12px 0; background: #0e1524; overflow-wrap: anywhere; }
+.provenance { overflow-wrap: anywhere; font-size: .88rem; color: #bfdbfe; }
+[hidden] { display: none !important; }
+
+.run-settings.hermes-settings { grid-template-columns: 1fr; }

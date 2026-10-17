@@ -13,8 +13,9 @@ plan. Code execution, Codex CLI, tests and diff review belong to #15/#16.
 `done` means owner-approved planning artifacts: `schema_version=2.0`,
 `director=hermes`, `simulated=false`, `completion_scope=real_planning_artifacts_only`,
 `code_executed=false`, `qa_verified=false`, review `scope=planning_only`.
-The frozen v1 contract and current web panel retain Mock Director. The panel lists
-mock runs only; real-run UI integration belongs to #19. Generic `/health` does not
+The frozen v1 contract retains Mock Director. The panel defaults to mock runs;
+[panel preparation](HERMES_PANEL.en.md) adds separate saved v2 history/cancellation
+without model launch/approval. Full integration still belongs to #19. Generic `/health` does not
 probe connectivity; protected v2 capabilities reports configuration, not live health.
 
 ## Server configuration
