@@ -1,0 +1,51 @@
+{
+  "kind": "synthetic_fixture_only",
+  "service_calls": 0,
+  "verified": true,
+  "rows_identical_after_restore": true,
+  "manifest": {
+    "schema_version": "1.0",
+    "created_utc": "2026-10-17T20:15:11Z",
+    "sqlite_runtime_version": "3.53.4",
+    "sqlite_bytes": 139264,
+    "sqlite_sha256": "246ef290147354f0f1100082c5a916fa89405402003f538eca2679369655334f",
+    "metadata": {
+      "kind": "app",
+      "versions": {
+        "taskflow": [
+          1,
+          2,
+          3
+        ],
+        "panel": [
+          1
+        ],
+        "budget": []
+      },
+      "row_counts": {
+        "model_errors": 0,
+        "model_status": 0,
+        "owner_decisions": 0,
+        "projects": 1,
+        "role_outputs": 0,
+        "rounds": 0,
+        "taskflow_artifacts": 1,
+        "taskflow_commands": 2,
+        "taskflow_events": 3,
+        "taskflow_operations": 2,
+        "taskflow_runs": 1,
+        "taskflow_stages": 3,
+        "tasks": 1
+      },
+      "unresolved_counts": {
+        "tasks.running": 0,
+        "tasks.stopping": 0,
+        "taskflow_runs.running": 1,
+        "taskflow_operations.running": 0,
+        "taskflow_operations.result_ready": 0,
+        "taskflow_operations.unknown": 1
+      },
+      "operator_recovery_required": true
+    }
+  }
+}

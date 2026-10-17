@@ -1,0 +1,101 @@
+{
+  "issue": 22,
+  "date": "2026-10-17",
+  "scope": "offline SQLite backup/verify/new-file restore only; no installation or service deployment",
+  "full_issue_closed": false,
+  "base_commit": "98740c461c927e80385a639cce29d323b58eb3fa",
+  "python": "3.13.12",
+  "checks": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "env": {
+        "RUN_UI_TESTS": "1",
+        "SQLITE_BACKUP_EXAMPLE": "docs/contracts/sqlite-backup-v1.example.json"
+      },
+      "exit_code": 0,
+      "output": "...............................s........................................ [ 20%]\n..............................s......................................... [ 40%]\n........................................................................ [ 61%]\n........................................................................ [ 81%]\n.................................................................        [100%]\n=============================== warnings summary ===============================\n<TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1\n  <TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n351 passed, 2 skipped, 1 warning in 49.96s\n"
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_backup.py"
+      ],
+      "exit_code": 0,
+      "output": "...............................s                                         [100%]\n=============================== warnings summary ===============================\n<TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1\n  <TEST_RUNTIME>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n31 passed, 1 skipped, 1 warning in 0.74s\n",
+      "note": "Canonical-path guard and dedicated Windows junction fixture added after initial review. Junction case is Windows-only; actual Windows execution is verified in CI."
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "compileall",
+        "-q",
+        "backend"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "output": "No broken requirements found."
+    },
+    {
+      "check": "git_check_ignore_private_state_and_interrupted_staging",
+      "paths_checked": 6,
+      "exit_code": 0
+    }
+  ],
+  "verified": [
+    "app rows, IDs, artifacts, commands, migrations and unknown operations survive unchanged",
+    "synthetic v2 planning artifacts/provenance survive without SDK calls",
+    "budget unknown balances/fence and policy hashes preserved",
+    "explicit restored result_ready commit uses saved result without Director/model calls",
+    "committed WAL data included without checkpoint",
+    "consistent atomic row cohorts during concurrent WAL writes",
+    "existing output and stale sidecars never overwritten",
+    "path traversal, symlink components/source WAL/SHM/journal redirects and hardlink sources refused",
+    "ZIP members/types/methods/counts/directory sizes checked before extraction/allocation",
+    "SHA/CRC/metadata/format, foreign keys, integrity and supported schemas verified",
+    "size/deadline checks and exclusive publication race preserve existing winner",
+    "temporary staging cleanup and CLI subprocess JSON/error behavior",
+    "stale snapshot can omit later completed external receipts: reconciliation always required, even with no unresolved rows",
+    "canonical containment after path resolution, including a Windows-only native junction fixture"
+  ],
+  "synthetic_example": "contracts/sqlite-backup-v1.example.json",
+  "real_production_or_user_db_accessed": false,
+  "ssh_zorin_services_models_accessed": false,
+  "app_startup_or_automatic_migrations_or_recovery_added": false,
+  "new_dependencies": false,
+  "limits": [
+    "ZIP is not encrypted; SHA/CRC are integrity checks, not authentication",
+    "point-in-time single-file snapshots; no cross-file transaction",
+    "restore never changes DATABASE_URL or starts workers",
+    "stop all old/restored workers and reconcile external effects before resuming",
+    "trusted workspace checks are not an OS sandbox against its owner",
+    "best-effort progress timeouts do not interrupt uninterruptible OS I/O",
+    "no cross-platform directory/power-loss durability guarantee; Windows ACLs require operator configuration"
+  ],
+  "review": "Manual filesystem/archive/publication/SQLite/state-recovery diff review; no independent agent reviewer.",
+  "remaining": [
+    "Full #22 Zorin installation/update/rollback and protected MacBook access",
+    "Operational health/metrics, backup scheduling and actual owner acceptance",
+    "No #14/#15/#18 integration or exactly-once billing claim from restoration"
+  ],
+  "source_sha256": {
+    "backend/app/storage/backup.py": "e6f585cfdd7cc56c9704c59830cd214857df766ca692ebe9f5f0ffd8d172f97f",
+    "tests/test_backup.py": "e3f432ba126dbb77481855bf8262ab01311e18edadbdef14e01da32b0ed8a146"
+  }
+}

@@ -105,3 +105,12 @@ with `python -m backend.app.budgets.demo`, without network access.
 **The library is not wired into runtime and does not enforce current app spending.**
 Full #18 stays open for verified pricing/usage, atomic operation-journal integration
 and live provider caps. No automatic inference retry/fallback was added.
+
+
+## Offline backup/restore preparation #22
+
+[Explicit SQLite snapshots](docs/SQLITE_BACKUPS.en.md) include committed WAL data,
+verify integrity/checksums and restore into a new filename only. V1/v2 artifacts,
+operations and budget reservations remain unchanged; unknown outcomes never retry.
+Snapshots are private, unencrypted data and must stay out of Git. Full Zorin
+installation/operational acceptance is not completed by this component.
