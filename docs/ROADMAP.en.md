@@ -1,5 +1,9 @@
 # AICommander 3.0 — dependency-aware roadmap
 
+**#18 preparation, 17 October 2026:** [offline budget ledger](BUDGETS.en.md)
+tests limits/quota with synthetic data, without Hermes/OmniRoute. Current runtime
+spending is not governed by it; full #18 remains open.
+
 **16 October 2026 update:** #11–#13 were live-verified and closed after PR #41.
 #14 adds [Hermes planning v2](HERMES_TASKFLOW.en.md), typed handoffs and safe
 operations, with optional Architect. Code/QA execution and integrated UI remain
