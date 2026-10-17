@@ -93,3 +93,15 @@ The target repository is AICommander-v3, branch main; v2 is preserved in v2-lega
 ## Repository audit
 
 [Audit updated after PR #30 and #37 (RU)](docs/AUDIT_2026-10-15.md) records code, CI and limited Zorin evidence. The main branch is v3; v2-legacy preserves v2. Subsequent [live QA #13](docs/qa-issue-13-live.json) verifies bounded inventory/inference routes, not a full development team.
+
+
+## Offline budget preparation #18
+
+[Admission/accounting library](docs/BUDGETS.en.md) validates role/model permissions,
+request/token/time limits and declared micro-USD reservations in a separate SQLite
+ledger. Unknown pricing and unapproved paid requests are denied. Unknown outcomes
+retain capacity and fence subsequent account permissions. Run the [synthetic example](docs/contracts/budget-offline.example.json)
+with `python -m backend.app.budgets.demo`, without network access.
+**The library is not wired into runtime and does not enforce current app spending.**
+Full #18 stays open for verified pricing/usage, atomic operation-journal integration
+and live provider caps. No automatic inference retry/fallback was added.

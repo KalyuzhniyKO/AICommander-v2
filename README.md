@@ -52,6 +52,7 @@
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
 | Шаблоны GitHub и порядок работы | [WORKFLOW](docs/GITHUB_WORKFLOW.md) | [Workflow](docs/GITHUB_WORKFLOW.en.md) |
 | Адаптер OmniRoute: opt-in и live smoke | [RU](docs/OMNIROUTE_ADAPTER.md) | [EN](docs/OMNIROUTE_ADAPTER.en.md) |
+| Лимиты и бюджет (offline-подготовка #18) | [RU](docs/BUDGETS.md) | [EN](docs/BUDGETS.en.md) |
 | Панель: история Hermes (подготовка #19) | [RU](docs/HERMES_PANEL.md) | [EN](docs/HERMES_PANEL.en.md) |
 | Hermes Director: реальное планирование | [RU](docs/HERMES_TASKFLOW.md) | [EN](docs/HERMES_TASKFLOW.en.md) |
 | Журнал операций taskflow (offline-часть #14) | [RU](docs/OPERATIONS.md) | [EN](docs/OPERATIONS.en.md) |
@@ -101,3 +102,15 @@ Copy-Item config/models.example.json config/models.json
 ## Аудит репозитория
 
 [Аудит после PR #30 и #37](docs/AUDIT_2026-10-15.md) фиксирует состояние кода, CI и ограниченные подтверждения Zorin. Последующее [live QA #13](docs/qa-issue-13-live.json) подтвердило inventory и ограниченные Hermes → OmniRoute маршруты; это не сквозная команда разработки.
+
+
+## Offline-подготовка бюджета #18
+
+[Библиотека допуска запросов](docs/BUDGETS.md) проверяет разрешённые роли/модели,
+лимиты запросов/токенов/времени и объявленный денежный резерв в отдельной SQLite.
+Неизвестная цена и платный маршрут без разрешения блокируются; unknown удерживает
+резерв и блокирует дальнейшие разрешения account. [Синтетический пример](docs/contracts/budget-offline.example.json)
+воспроизводится командой `python -m backend.app.budgets.demo` без сети.
+**В runtime библиотека пока не подключена и реальные расходы приложения не ограничивает.**
+Полная #18 остаётся открытой для проверенных тарифов/usage и интеграции с журналом
+операций Hermes/OmniRoute; новые автоматические retries/fallback не добавлены.

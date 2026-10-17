@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "Limits": {
+      "additionalProperties": false,
+      "properties": {
+        "max_requests": {
+          "default": 8,
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Max Requests",
+          "type": "integer"
+        },
+        "max_input_tokens": {
+          "default": 4096,
+          "maximum": 1000000,
+          "minimum": 1,
+          "title": "Max Input Tokens",
+          "type": "integer"
+        },
+        "max_output_tokens": {
+          "default": 1024,
+          "maximum": 1000000,
+          "minimum": 1,
+          "title": "Max Output Tokens",
+          "type": "integer"
+        },
+        "max_total_tokens": {
+          "default": 16384,
+          "maximum": 1000000000,
+          "minimum": 1,
+          "title": "Max Total Tokens",
+          "type": "integer"
+        },
+        "max_request_seconds": {
+          "default": 90,
+          "maximum": 3600,
+          "minimum": 1,
+          "title": "Max Request Seconds",
+          "type": "integer"
+        },
+        "lifetime_seconds": {
+          "default": 600,
+          "maximum": 86400,
+          "minimum": 1,
+          "title": "Lifetime Seconds",
+          "type": "integer"
+        },
+        "max_micro_usd": {
+          "default": 0,
+          "maximum": 1000000000000,
+          "minimum": 0,
+          "title": "Max Micro Usd",
+          "type": "integer"
+        },
+        "allow_paid": {
+          "default": false,
+          "title": "Allow Paid",
+          "type": "boolean"
+        },
+        "base_backoff_seconds": {
+          "default": 60,
+          "maximum": 3600,
+          "minimum": 1,
+          "title": "Base Backoff Seconds",
+          "type": "integer"
+        },
+        "max_backoff_seconds": {
+          "default": 3600,
+          "maximum": 86400,
+          "minimum": 1,
+          "title": "Max Backoff Seconds",
+          "type": "integer"
+        }
+      },
+      "title": "Limits",
+      "type": "object"
+    },
+    "Route": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "enum": [
+            "analyst",
+            "architect",
+            "developer",
+            "reviewer"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "model_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$",
+          "title": "Model Id",
+          "type": "string"
+        },
+        "tariff": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Tariff"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "role",
+        "model_id"
+      ],
+      "title": "Route",
+      "type": "object"
+    },
+    "Tariff": {
+      "additionalProperties": false,
+      "properties": {
+        "input_micro_usd_per_million": {
+          "maximum": 1000000000000,
+          "minimum": 0,
+          "title": "Input Micro Usd Per Million",
+          "type": "integer"
+        },
+        "output_micro_usd_per_million": {
+          "maximum": 1000000000000,
+          "minimum": 0,
+          "title": "Output Micro Usd Per Million",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "input_micro_usd_per_million",
+        "output_micro_usd_per_million"
+      ],
+      "title": "Tariff",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "routes": {
+      "items": {
+        "$ref": "#/$defs/Route"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "title": "Routes",
+      "type": "array"
+    },
+    "limits": {
+      "$ref": "#/$defs/Limits"
+    }
+  },
+  "required": [
+    "routes"
+  ],
+  "title": "Policy",
+  "type": "object"
+}
