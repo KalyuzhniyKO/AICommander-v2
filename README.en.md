@@ -21,7 +21,7 @@ The goal is real, test-backed software changes, not several independent textual 
 ## Retained from v2
 Local FastAPI, minimal web UI, tasks and rounds, SQLite history, simple role prompts and keyword role routing, an OpenRouter-compatible transport with fallback and model availability checks, and credential-free test scaffolding.
 
-Hermes taskflow v2 provides [live-tested planning artifacts](docs/HERMES_TASKFLOW.en.md), using the installed runtime. The current panel/v1 retain mock runs. Final #14 live acceptance awaits provider quota recovery.
+Hermes taskflow v2 provides [live-tested planning artifacts](docs/HERMES_TASKFLOW.en.md), using the installed runtime. V1 retains mock runs; [panel preparation](docs/HERMES_PANEL.en.md) adds separate saved v2 history and cancellation, without model launch or approval. Final #14 live acceptance awaits provider quota recovery.
 
 **Remaining integrations:** executing QA/Reviewer, Codex CLI, OS sandbox, GitHub PR generation and budget policy. The authenticated mock-taskflow panel and independent offline worktree library are implemented. [Verified scope and tests](docs/QA_PANEL.md).
 
