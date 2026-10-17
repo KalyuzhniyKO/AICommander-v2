@@ -90,7 +90,8 @@ def test_incomplete_stale_or_untrusted_evidence_never_passes(kind):
     assert not result['ready_for_merge']
 
 
-@pytest.mark.parametrize('raw', [b'not json', b'[]', b'{"number":7,"number":8}', b'x'*(1024*1024+1)])
+@pytest.mark.parametrize('raw', [b'not json', b'[]', b'{"number":7,"number":8}', b'x'*(1024*1024+1)],
+                         ids=['invalid-json', 'wrong-root', 'duplicate-key', 'oversized'])
 def test_invalid_duplicate_or_oversized_payload_is_safe_unavailable(raw):
     reader = client([raw])
     result = reader.snapshot(7)
