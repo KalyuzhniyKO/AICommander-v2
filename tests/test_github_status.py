@@ -39,9 +39,12 @@ class Opener:
 
 
 def client(values):
-    reader = PublicGitHubStatus(REPO, expected_checks=('tests',), expected_app_id=15368)
-    reader._opener = Opener(values)
-    return reader
+    from unittest.mock import patch
+    opener = Opener(values)
+    # Inject before construction: fixtures must not initialize a real HTTPS
+    # context (including repeated Windows system-certificate enumeration).
+    with patch('urllib.request.build_opener', return_value=opener):
+        return PublicGitHubStatus(REPO, expected_checks=('tests',), expected_app_id=15368)
 
 
 def test_exact_head_snapshot_is_read_only_and_never_merge_permission(monkeypatch):
