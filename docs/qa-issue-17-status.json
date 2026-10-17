@@ -144,6 +144,138 @@
       "pull_state": "open",
       "draft": false,
       "merged": false
+    },
+    {
+      "repository": "KalyuzhniyKO/AICommander-v3",
+      "pull_request": 50,
+      "pull_url": "https://github.com/KalyuzhniyKO/AICommander-v3/pull/50",
+      "diff_url": "https://github.com/KalyuzhniyKO/AICommander-v3/pull/50/files",
+      "head_sha": "679c4bcf15a709e64adf9b7c7f354e85187b764b",
+      "state": "passed",
+      "complete": true,
+      "all_expected_checks_passed": true,
+      "ready_for_merge": false,
+      "checks": [
+        {
+          "name": "Python 3.11 / ubuntu-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.12 / ubuntu-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.13 / windows-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.13 / ubuntu-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Installed Python dependency audit",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.11 / windows-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.12 / windows-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Chromium owner panel",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.11 / ubuntu-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.12 / ubuntu-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.13 / windows-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Installed Python dependency audit",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.11 / windows-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.12 / windows-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Python 3.13 / ubuntu-latest",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        },
+        {
+          "name": "Chromium owner panel",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368,
+          "trusted_app": true
+        }
+      ],
+      "statuses": [],
+      "missing_checks": [],
+      "reason": "reported_snapshot_only",
+      "public_read_only": true,
+      "pull_state": "open",
+      "draft": false,
+      "merged": false
     }
   ],
   "credentials_used_by_reader": false,
