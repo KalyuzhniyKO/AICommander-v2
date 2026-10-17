@@ -38,3 +38,8 @@ literal redactor without environment credential discovery. Host validation is
 not a network firewall; use the existing loopback listener through SSH. Basic
 auth does not encrypt traffic. OS isolation, supply-chain audit and deployment/
 reboot/live acceptance remain separate work.
+
+
+[A separate local dependency audit](DEPENDENCY_AUDIT.en.md) checked 35 Python
+distributions: after updating pip, no known findings remain. License metadata
+is inventoried; full distribution and Zorin audits are pending.

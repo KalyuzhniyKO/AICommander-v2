@@ -75,3 +75,8 @@ unique constraint вернёт conflict вместо создания второ
 - Настоящие OS/filesystem/network isolation, права процесса, доверенный Reviewer,
   deployment/reboot acceptance и live-проверка сервисов остаются #15/#20/#22.
   Retry/recovery/budget политики этим PR не меняются.
+
+
+[Отдельный локальный dependency audit](DEPENDENCY_AUDIT.md) проверил 35
+Python distributions: после обновления pip известных findings нет. License
+metadata собрана; полная проверка поставки и Zorin не выполнена.
