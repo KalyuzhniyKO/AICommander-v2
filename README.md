@@ -52,6 +52,7 @@
 | Английские версии GitHub Issues | Основные описания — в Issues | [Issues EN](docs/ISSUES_EN.md) |
 | Шаблоны GitHub и порядок работы | [WORKFLOW](docs/GITHUB_WORKFLOW.md) | [Workflow](docs/GITHUB_WORKFLOW.en.md) |
 | Адаптер OmniRoute: opt-in и live smoke | [RU](docs/OMNIROUTE_ADAPTER.md) | [EN](docs/OMNIROUTE_ADAPTER.en.md) |
+| SQLite backup/restore (подготовка #22) | [RU](docs/SQLITE_BACKUPS.md) | [EN](docs/SQLITE_BACKUPS.en.md) |
 | Лимиты и бюджет (offline-подготовка #18) | [RU](docs/BUDGETS.md) | [EN](docs/BUDGETS.en.md) |
 | Панель: история Hermes (подготовка #19) | [RU](docs/HERMES_PANEL.md) | [EN](docs/HERMES_PANEL.en.md) |
 | Hermes Director: реальное планирование | [RU](docs/HERMES_TASKFLOW.md) | [EN](docs/HERMES_TASKFLOW.en.md) |
@@ -114,3 +115,12 @@ Copy-Item config/models.example.json config/models.json
 **В runtime библиотека пока не подключена и реальные расходы приложения не ограничивает.**
 Полная #18 остаётся открытой для проверенных тарифов/usage и интеграции с журналом
 операций Hermes/OmniRoute; новые автоматические retries/fallback не добавлены.
+
+
+## Offline-подготовка backup/restore #22
+
+[Явный SQLite snapshot-инструмент](docs/SQLITE_BACKUPS.md) создаёт проверяемый
+архив, включает WAL и восстанавливает данные только в новый файл. Сохраняются
+артефакты v1/v2, операции и бюджетные резервы; неизвестные исходы не повторяются.
+Снимки приватные, не зашифрованы и не должны попадать в Git. Полная установка
+и эксплуатационная приёмка Zorin этим компонентом не завершены.
