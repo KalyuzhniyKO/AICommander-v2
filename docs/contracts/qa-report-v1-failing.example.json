@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "run_id": "9d783870cf9042e1b915d2e5f181dc40",
+  "scope": "offline_trusted_fixture",
+  "workspace_id": "e2321cd13b2b4c32847f5c281c7c833e",
+  "base_commit": "00580f01deafa7a6d1eb3212f504bbf5c8483b01",
+  "head": "00580f01deafa7a6d1eb3212f504bbf5c8483b01",
+  "evidence_sha256": "3431e0871afee663031a9ad5d5841b45385dc963c412ab8a41933a00dcdded08",
+  "command_plan_sha256": "d212a7bb217ab0d956d9d5336d984970634dfb78b4073820d7131e534a338692",
+  "evidence_complete": true,
+  "source_unchanged": true,
+  "diff": "diff --git a/sample.py b/sample.py\nindex b15b1b0..95cd691 100644\n--- a/sample.py\n+++ b/sample.py\n@@ -1 +1 @@\n-VALUE = 1\n+VALUE = 3\n",
+  "git_status": " M sample.py\n",
+  "required_checks": [
+    "pytest"
+  ],
+  "checks": [
+    {
+      "workspace_id": "e2321cd13b2b4c32847f5c281c7c833e",
+      "command_id": "pytest",
+      "outcome": "exited",
+      "exit_code": 1,
+      "duration_seconds": 0.49,
+      "stdout": "F                                                                        [100%]\n=================================== FAILURES ===================================\n__________________________________ test_value __________________________________\n\n    def test_value():\n>       assert VALUE == 2\nE       assert 3 == 2\n\ntest_sample.py:3: AssertionError\n=========================== short test summary info ============================\nFAILED test_sample.py::test_value - assert 3 == 2\n1 failed in 0.01s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "passed": false
+    }
+  ],
+  "qa_passed": false,
+  "ready_for_pr": false,
+  "independent_review": "required",
+  "owner_approval": "required",
+  "blockers": [
+    "required_checks_not_passed"
+  ],
+  "report_sha256": "5c81d640ddf1808c495767bf29bf058e28bf0ced745d29378ffd31bb3c9a4964"
+}

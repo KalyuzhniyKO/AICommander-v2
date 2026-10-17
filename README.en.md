@@ -114,3 +114,11 @@ verify integrity/checksums and restore into a new filename only. V1/v2 artifacts
 operations and budget reservations remain unchanged; unknown outcomes never retry.
 Snapshots are private, unencrypted data and must stay out of Git. Full Zorin
 installation/operational acceptance is not completed by this component.
+
+
+## Offline QA (#16)
+
+[QA runner](docs/QA_RUNNER.en.md) executes real pytest/Django checks in a trusted
+disposable worktree and records exit codes, redacted logs and actual Git diff.
+Failures or source changes block QA. Independent review and owner approval remain
+required. No taskflow wiring or OS sandbox is claimed; full #16 remains open.

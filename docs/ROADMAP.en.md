@@ -49,3 +49,9 @@ OmniRoute with temporary SQLite. [Evidence](qa-issue-13-live.json). The conserva
 no-new-framework ADR is accepted. After this PR is verified/merged, #11/#12/#13
 can close; #14 still owns real Director/external effects in taskflow. Reboot
 recovery, arbitrary tools and all provider/fallback routes are not claimed.
+
+
+Offline preparation for #16 (2026-10-17): [QA runner](QA_RUNNER.en.md) executes
+real pytest/Django checks against trusted disposable fixtures and binds reports
+to code/diff evidence. Independent Reviewer, OS sandbox and runtime integration
+remain pending; full #16 stays open.

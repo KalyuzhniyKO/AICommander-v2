@@ -1,0 +1,46 @@
+{
+  "issue": 16,
+  "scope": "offline_preparation_trusted_disposable_repositories",
+  "date": "2026-10-17",
+  "local_validation": {
+    "platform": "macOS, Python 3.13.12",
+    "full_suite_with_chromium": {"passed": 371, "skipped": 2},
+    "additional_test_added_after_full_suite_collection": {
+      "name": "test_exit_zero_with_truncated_pytest_output_is_not_success",
+      "passed": 1
+    },
+    "execution_and_qa_integration_suite_before_last_test": {"passed": 59, "skipped": 1},
+    "compileall": "passed",
+    "pip_check": "passed",
+    "git_diff_check": "passed"
+  },
+  "real_fixture_checks": [
+    "pytest_success_and_intentional_failure",
+    "pytest_no_tests_exit_5",
+    "django_system_checks_success_and_failure",
+    "django_missing_migration_with_no_file_or_database_writes",
+    "timeout_output_limit_and_exit_zero_truncation",
+    "active_and_prelaunch_cancellation",
+    "tracked_code_changes_invalidate_evidence",
+    "untracked_source_blocked_until_staged",
+    "committed_changes_reviewed_against_original_base",
+    "hidden_index_flags_refused",
+    "raw_content_hash_and_redacted_diff",
+    "redacted_logs_and_clean_environment",
+    "exclusive_report_export_and_source_checkout_preserved"
+  ],
+  "failing_fixture_report": "contracts/qa-report-v1-failing.example.json",
+  "independent_reviewer_executed": false,
+  "ready_for_pr_from_runner": false,
+  "taskflow_runtime_wired": false,
+  "zorin_checked": false,
+  "os_sandbox_implemented": false,
+  "network_isolation_implemented": false,
+  "full_issue_completed": false,
+  "remaining": [
+    "accept_stage_15_and_OS_isolation",
+    "trusted_independent_reviewer_bound_to_current_code_and_report",
+    "taskflow_artifact_and_status_integration",
+    "owner_acceptance_on_Zorin"
+  ]
+}

@@ -1,4 +1,6 @@
 import math
+import hashlib
+import json
 import os
 from pathlib import Path, PureWindowsPath
 import re
@@ -225,6 +227,48 @@ class OfflineExecutor:
             status = self._git(path, "status", "--porcelain=v1", "--untracked-files=all")
             diff = self._git(path, "diff", "--no-ext-diff", "--no-textconv", "--no-color", workspace.base_commit, "--")
             return Snapshot(workspace.id, workspace.base_commit, head, self.redact(status), self.redact(diff))
+
+    def review_evidence(self, key: str):
+        """Bound tracked bytes to Git evidence; untracked source cannot be reviewed.
+
+        Ignored, untracked outputs are excluded. Only trusted fixture code is
+        supported: this is not a defense against code racing reads or changing
+        and restoring files while a test runs. Limits fail closed.
+        """
+        with self._exclusive():
+            workspace, path, _ = self._owned(key)
+            head = self._git(path, "rev-parse", "HEAD").strip()
+            status = self._git(path, "status", "--porcelain=v1", "--untracked-files=all")
+            diff = self._git(path, "diff", "--no-ext-diff", "--no-textconv", "--no-color",
+                             workspace.base_commit, "--")
+            flags = self._git(path, "ls-files", "-v", "-z").split("\0")
+            if any(entry and (entry[0].islower() or entry[0] == "S") for entry in flags):
+                raise ExecutionError("QA forbids assume-unchanged and skip-worktree index entries")
+            names = self._git(path, "ls-files", "-z").split("\0")
+            if len(names) > 4097:
+                raise ExecutionError("QA evidence has too many files")
+            files = []
+            total = 0
+            for name in sorted(set(n for n in names if n)):
+                target = path / name
+                _within(target, path)
+                if not target.exists():
+                    files.append((name, None))
+                    continue
+                size = target.stat().st_size
+                total += size
+                if not target.is_file() or total > 8 * 1024 * 1024:
+                    raise ExecutionError("QA evidence exceeds its file limit")
+                with target.open("rb") as stream:
+                    data = stream.read(8 * 1024 * 1024 + 1)
+                if len(data) != size:
+                    raise ExecutionError("QA evidence changed while reading")
+                files.append((name, hashlib.sha256(data).hexdigest()))
+            payload = [workspace.id, workspace.base_commit, head, status, diff, files]
+            digest = hashlib.sha256(json.dumps(payload, ensure_ascii=True).encode()).hexdigest()
+            snapshot = Snapshot(workspace.id, workspace.base_commit, head,
+                                self.redact(status), self.redact(diff))
+            return snapshot, digest, not any(line.startswith("?? ") for line in status.splitlines())
 
     def run(self, key: str, command_id: str, *, cancel: threading.Event | None = None):
         with self._exclusive():
